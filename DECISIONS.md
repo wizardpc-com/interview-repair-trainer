@@ -6,7 +6,7 @@ The application uses Next.js with TypeScript, Tailwind CSS, and Route Handlers i
 
 ## Four independent layers
 
-Persona, Core Interview Protocol, and Scenario Pack are portable protocol assets. Runtime Engine code is kept separately under `src` so product execution does not become the source of truth for protocol content.
+The architecture separates Persona, Core Interview Protocol, Scenario Pack, and Runtime Engine responsibilities. Core Protocol and Scenario Pack are portable assets; Persona remains a reserved boundary in Phase 1, with no independent Persona asset or user-facing style switch. Runtime Engine code is kept separately under `src` so product execution does not become the source of truth for protocol content.
 
 ## Text-first domain, single-model Phase 1
 
@@ -24,7 +24,7 @@ Browser STT was added only after the text-first runtime was stable. It remains a
 
 ## Hidden server QuestionPlan
 
-One provider call generates exactly three distinct QuestionPlans before the first answer begins. Every plan is copied and frozen in the hidden Session and has one `primaryTarget`, `requiredEvidence`, and `optionalEvidence`. Only the primary target and required evidence may affect a Hard Gate, every required hidden criterion must be reasonably implied by the surface question, and Repair cannot regenerate any plan.
+One provider call generates exactly three QuestionPlans from distinct question families before the first answer begins. Every plan is copied and frozen in the hidden Session and has one `primaryTarget`, `requiredEvidence`, and `optionalEvidence`. Only the primary target and required evidence may affect a Hard Gate, every required hidden criterion must be reasonably implied by the surface question, and Repair cannot regenerate any plan.
 
 Optional evidence may improve final review but cannot force an interruption. Hidden Target means the AI's precommitted training target for this run; it is not a claim about a real interviewer's private intent. The complete QuestionPlan remains server-only while the answer is in progress.
 
@@ -56,7 +56,7 @@ Redis, PostgreSQL, queues, accounts, and persistence infrastructure are explicit
 
 ## Structured validation
 
-Generated QuestionPlans and SemanticCheckResults cross a Zod validation boundary before entering application logic. Future API request bodies must use the same rule. Unvalidated parsed JSON must not be cast directly to a domain type.
+Generated QuestionPlans, SemanticCheckResults, and API request bodies cross Zod validation boundaries before entering application logic. Other untrusted boundary payloads follow the same rule. Unvalidated parsed JSON must not be cast directly to a domain type.
 
 ## Runtime version
 
@@ -66,4 +66,6 @@ Node.js 24 is the reference local and Docker runtime. `package.json` retains the
 
 The repository has completed Stages 1–10: domain contracts, deterministic Gate Arbiter policy, one portable scenario, one Qwen adapter reused for three-plan generation and evaluation, hidden in-memory Sessions, text-first API and multi-question Runtime, Chrome-first speech input with text fallback, versioned Semantic Evaluator orchestration, Hard Gate and override behavior, same-target Repair and Re-answer, the non-Gate real-time wrap-up reminder, and a deterministic three-question report.
 
-The report selects only public-safe fields from frozen plans and completed runtime records; it does not call the LLM. There are no committed credentials, database, durable sessions, accounts, provider STT, multi-model router, multi-agent runtime, factual grading, score, or ranking.
+The report selects only public-safe fields from frozen plans and completed runtime records; it does not call the LLM. Its first-pass count means that the first completed answer triggered no Hard Gate; it is not a quality, correctness, or ability score. There are no committed credentials, database, durable sessions, accounts, provider STT, multi-model router, multi-agent runtime, factual grading, score, or ranking.
+
+The Stage 10 feature baseline is commit `5a61025`. Its automatic verification passed 222 tests with 4 skipped, the production build and TypeScript production check, and `git diff --check`. That three-question Session / Report cycle did not reconnect to real Qwen or rerun manual Chrome voice acceptance. Real-Qwen Golden and Chrome voice evidence belongs to earlier core Gate / Repair Runtime stages and is not evidence of a final three-question voice E2E run.

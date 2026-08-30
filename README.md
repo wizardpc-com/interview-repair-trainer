@@ -6,7 +6,7 @@ Interview Repair Trainer 是一个面向理工科本科生的项目与科研经�
 
 ```text
 输入项目或科研经历
-  -> Qwen 一次生成并冻结三道互不重复的服务端 QuestionPlan
+  -> Qwen 一次生成并冻结 3 个来自不同 question family 的服务端 QuestionPlan
   -> 逐题通过浏览器语音或文本回答
   -> 稳定 transcript 形成版本化 checkpoint
   -> Semantic Evaluator 给出结构化建议
@@ -17,11 +17,13 @@ Interview Repair Trainer 是一个面向理工科本科生的项目与科研经�
 
 Hidden Target 是本次训练预先承诺的目标，不是对真实面试官心理的推断。完整 QuestionPlan 只保存在服务端；LLM 输出必须经过 Zod 校验，且不能直接控制界面或状态跳转。
 
+系统主要评价 question alignment、题面明确要求的 evidence sufficiency、personal ownership，以及 repair / recovery，不声称验证所有 science / engineering 专业事实。当题面和冻结的 evidence 约束允许时，明确说明“没有进行可靠测量”可以是合法边界，不能只因没有数字就自动判为 `VAGUE_WITHOUT_EVIDENCE`。
+
 ## 当前实现
 
 完整一轮训练闭环已经完成 Stage 1–10，并包含实时收束提醒：
 
-- 根据项目经历一次生成三道不重复的场景化深挖问题，并在首题开始前冻结全部 QuestionPlan；
+- 根据项目经历一次生成 3 个覆盖不同深挖方向、来自不同 question family 的 QuestionPlan，并在首题开始前冻结全部计划；
 - 使用 Chrome 优先的 Web Speech API 进行 `zh-CN` 实时转写，以 Web Audio 的真实采样驱动音量反馈；
 - 语音不可用、权限被拒或识别失败时，保留完整的文本备用路径；
 - 仅用稳定转写创建版本化 checkpoint，并丢弃迟到或过期的 evaluator 结果；
@@ -30,7 +32,7 @@ Hidden Target 是本次训练预先承诺的目标，不是对真实面试官心
 - Hard Gate 冻结原回答，允许用户不同意并继续，或针对同一冻结目标重新回答；
 - 重新回答后只判断原缺口是否修复，不要求得到“完美答案”。
 - 完成当前题后自动进入下一题；Repair 结果先经过简洁过渡页，不会瞬间消失；
-- 第三题结束后从真实 runtime 记录生成题目级报告和六项计数，不调用 LLM 生成总评或分数。
+- 第三题结束后从真实 runtime 记录生成题目级报告和六项计数，不调用 LLM 生成总评或分数；报告中的“首次直接通过”仅表示本题第一次回答完成时未触发 Hard Gate，不是质量评分、正确率或能力判定。
 
 当前没有账号、数据库、跨进程持久化、多模型路由、通用事实判定、综合评分或排名。Session 仅保存在单个 Node.js 进程内，TTL 为一小时，进程重启后丢失。浏览器 ASR 错字和模型语义误判仍可能影响体验，因此产品采用 fail-open、一次 Gate 上限和用户 override 来降低误打断风险。
 
@@ -38,7 +40,7 @@ Hidden Target 是本次训练预先承诺的目标，不是对真实面试官心
 
 | 层 | 作用 | 当前目录或状态 |
 | --- | --- | --- |
-| Persona | 面试官表达风格 | 独立可移植层；Phase 1 尚未加入单独 Persona 资产 |
+| Persona | 面试官表达风格 | 架构上与检查标准分离；Phase 1 没有独立 Persona 资产或用户可切换的风格功能 |
 | Core Interview Protocol | 可复用的面试行为规则 | `protocols/core/` |
 | Scenario Pack | 题型、训练目标与证据约束 | `protocols/scenarios/` |
 | Runtime Engine | 状态机、checkpoint、语义决策与 repair | `src/domain/`、`src/server/`、`src/services/` |
@@ -93,6 +95,10 @@ npm start
 npm test
 npm run build
 ```
+
+Stage 10 的功能基线提交是 `5a61025`（`feat: complete three-question training round`）。该轮验证结果为：222 个测试通过、4 个跳过，23 个测试文件通过、1 个跳过；生产构建及其中的 TypeScript 检查通过，`git diff --check` 通过。
+
+证据边界必须分开理解：核心 Gate / Repair Runtime 在前序阶段运行过真实 Qwen Golden 和 Chrome 语音验收，并针对 ASR noisy transcript 的 False Gate 做过修正；Stage 10 的三题 Session / Report 扩展完成了完整自动化测试和生产构建，但该轮没有重新连接真实 Qwen，也没有重新执行 Chrome 真实语音人工验收。因此不能把这些阶段合并描述为“最终三题版本已经通过真实 Qwen 与 Chrome Voice E2E”。
 
 真实 Qwen Golden 验证是显式、可能产生 API 费用的独立流程。配置 `.env.local` 后，可按需运行 `package.json` 中的 `test:golden:*:qwen` 脚本；历史原始输出与报告保存在 `reports/golden/`。
 

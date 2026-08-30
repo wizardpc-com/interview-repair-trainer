@@ -1,5 +1,7 @@
 # Stage 9 MVP 集成验收
 
+> 历史证据快照：本文记录 Stage 9 当时的分支、自动测试、真实 Qwen Golden 和 Chrome smoke，包括当时要求停止合并的 False Gate。后续提交已经针对该 ASR noisy transcript 边界增加修正和自动回归；Stage 10 功能提交 `5a61025` 又增加了三题 Session 与确定性 Report，但该轮没有重新运行真实 Qwen 或 Chrome 语音人工验收。本文不代表当前最终版本状态，也不能与 Stage 10 自动验证拼接成最终三题 Voice E2E 结论。
+
 - 日期：2026-08-30
 - 分支：`integrate/stage9-local`
 - 基线：`01516da217977b90bbe688b1845bf70dace7ba9b`

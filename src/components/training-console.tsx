@@ -1077,7 +1077,7 @@ export function TrainingConsole() {
               把项目经历，练成一段清楚的回答。
             </h1>
             <p className="mt-7 max-w-lg text-base leading-7 text-[#5e6964] sm:text-lg">
-              输入项目经历，一次生成三道互不重复的深挖问题，再连续完成回答与修复训练。
+              输入项目经历，一次生成三个覆盖不同深挖方向的问题，再连续完成回答与修复训练。
             </p>
           </div>
 

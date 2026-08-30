@@ -38,9 +38,9 @@ Across all stages, internal protocol identifiers remain English machine values w
 
 ## 5. Hidden in-memory session — complete
 
-- **Goal:** Store the frozen QuestionPlan in a server-only, in-memory session with TTL.
+- **Goal:** Store frozen QuestionPlans in a server-only, in-memory session with TTL.
 - **Files / modules involved:** `src/server/session-store.ts`, `src/server/interview-session-service.ts`, `tests/server/interview-session.test.ts`.
-- **Acceptance criteria:** Session creation uses the provider-independent LLM service, copies and freezes the complete plan server-side, exposes only the session id and surface questions, and rejects expired sessions. Planning failure creates no partial session.
+- **Acceptance criteria:** Session creation uses the provider-independent LLM service, copies and freezes the complete plan list server-side, exposes only the session id and surface questions, and rejects expired sessions. Planning failure creates no partial session.
 - **Tests:** Cover create and read, deep freezing, hidden-field serialization, lazy expiry, missing sessions, planning failure atomicity, and session isolation.
 - **Explicit non-goals:** Redis, PostgreSQL, accounts, durable recovery, horizontal scaling.
 
@@ -80,8 +80,9 @@ Across all stages, internal protocol identifiers remain English machine values w
 
 - **Goal:** Generate and freeze a three-question Interview Plan, run all three questions through the existing Gate/Repair flow, and produce a deterministic final report.
 - **Files / modules involved:** `src/domain/interview/report.ts`, `src/services/llm`, `src/server/interview-session-service.ts`, `src/server/session-store.ts`, API contracts, Training Console, and report/runtime/session tests.
-- **Acceptance criteria:** Session creation performs one validated provider call for exactly three distinct question families and freezes all plans before question one. Normal completion, successful Repair, and unresolved Repair advance through the existing `currentQuestionIndex`; question three enters `INTERVIEW_DONE`. The report includes first-pass, Gate, Repair, successful Repair, and unresolved counts plus per-question answers and deterministic Hard Gate details, with no fabricated overall score or internal evaluator metadata.
+- **Acceptance criteria:** Session creation performs one validated provider call for exactly three distinct question families and freezes all plans before question one. Normal completion, successful Repair, and unresolved Repair advance through the existing `currentQuestionIndex`; question three enters `INTERVIEW_DONE`. The report includes first-pass completion with no Hard Gate, Gate, Repair, successful Repair, and unresolved counts plus per-question answers and deterministic Hard Gate details, with no fabricated overall score or internal evaluator metadata. First-pass is a runtime event definition, not a quality, correctness, or ability score.
 - **Tests:** Cover exact and distinct plan count, deep freezing, duplicate rejection, all question transitions, successful and unresolved Repair advancement, final interview completion, deterministic aggregation, public-field safety, and report rendering.
+- **Verification snapshot:** Feature commit `5a61025` (`feat: complete three-question training round`) passed 222 tests with 4 skipped across 23 passing and 1 skipped test files; production build, TypeScript production check, and `git diff --check` passed. This Stage 10 cycle did not reconnect to real Qwen or rerun manual Chrome voice acceptance; those are historical core Runtime evidence, not Stage 10 E2E evidence.
 - **Explicit non-goals:** Scores such as `87.4`, rankings, long-term profiles, database-backed analytics.
 
 ## 11. Deferred adapters and polish — deferred

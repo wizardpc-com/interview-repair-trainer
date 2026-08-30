@@ -4,7 +4,7 @@ The repository keeps portable interview assets separate from product execution. 
 
 | Layer | Responsibility | Location |
 | --- | --- | --- |
-| Persona | Interviewer tone and expression style | `protocols/personas/` |
+| Persona | Interviewer tone and expression style, separated from checking policy | Reserved architecture boundary; Phase 1 has no independent Persona asset or user-facing style switch |
 | Core Interview Protocol | Reusable interview behavior rules | `protocols/core/` |
 | Scenario Pack | Scenario-specific questions and evidence context | `protocols/scenarios/` |
 | Runtime Engine | State, checkpoints, semantic decisions, repair, and metrics | `src/domain/`, `src/server/` |
@@ -15,7 +15,7 @@ Protocol export artifacts belong in `protocols/exports/`. Provider-specific LLM 
 
 ```text
 project or research context input
-  -> generate and freeze three distinct QuestionPlans in one hidden server session
+  -> generate and freeze three QuestionPlans from distinct question families in one hidden server session
   -> for each question: expose only the surface question
   -> browser speech input or text fallback
   -> stable transcript input
@@ -34,12 +34,12 @@ Browser STT converts speech to input text and does not participate in domain dec
 
 Phase 1 configures one real LLM. The same model performs two roles through one provider-independent service interface:
 
-- before answering, one request generates three distinct deep-dive QuestionPlans with frozen Hidden Targets and evidence requirements;
+- before answering, one request generates three deep-dive QuestionPlans from distinct question families with frozen Hidden Targets and evidence requirements;
 - during answering, it evaluates semantic checkpoints for `NOT_ANSWERING_QUESTION`, `VAGUE_WITHOUT_EVIDENCE`, and `OWNERSHIP_AMBIGUOUS` and returns structured data to the Gate Arbiter.
 
 Planner and Semantic Evaluator orchestration depend only on the provider-independent service interface. Domain code has no LLM service dependency, and provider-specific code stays inside `src/services/llm`. LLM output never directly controls the UI or state machine.
 
-Stage 4 uses one Qwen model configuration for both operations through Qwen's OpenAI-compatible Chat Completions endpoint. The adapter uses native `fetch` rather than a provider SDK. `QWEN_API_KEY`, `QWEN_MODEL`, and `QWEN_BASE_URL` are server environment configuration; the default model is `qwen3.8-flash`. Requests use non-thinking mode and JSON Object output so the existing Zod validation and single structured-output retry remain authoritative.
+Stage 4 uses one Qwen model configuration for both operations through Qwen's OpenAI-compatible Chat Completions endpoint. The adapter uses native `fetch` rather than a provider SDK. `QWEN_API_KEY`, `QWEN_MODEL`, and `QWEN_BASE_URL` are server environment configuration; the default model is `qwen3.8-flash`. Requests use non-thinking mode and strict JSON Schema structured output so the existing Zod validation and single structured-output retry remain authoritative.
 
 A future extension may use a stronger model for planning and final review and a faster model for real-time monitoring. Phase 1 does not implement the router, selection logic, or second provider configuration required for that split.
 
@@ -99,7 +99,7 @@ Phase 1 runs as a single application instance with an in-memory server session s
 
 The public session DTO is constructed by explicit field selection. It contains only the `sessionId` plus each `questionId` and `surfaceQuestion`; it does not contain project context, scenario hints, timestamps, primary targets, required or optional evidence, or allowed gate types. Redis, PostgreSQL, queues, accounts, durable persistence, and horizontal scaling are out of scope.
 
-Zod now validates generated QuestionPlans and SemanticCheckResults. When API routes are added, runtime schemas must also validate:
+Zod validates generated QuestionPlans, SemanticCheckResults, API request bodies, and other untrusted boundary payloads. In particular, runtime boundary schemas validate:
 
 - API request bodies;
 - any additional untrusted boundary payloads.
@@ -108,7 +108,7 @@ Parsed JSON cannot enter the domain through an unchecked type cast.
 
 ## Interview runtime and public API
 
-Each hidden session owns an immutable runtime snapshot alongside its frozen QuestionPlan. The path without a Hard Gate remains deterministic:
+Each hidden session owns an immutable runtime snapshot alongside its frozen QuestionPlans. The path without a Hard Gate remains deterministic:
 
 ```text
 QUESTION_READY -> ANSWERING -> QUESTION_DONE
@@ -132,13 +132,13 @@ Every accepted transcript change increments `answerVersion`. Creating a checkpoi
 
 Periodic `INTERIM` checkpoint eligibility is an explicitly tunable MVP heuristic, not a scientifically calibrated threshold. The current values require 80 characters in the trimmed transcript, five seconds since answer start, five seconds since the previous checkpoint, a changed answer version, and no request already in flight. Explicit completion creates a `FINAL` checkpoint once the trimmed answer has at least four characters; it does not inherit the periodic length, duration, or persistence thresholds. Shorter non-empty input completes without semantic interruption.
 
-`POST /api/sessions` validates project context, generates exactly three distinct plans in one provider call, freezes all three, and returns only the public session and runtime DTOs. `POST /api/sessions/:sessionId/answer` validates `START`, `UPDATE_TRANSCRIPT`, `COMPLETE`, `CONTINUE_AFTER_WRAP_UP`, `START_REANSWER`, and `OVERRIDE_GATE` actions; transcript writes must identify answer attempt 1 or 2. Public runtime responses include the current surface question, state, transcript, version counters, checkpoint freshness metadata, an optional completed-Repair transition, and the final deterministic report; they exclude project context and every private QuestionPlan field.
+`POST /api/sessions` validates project context, generates exactly three plans from distinct question families in one provider call, freezes all three, and returns only the public session and runtime DTOs. `POST /api/sessions/:sessionId/answer` validates `START`, `UPDATE_TRANSCRIPT`, `EVALUATE_CHECKPOINT`, `COMPLETE`, `CONTINUE_AFTER_WRAP_UP`, `START_REANSWER`, and `OVERRIDE_GATE` actions; transcript writes must identify answer attempt 1 or 2. Public runtime responses include the current surface question, state, transcript, version counters, checkpoint freshness metadata, an optional completed-Repair transition, and the final deterministic report; they exclude project context and every private QuestionPlan field.
 
 The Training Console is deliberately not a chat transcript. Setup contains one project/research context field. Before answering, the current surface question occupies the center of a near-full-screen interview stage. During answering, the question remains visible above a microphone focus and a compact read-only transcript. After a terminal Repair, a concise result transition remains visible before the next question. After question three, the console renders the deterministic report instead of returning to the setup screen. Save status remains secondary; answer and checkpoint versions stay in the public DTO for synchronization but are not rendered in the ordinary interface.
 
 ## User-facing Chinese boundary
 
-Internal protocol identifiers remain stable English machine values. The `zh-CN` presentation boundary maps runtime states, actions, errors, and future gate results to concise Chinese copy; it never renders issue ids, version counters, confidence, or provider details to ordinary users. This is a presentation contract, not a requirement for a general-purpose localization framework.
+Internal protocol identifiers remain stable English machine values. The `zh-CN` presentation boundary maps runtime states, actions, errors, Gate results, and Repair results to concise Chinese copy; it never renders issue ids, version counters, confidence, or provider details to ordinary users. This is a presentation contract, not a requirement for a general-purpose localization framework.
 
 The planner selects exactly three distinct question families and must return each family's exact target, evidence split, and gate types through one validated structured output. Personal contribution, technical choice and rationale, and results with validation are preferred when relevant. The application uses each family's fixed concise Chinese surface question so every gating criterion has source-defined surface support; model-adapted wording cannot silently omit a required request. Provider failures, duplicate families, the wrong plan count, and structurally invalid plans fail session creation rather than guessing or partially creating a session.
 
@@ -178,7 +178,9 @@ A terminal repair stores the original answer, repaired answer, issue record, ove
 
 `completeAnswer` and `completeRepair` reuse the existing `currentQuestionIndex` to mark the active question done and activate the next already-frozen plan. Successful and unresolved Repairs both advance; a third completion sets `INTERVIEW_DONE`. The UI keeps a repaired question's terminal result as a local acknowledgement transition before revealing the next question or final report.
 
-The report is built only when every runtime question is `QUESTION_DONE`. It counts completed questions, first-pass questions with no Hard Gate, Hard Gates, Repairs, successful Repairs, and unresolved Repairs. Each question exposes its surface question and final answer; a Hard Gate additionally exposes its deterministic pause reason, original answer, optional repair answer, repair outcome, or an override note. The report selects these fields from frozen plans and runtime records only. It does not call the LLM and contains no score, ranking, probability, confidence, internal issue id, or specialist factual judgment.
+The report is built only when every runtime question is `QUESTION_DONE`. It counts completed questions, first-pass questions whose first completed answer triggered no Hard Gate, Hard Gates, Repairs, successful Repairs, and unresolved Repairs. Here first-pass is a runtime event count, not an answer-quality judgment, correctness measure, or interview-skill threshold. Each question exposes its surface question and final answer; a Hard Gate additionally exposes its deterministic pause reason, original answer, optional repair answer, repair outcome, or an override note. The report selects these fields from frozen plans and runtime records only. It does not call the LLM and contains no score, ranking, probability, confidence, internal issue id, or specialist factual judgment.
+
+The Stage 10 feature baseline is commit `5a61025` (`feat: complete three-question training round`). Its verification snapshot is 222 tests passed and 4 skipped across 23 passing and 1 skipped test files, with the production build, TypeScript production check, and `git diff --check` passing. That Stage 10 Session / Report cycle did not reconnect to the real Qwen service or rerun manual Chrome voice acceptance. Real-Qwen Golden and Chrome voice evidence belongs to earlier core Gate / Repair Runtime stages and must not be presented as a final three-question voice E2E result.
 
 ## Dependency direction
 

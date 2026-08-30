@@ -9,7 +9,7 @@ describe("training console copy", () => {
   it("explains the setup flow in Chinese", () => {
     const markup = renderToStaticMarkup(createElement(TrainingConsole));
 
-    expect(markup).toContain("一次生成三道互不重复的深挖问题");
+    expect(markup).toContain("一次生成三个覆盖不同深挖方向的问题");
     expect(markup).toContain("第一步：提供项目背景");
     expect(markup).toContain("生成三题训练计划");
     expect(markup).not.toContain("Text-first console");
