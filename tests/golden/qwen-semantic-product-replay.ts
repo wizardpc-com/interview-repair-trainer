@@ -124,11 +124,15 @@ function directArbiterDecision(
           answerStartedAt: null,
           lastCheckpointAt: null,
           latestCheckpoint: null,
+          answerAttempt: 1,
           originalAnswer: null,
+          repairedAnswer: null,
           hardGate: null,
           gateOverride: null,
           repairStatus: null,
           semanticIssueCandidate: null,
+          afterEvaluation: null,
+          repairOutcome: null,
         },
       ],
     },
@@ -226,6 +230,7 @@ export async function replayCapturedSemanticResult(
   let publicRuntime = service.updateTranscript(
     session.sessionId,
     fixture.transcript,
+    1,
   );
 
   if (checkpointKind === "FINAL") {

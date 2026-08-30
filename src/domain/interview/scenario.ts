@@ -7,6 +7,7 @@ import {
 export type ScenarioEvidenceKind = Readonly<{
   id: string;
   description: string;
+  honestNoMeasurementSatisfies: boolean;
 }>;
 
 export type ScenarioRequiredEvidence = Readonly<{
@@ -56,6 +57,14 @@ function readString(value: unknown, label: string): string {
   return value;
 }
 
+function readBoolean(value: unknown, label: string): boolean {
+  if (typeof value !== "boolean") {
+    throw new Error(`${label} must be a boolean`);
+  }
+
+  return value;
+}
+
 function readArray(value: unknown, label: string): readonly unknown[] {
   if (!Array.isArray(value)) {
     throw new Error(`${label} must be an array`);
@@ -84,6 +93,22 @@ function readDefinition(value: unknown, label: string): TrainingTarget {
   return {
     id: readString(record.id, `${label}.id`),
     description: readString(record.description, `${label}.description`),
+  };
+}
+
+function readEvidenceKind(
+  value: unknown,
+  label: string,
+): ScenarioEvidenceKind {
+  const record = readRecord(value, label);
+
+  return {
+    id: readString(record.id, `${label}.id`),
+    description: readString(record.description, `${label}.description`),
+    honestNoMeasurementSatisfies: readBoolean(
+      record.honestNoMeasurementSatisfies,
+      `${label}.honestNoMeasurementSatisfies`,
+    ),
   };
 }
 
@@ -239,7 +264,7 @@ export function parseScenarioPack(input: unknown): InterviewScenarioPack {
   );
   const evidenceKinds = requireItems(
     readArray(record.evidenceKinds, "scenario.evidenceKinds").map((item, index) =>
-      readDefinition(item, `scenario.evidenceKinds[${index}]`),
+      readEvidenceKind(item, `scenario.evidenceKinds[${index}]`),
     ),
     "scenario.evidenceKinds",
   );

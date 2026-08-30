@@ -40,6 +40,7 @@ export async function POST(
         runtime = runtimeService.updateTranscript(
           sessionId,
           parsed.data.transcript,
+          parsed.data.answerAttempt,
         );
         break;
       case "EVALUATE_CHECKPOINT":
@@ -52,8 +53,8 @@ export async function POST(
       case "OVERRIDE_GATE":
         runtime = runtimeService.overrideGate(sessionId);
         break;
-      case "PREPARE_REANSWER":
-        runtime = runtimeService.prepareReanswer(sessionId);
+      case "START_REANSWER":
+        runtime = runtimeService.startReanswer(sessionId);
         break;
       case "COMPLETE":
         runtime = await runtimeService.complete(sessionId);

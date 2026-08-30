@@ -25,8 +25,9 @@ describe("training console copy", () => {
     expect(source).toContain('QUESTION_READY: "待回答"');
     expect(source).toContain('ANSWERING: "回答中"');
     expect(source).toContain('REPAIR: "回答已暂停"');
-    expect(source).toContain('REANSWER: "准备重新回答"');
+    expect(source).toContain('REANSWER: "重新回答中"');
     expect(source).toContain('QUESTION_DONE: "本题完成"');
+    expect(source).toContain("同一问题 · 重新回答");
     expect(source).not.toContain("Interview prompt");
     expect(source).not.toContain("Your answer");
     expect(source).not.toContain("Transcript 已自动同步");
@@ -43,7 +44,7 @@ describe("training console copy", () => {
     );
 
     const startAction = source.indexOf('action: "START"');
-    const microphoneStart = source.indexOf("await startVoiceCapture()", startAction);
+    const microphoneStart = source.indexOf("void startVoiceCapture()", startAction);
     expect(startAction).toBeGreaterThan(-1);
     expect(microphoneStart).toBeGreaterThan(startAction);
     expect(source).toMatch(/onInterim:[\s\S]*captureIsCurrent\(\)/);
@@ -56,8 +57,28 @@ describe("training console copy", () => {
       /evaluated\.state === "REPAIR"[\s\S]*await stopVoiceCapture\(\)/,
     );
     expect(source).toMatch(
-      /action: "OVERRIDE_GATE"[\s\S]*await startVoiceCapture\(\)/,
+      /action: "OVERRIDE_GATE"[\s\S]*void startVoiceCapture\(\)/,
     );
-    expect(source).toContain('latestRuntime.state !== "ANSWERING"');
+    expect(source).toContain("!isAnswerCaptureState(latestRuntime.state)");
+    expect(source).toMatch(
+      /const answerAttempt = currentRuntime\.answerAttempt[\s\S]*action: "UPDATE_TRANSCRIPT"[\s\S]*answerAttempt[\s\S]*runtimeRef\.current\?\.answerAttempt !== answerAttempt/,
+    );
+
+    const reanswerAction = source.indexOf('action: "START_REANSWER"');
+    const reanswerGuard = source.indexOf(
+      'reanswer.state !== "REANSWER"',
+      reanswerAction,
+    );
+    const freshMicrophone = source.indexOf(
+      "void startVoiceCapture()",
+      reanswerGuard,
+    );
+    expect(reanswerAction).toBeGreaterThan(-1);
+    expect(reanswerGuard).toBeGreaterThan(reanswerAction);
+    expect(freshMicrophone).toBeGreaterThan(reanswerGuard);
+    expect(source).toMatch(
+      /checkpointRuntime\.state !== "ANSWERING"[\s\S]*attemptedCheckpointKeysRef/,
+    );
+    expect(source).not.toContain('action: "PREPARE_REANSWER"');
   });
 });

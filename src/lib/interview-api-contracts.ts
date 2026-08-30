@@ -16,6 +16,7 @@ export const answerActionRequestSchema = z.discriminatedUnion("action", [
     .object({
       action: z.literal("UPDATE_TRANSCRIPT"),
       transcript: z.string().max(20_000),
+      answerAttempt: z.union([z.literal(1), z.literal(2)]),
     })
     .strict(),
   z
@@ -27,7 +28,7 @@ export const answerActionRequestSchema = z.discriminatedUnion("action", [
     })
     .strict(),
   z.object({ action: z.literal("OVERRIDE_GATE") }).strict(),
-  z.object({ action: z.literal("PREPARE_REANSWER") }).strict(),
+  z.object({ action: z.literal("START_REANSWER") }).strict(),
   z.object({ action: z.literal("COMPLETE") }).strict(),
 ]);
 
@@ -57,11 +58,18 @@ const publicCheckpointSchema = z
 
 const publicHardGateSchema = z
   .object({
-    status: z.enum(["GATE_PENDING", "REANSWER_PREPARED"]),
+    status: z.enum(["GATE_PENDING", "REANSWERING"]),
     title: nonEmptyString,
     whyPaused: nonEmptyString,
     repairCue: nonEmptyString,
     originalAnswer: z.string(),
+  })
+  .strict();
+
+const publicRepairResultSchema = z
+  .object({
+    status: z.enum(["SUCCESSFUL", "UNRESOLVED"]),
+    title: z.enum(["修复成功", "仍未解决"]),
   })
   .strict();
 
@@ -79,10 +87,12 @@ export const publicInterviewRuntimeSchema = z
       .strict(),
     state: z.enum(QUESTION_STATES),
     transcript: z.string(),
+    answerAttempt: z.union([z.literal(1), z.literal(2)]),
     answerVersion: z.number().int().nonnegative(),
     checkpointVersion: z.number().int().nonnegative(),
     checkpoint: publicCheckpointSchema.nullable(),
     hardGate: publicHardGateSchema.nullable(),
+    repairResult: publicRepairResultSchema.nullable(),
   })
   .strict();
 
@@ -128,6 +138,7 @@ export type PublicInterviewRuntimeDto = Readonly<{
   }>;
   state: z.infer<typeof publicInterviewRuntimeSchema>["state"];
   transcript: string;
+  answerAttempt: 1 | 2;
   answerVersion: number;
   checkpointVersion: number;
   checkpoint: Readonly<{
@@ -138,10 +149,14 @@ export type PublicInterviewRuntimeDto = Readonly<{
     freshness: "CURRENT" | "STALE";
   }> | null;
   hardGate: Readonly<{
-    status: "GATE_PENDING" | "REANSWER_PREPARED";
+    status: "GATE_PENDING" | "REANSWERING";
     title: string;
     whyPaused: string;
     repairCue: string;
     originalAnswer: string;
+  }> | null;
+  repairResult: Readonly<{
+    status: "SUCCESSFUL" | "UNRESOLVED";
+    title: "修复成功" | "仍未解决";
   }> | null;
 }>;

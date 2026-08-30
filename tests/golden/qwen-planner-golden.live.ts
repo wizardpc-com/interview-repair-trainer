@@ -4,8 +4,8 @@ import { describe, expect, it } from "vitest";
 import {
   createCheckpoint,
   interruptForHardGate,
-  prepareReanswer,
   startAnswer,
+  startReanswer,
   updateTranscript,
 } from "../../src/domain/interview/runtime";
 import { arbitrateGate } from "../../src/domain/semantic/gate-arbiter";
@@ -152,8 +152,23 @@ describe("Qwen Planner Golden invariants (live, isolated from evaluator)", () =>
           triggeredAt: 3_000,
           whyPaused: "Planner Golden freeze check.",
           repairCue: "Preserve the frozen plan.",
+          beforeEvaluation: {
+            questionId: plan.id,
+            checkpointVersion: checkpointed.checkpoint.checkpointVersion,
+            decision: "ISSUE_DETECTED",
+            issueType,
+            triggeringCriterion: {
+              kind: "PRIMARY_TARGET",
+              id: plan.primaryTarget.id,
+            },
+            issueExplanation: "Planner Golden freeze check.",
+            repairCue: "Preserve the frozen plan.",
+            confidence: 0.95,
+            gateability: "GATE_ELIGIBLE",
+            answerBoundary: "NONE",
+          },
         });
-        runtime = prepareReanswer(runtime);
+        runtime = startReanswer(runtime, 4_000);
         store.updateRuntime(stored.sessionId, runtime);
 
         const family = phaseOneScenario.questionFamilies.find(
@@ -179,9 +194,9 @@ describe("Qwen Planner Golden invariants (live, isolated from evaluator)", () =>
             Object.isFrozen(frozenPlan.requiredEvidence) &&
             Object.isFrozen(frozenPlan.optionalEvidence) &&
             store.get(stored.sessionId)?.runtime.questions[0]?.state ===
-              "REPAIR" &&
+              "REANSWER" &&
             store.get(stored.sessionId)?.runtime.questions[0]?.repairStatus ===
-              "REANSWER_PREPARED",
+              "REANSWERING",
         };
 
         results.push({

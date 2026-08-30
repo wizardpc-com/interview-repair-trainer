@@ -17,6 +17,7 @@ describe("science and engineering project deep-dive scenario", () => {
       "science-engineering-project-deep-dive.json",
     ]);
     expect(scenario.id).toBe("science-engineering-project-deep-dive");
+    expect(scenario.version).toBe(2);
     expect(scenario.title).not.toBe("");
     expect(scenario.description).not.toBe("");
     expect(scenario.questionFamilies.map(({ id }) => id)).toEqual([
@@ -39,6 +40,16 @@ describe("science and engineering project deep-dive scenario", () => {
         expect(GATE_ISSUE_TYPES).toContain(issueType);
       }
     }
+  });
+
+  it("precommits which evidence accepts an honest no-measurement boundary", () => {
+    expect(
+      scenario.evidenceKinds
+        .filter(({ honestNoMeasurementSatisfies }) =>
+          honestNoMeasurementSatisfies,
+        )
+        .map(({ id }) => id),
+    ).toEqual(["observed-result", "validation-method"]);
   });
 
   it("gives every question family one supported target and traceable required evidence", () => {

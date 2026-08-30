@@ -1,6 +1,7 @@
 import type { QuestionPlan } from "../domain/interview/contracts";
 import {
   completeAnswer,
+  completeRepair,
   createCheckpoint,
   getCheckpointEligibility,
   interruptForHardGate,
@@ -10,9 +11,9 @@ import {
   MVP_FINAL_CHECKPOINT_MIN_CHARACTERS,
   MVP_SEMANTIC_GATE_HEURISTIC,
   overrideHardGate,
-  prepareReanswer,
   setSemanticIssueCandidate,
   startAnswer,
+  startReanswer,
   updateTranscript,
   type CheckpointHeuristic,
   type InterviewRuntime,
@@ -24,7 +25,11 @@ import {
   arbitrateGate,
   type SurfaceQuestionSupport,
 } from "../domain/semantic/gate-arbiter";
-import type { GateCriterion } from "../domain/semantic/contracts";
+import { arbitrateRepair } from "../domain/semantic/repair-arbiter";
+import type {
+  GateCriterion,
+  SemanticCheckResult,
+} from "../domain/semantic/contracts";
 import type { PublicInterviewRuntimeDto } from "../lib/interview-api-contracts";
 import type { LlmService } from "../services/llm/llm-service";
 import { createHardGatePresentation } from "./hard-gate-presentation";
@@ -130,6 +135,40 @@ function criterionSurfaceSupport(
     : "NOT_SUPPORTED";
 }
 
+function repairSurfaceSupport(
+  session: InterviewSession,
+  questionPlan: QuestionPlan,
+  result: SemanticCheckResult,
+): SurfaceQuestionSupport {
+  return result.decision === "ISSUE_DETECTED"
+    ? criterionSurfaceSupport(
+        session,
+        questionPlan,
+        result.triggeringCriterion,
+      )
+    : "SUPPORTED";
+}
+
+function honestNoMeasurementSatisfiesCriterion(
+  session: InterviewSession,
+  questionPlan: QuestionPlan,
+  criterion: GateCriterion,
+): boolean {
+  if (
+    session.scenario.id !== phaseOneScenario.id ||
+    session.scenario.version !== phaseOneScenario.version ||
+    criterion.kind !== "REQUIRED_EVIDENCE" ||
+    !questionPlan.requiredEvidence.some(({ id }) => id === criterion.id)
+  ) {
+    return false;
+  }
+
+  return (
+    phaseOneScenario.evidenceKinds.find(({ id }) => id === criterion.id)
+      ?.honestNoMeasurementSatisfies === true
+  );
+}
+
 export class InterviewRuntimeService {
   readonly #now: () => number;
   readonly #checkpointHeuristic: CheckpointHeuristic;
@@ -161,8 +200,18 @@ export class InterviewRuntimeService {
   updateTranscript(
     sessionId: string,
     transcript: string,
+    answerAttempt: 1 | 2,
   ): PublicInterviewRuntimeDto {
     const session = this.requireSession(sessionId);
+    const activeQuestion =
+      session.runtime.questions[session.runtime.currentQuestionIndex];
+    if (activeQuestion === undefined) {
+      throw new Error("Stored runtime has no current question");
+    }
+    if (activeQuestion.answerAttempt !== answerAttempt) {
+      return toPublicInterviewRuntime(session);
+    }
+
     let runtime = updateTranscript(session.runtime, transcript);
     const question = runtime.questions[runtime.currentQuestionIndex];
     if (question === undefined) {
@@ -225,18 +274,39 @@ export class InterviewRuntimeService {
     return this.saveAndPublish(sessionId, runtime);
   }
 
-  prepareReanswer(sessionId: string): PublicInterviewRuntimeDto {
+  startReanswer(sessionId: string): PublicInterviewRuntimeDto {
     const session = this.requireSession(sessionId);
-    const runtime = prepareReanswer(session.runtime);
+    const runtime = startReanswer(session.runtime, this.#now());
     return this.saveAndPublish(sessionId, runtime);
   }
 
-  async complete(sessionId: string): Promise<PublicInterviewRuntimeDto> {
-    const inFlight = this.#inFlightEvaluations.get(sessionId);
-    if (inFlight !== undefined) {
-      await inFlight.promise;
+  complete(sessionId: string): Promise<PublicInterviewRuntimeDto> {
+    const session = this.requireSession(sessionId);
+    const question = session.runtime.questions[session.runtime.currentQuestionIndex];
+
+    if (question === undefined) {
+      throw new Error("Stored runtime has no current question");
     }
 
+    if (question.state === "REANSWER") {
+      return this.completeReanswer(sessionId);
+    }
+
+    if (question.state !== "ANSWERING") {
+      return Promise.resolve(toPublicInterviewRuntime(session));
+    }
+
+    const inFlight = this.#inFlightEvaluations.get(sessionId);
+    if (inFlight !== undefined) {
+      return inFlight.promise.then(() => this.completeInitialAnswer(sessionId));
+    }
+
+    return this.completeInitialAnswer(sessionId);
+  }
+
+  private async completeInitialAnswer(
+    sessionId: string,
+  ): Promise<PublicInterviewRuntimeDto> {
     let session = this.requireSession(sessionId);
     let runtime = session.runtime;
     let question = runtime.questions[runtime.currentQuestionIndex];
@@ -246,6 +316,17 @@ export class InterviewRuntimeService {
     }
     if (question.state !== "ANSWERING") {
       return toPublicInterviewRuntime(session);
+    }
+
+    if (question.gateCount >= 1) {
+      return this.saveAndPublish(sessionId, completeAnswer(runtime));
+    }
+
+    if (
+      question.latestCheckpoint?.kind === "FINAL" &&
+      !isCheckpointStale(question.latestCheckpoint, runtime)
+    ) {
+      return this.saveAndPublish(sessionId, completeAnswer(runtime));
     }
 
     if (
@@ -285,6 +366,57 @@ export class InterviewRuntimeService {
 
     runtime = completeAnswer(runtime);
     return this.saveAndPublish(sessionId, runtime);
+  }
+
+  private completeReanswer(sessionId: string): Promise<PublicInterviewRuntimeDto> {
+    let session = this.requireSession(sessionId);
+    let runtime = session.runtime;
+    let question = runtime.questions[runtime.currentQuestionIndex];
+
+    if (question === undefined) {
+      throw new Error("Stored runtime has no current question");
+    }
+    if (question.state !== "REANSWER") {
+      return Promise.resolve(toPublicInterviewRuntime(session));
+    }
+
+    let checkpoint = question.latestCheckpoint;
+    if (
+      checkpoint === null ||
+      checkpoint.kind !== "FINAL" ||
+      isCheckpointStale(checkpoint, runtime)
+    ) {
+      const finalCheckpoint = createCheckpoint(runtime, this.#now(), "FINAL");
+      runtime = finalCheckpoint.runtime;
+      this.saveAndPublish(sessionId, runtime);
+      checkpoint = finalCheckpoint.checkpoint;
+      session = this.requireSession(sessionId);
+      question = session.runtime.questions[session.runtime.currentQuestionIndex];
+      if (question === undefined || question.state !== "REANSWER") {
+        return Promise.resolve(toPublicInterviewRuntime(session));
+      }
+    }
+
+    const identity: CheckpointIdentity = {
+      questionId: checkpoint.questionId,
+      answerVersion: checkpoint.answerVersion,
+      checkpointVersion: checkpoint.checkpointVersion,
+    };
+    const existing = this.#inFlightEvaluations.get(sessionId);
+    if (existing !== undefined) {
+      return sameIdentity(existing.identity, identity)
+        ? existing.promise
+        : Promise.resolve(toPublicInterviewRuntime(session));
+    }
+
+    const promise = this.runRepairEvaluation(session, checkpoint).finally(() => {
+      const current = this.#inFlightEvaluations.get(sessionId);
+      if (current?.promise === promise) {
+        this.#inFlightEvaluations.delete(sessionId);
+      }
+    });
+    this.#inFlightEvaluations.set(sessionId, { identity, promise });
+    return promise;
   }
 
   private hasInFlightEvaluation(
@@ -396,6 +528,7 @@ export class InterviewRuntimeService {
       triggeringCriterion: result.triggeringCriterion,
       checkpointVersion: result.checkpointVersion,
       triggeredAt: this.#now(),
+      beforeEvaluation: result,
       ...presentation,
     });
     return this.saveAndPublish(initialSession.sessionId, runtime);
@@ -417,6 +550,77 @@ export class InterviewRuntimeService {
       session.sessionId,
       setSemanticIssueCandidate(session.runtime, null),
     );
+  }
+
+  private async runRepairEvaluation(
+    initialSession: InterviewSession,
+    checkpoint: SemanticCheckpoint,
+  ): Promise<PublicInterviewRuntimeDto> {
+    const questionIndex = initialSession.questionPlans.findIndex(
+      ({ id }) => id === checkpoint.questionId,
+    );
+    const questionPlan = initialSession.questionPlans[questionIndex];
+    if (questionPlan === undefined) {
+      return toPublicInterviewRuntime(initialSession);
+    }
+
+    const evaluation = await this.llmService.evaluateSemanticCheckpoint({
+      projectContext: initialSession.projectContext,
+      questionPlan,
+      transcript: checkpoint.transcriptSnapshot,
+      checkpointVersion: checkpoint.checkpointVersion,
+      checkpointKind: checkpoint.kind,
+    });
+
+    const latestSession = this.requireSession(initialSession.sessionId);
+    if (!evaluation.ok) {
+      return toPublicInterviewRuntime(latestSession);
+    }
+
+    const result = evaluation.value;
+    if (
+      isCheckpointStale(checkpoint, latestSession.runtime) ||
+      isCheckpointResultStale(result, latestSession.runtime)
+    ) {
+      return toPublicInterviewRuntime(latestSession);
+    }
+
+    const question = latestSession.runtime.questions[questionIndex];
+    if (
+      question === undefined ||
+      question.state !== "REANSWER" ||
+      question.hardGate === null
+    ) {
+      return toPublicInterviewRuntime(latestSession);
+    }
+
+    const repairDecision = arbitrateRepair({
+      questionPlan,
+      interviewState: latestSession.runtime.interviewState,
+      questionState: question,
+      originalIssueType: question.hardGate.issueType,
+      originalTriggeringCriterion: question.hardGate.triggeringCriterion,
+      honestNoMeasurementSatisfiesOriginalCriterion:
+        honestNoMeasurementSatisfiesCriterion(
+          latestSession,
+          questionPlan,
+          question.hardGate.triggeringCriterion,
+        ),
+      semanticResult: result,
+      meetsConfidenceThreshold:
+        result.confidence >= this.#semanticGateHeuristic.minConfidence,
+      surfaceQuestionSupport: repairSurfaceSupport(
+        latestSession,
+        questionPlan,
+        result,
+      ),
+    });
+    const runtime = completeRepair(
+      latestSession.runtime,
+      result,
+      repairDecision,
+    );
+    return this.saveAndPublish(initialSession.sessionId, runtime);
   }
 
   private requireSession(sessionId: string): InterviewSession {

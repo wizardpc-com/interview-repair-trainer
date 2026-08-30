@@ -64,6 +64,10 @@ export type HardGateInterruption = Readonly<{
   triggeredAt: number;
   whyPaused: string;
   repairCue: string;
+  beforeEvaluation: Extract<
+    SemanticCheckResult,
+    { decision: "ISSUE_DETECTED" }
+  >;
 }>;
 
 export type GateOverrideRecord = Readonly<{
@@ -71,7 +75,9 @@ export type GateOverrideRecord = Readonly<{
   recordedAt: number;
 }>;
 
-export type RepairStatus = "GATE_PENDING" | "REANSWER_PREPARED";
+export type RepairStatus = "GATE_PENDING" | "REANSWERING";
+
+export type RepairOutcome = "SUCCESSFUL" | "UNRESOLVED";
 
 export type AnswerRuntimeState = QuestionRuntimeState &
   Readonly<{
@@ -79,11 +85,15 @@ export type AnswerRuntimeState = QuestionRuntimeState &
     answerStartedAt: number | null;
     lastCheckpointAt: number | null;
     latestCheckpoint: SemanticCheckpoint | null;
+    answerAttempt: 1 | 2;
     originalAnswer: string | null;
+    repairedAnswer: string | null;
     hardGate: HardGateInterruption | null;
     gateOverride: GateOverrideRecord | null;
     repairStatus: RepairStatus | null;
     semanticIssueCandidate: SemanticIssueCandidate | null;
+    afterEvaluation: SemanticCheckResult | null;
+    repairOutcome: RepairOutcome | null;
   }>;
 
 export type InterviewRuntime = Readonly<{
@@ -130,6 +140,19 @@ const ALLOWED_QUESTION_TRANSITIONS = {
   QUESTION_DONE: Object.freeze([]),
 } as const satisfies Readonly<Record<QuestionState, readonly QuestionState[]>>;
 
+function freezeSemanticCheckResult<T extends SemanticCheckResult>(
+  result: T,
+): T {
+  if (result.decision === "CONTINUE") {
+    return Object.freeze({ ...result }) as T;
+  }
+
+  return Object.freeze({
+    ...result,
+    triggeringCriterion: Object.freeze({ ...result.triggeringCriterion }),
+  }) as T;
+}
+
 function freezeQuestionState(
   state: AnswerRuntimeState,
 ): AnswerRuntimeState {
@@ -147,6 +170,9 @@ function freezeQuestionState(
             triggeringCriterion: Object.freeze({
               ...state.hardGate.triggeringCriterion,
             }),
+            beforeEvaluation: freezeSemanticCheckResult(
+              state.hardGate.beforeEvaluation,
+            ),
           }),
     gateOverride:
       state.gateOverride === null
@@ -161,6 +187,10 @@ function freezeQuestionState(
               ...state.semanticIssueCandidate.triggeringCriterion,
             }),
           }),
+    afterEvaluation:
+      state.afterEvaluation === null
+        ? null
+        : freezeSemanticCheckResult(state.afterEvaluation),
   });
 }
 
@@ -214,11 +244,20 @@ function assertTransition(from: QuestionState, to: QuestionState): void {
   }
 }
 
+function assertAnswerActive(question: AnswerRuntimeState): void {
+  if (question.state !== "ANSWERING" && question.state !== "REANSWER") {
+    throw new InterviewRuntimeError(
+      "INVALID_TRANSITION",
+      `Cannot update an answer while question is ${question.state}`,
+    );
+  }
+}
+
 function assertAnswering(question: AnswerRuntimeState): void {
   if (question.state !== "ANSWERING") {
     throw new InterviewRuntimeError(
       "INVALID_TRANSITION",
-      `Cannot update an answer while question is ${question.state}`,
+      `Cannot update an initial answer while question is ${question.state}`,
     );
   }
 }
@@ -258,11 +297,15 @@ export function createInterviewRuntime(
       answerStartedAt: null,
       lastCheckpointAt: null,
       latestCheckpoint: null,
+      answerAttempt: 1,
       originalAnswer: null,
+      repairedAnswer: null,
       hardGate: null,
       gateOverride: null,
       repairStatus: null,
       semanticIssueCandidate: null,
+      afterEvaluation: null,
+      repairOutcome: null,
     })),
   });
 }
@@ -290,7 +333,7 @@ export function updateTranscript(
   transcript: string,
 ): InterviewRuntime {
   const question = currentQuestion(runtime);
-  assertAnswering(question);
+  assertAnswerActive(question);
 
   if (transcript === question.transcript) {
     return runtime;
@@ -356,7 +399,7 @@ export function createCheckpoint(
   kind: CheckpointKind = "INTERIM",
 ): Readonly<{ runtime: InterviewRuntime; checkpoint: SemanticCheckpoint }> {
   const question = currentQuestion(runtime);
-  assertAnswering(question);
+  assertAnswerActive(question);
 
   if (question.transcript.trim().length === 0) {
     throw new InterviewRuntimeError(
@@ -421,7 +464,7 @@ export function isCheckpointStale(
 
   return (
     question === undefined ||
-    question.state !== "ANSWERING" ||
+    (question.state !== "ANSWERING" && question.state !== "REANSWER") ||
     question.answerVersion !== checkpoint.answerVersion ||
     question.checkpointVersion !== checkpoint.checkpointVersion ||
     question.latestCheckpoint?.checkpointVersion !== checkpoint.checkpointVersion
@@ -455,7 +498,17 @@ export function interruptForHardGate(
   if (
     question.gateCount !== 0 ||
     question.latestCheckpoint === null ||
-    question.latestCheckpoint.checkpointVersion !== interruption.checkpointVersion
+    question.latestCheckpoint.checkpointVersion !== interruption.checkpointVersion ||
+    question.latestCheckpoint.answerVersion !== question.answerVersion ||
+    question.latestCheckpoint.transcriptSnapshot !== question.transcript ||
+    interruption.beforeEvaluation.questionId !== question.questionId ||
+    interruption.beforeEvaluation.checkpointVersion !==
+      interruption.checkpointVersion ||
+    interruption.beforeEvaluation.issueType !== interruption.issueType ||
+    interruption.beforeEvaluation.triggeringCriterion.kind !==
+      interruption.triggeringCriterion.kind ||
+    interruption.beforeEvaluation.triggeringCriterion.id !==
+      interruption.triggeringCriterion.id
   ) {
     throw new InterviewRuntimeError(
       "INVALID_RUNTIME",
@@ -473,6 +526,8 @@ export function interruptForHardGate(
     repairStatus: "GATE_PENDING",
     latestCheckpoint: null,
     semanticIssueCandidate: null,
+    afterEvaluation: null,
+    repairOutcome: null,
   });
 }
 
@@ -508,35 +563,55 @@ export function overrideHardGate(
   });
 }
 
-export function prepareReanswer(
+export function startReanswer(
   runtime: InterviewRuntime,
+  startedAt: number,
 ): InterviewRuntime {
   const question = currentQuestion(runtime);
 
   if (
     question.state !== "REPAIR" ||
     question.hardGate === null ||
-    question.originalAnswer === null
+    question.originalAnswer === null ||
+    question.gateOverride !== null ||
+    question.gateCount !== 1 ||
+    question.repairStatus !== "GATE_PENDING"
   ) {
     throw new InterviewRuntimeError(
       "INVALID_TRANSITION",
-      `Cannot prepare a re-answer while question is ${question.state}`,
+      `Cannot start a re-answer while question is ${question.state}`,
     );
   }
 
-  if (question.repairStatus === "REANSWER_PREPARED") {
-    return runtime;
-  }
+  assertTransition(question.state, "REANSWER");
 
   return replaceCurrentQuestion(runtime, {
     ...question,
-    repairStatus: "REANSWER_PREPARED",
+    state: "REANSWER",
+    transcript: "",
+    answerStartedAt: startedAt,
+    lastCheckpointAt: null,
+    latestCheckpoint: null,
+    answerVersion: question.answerVersion + 1,
+    answerAttempt: 2,
+    repairedAnswer: null,
+    repairStatus: "REANSWERING",
+    semanticIssueCandidate: null,
+    afterEvaluation: null,
+    repairOutcome: null,
   });
 }
 
 export function completeAnswer(runtime: InterviewRuntime): InterviewRuntime {
   const question = currentQuestion(runtime);
   assertTransition(question.state, "QUESTION_DONE");
+
+  if (question.state !== "ANSWERING") {
+    throw new InterviewRuntimeError(
+      "INVALID_TRANSITION",
+      `Cannot complete an initial answer while question is ${question.state}`,
+    );
+  }
 
   if (question.transcript.trim().length === 0) {
     throw new InterviewRuntimeError(
@@ -555,6 +630,64 @@ export function completeAnswer(runtime: InterviewRuntime): InterviewRuntime {
   return replaceCurrentQuestion(
     runtime,
     { ...question, state: "QUESTION_DONE", semanticIssueCandidate: null },
+    interviewState,
+    nextQuestion === undefined ? runtime.currentQuestionIndex : nextQuestionIndex,
+  );
+}
+
+export function completeRepair(
+  runtime: InterviewRuntime,
+  afterEvaluation: SemanticCheckResult,
+  outcome: RepairOutcome,
+): InterviewRuntime {
+  const question = currentQuestion(runtime);
+
+  if (
+    question.state !== "REANSWER" ||
+    question.answerAttempt !== 2 ||
+    question.repairStatus !== "REANSWERING" ||
+    question.originalAnswer === null ||
+    question.hardGate === null ||
+    question.gateCount !== 1 ||
+    question.latestCheckpoint === null ||
+    question.latestCheckpoint.answerVersion !== question.answerVersion ||
+    question.latestCheckpoint.transcriptSnapshot !== question.transcript ||
+    afterEvaluation.questionId !== question.questionId ||
+    afterEvaluation.checkpointVersion !==
+      question.latestCheckpoint.checkpointVersion
+  ) {
+    throw new InterviewRuntimeError(
+      "INVALID_RUNTIME",
+      "Repair evaluation does not match the current re-answer checkpoint",
+    );
+  }
+
+  if (question.transcript.trim().length === 0) {
+    throw new InterviewRuntimeError(
+      "EMPTY_ANSWER",
+      "Cannot complete an empty re-answer",
+    );
+  }
+
+  const nextQuestionIndex = runtime.currentQuestionIndex + 1;
+  const nextQuestion = runtime.questions[nextQuestionIndex];
+  const interviewState: InterviewRuntimeState =
+    nextQuestion === undefined
+      ? { state: "INTERVIEW_DONE", activeQuestionId: null }
+      : { state: "IN_PROGRESS", activeQuestionId: nextQuestion.questionId };
+
+  return replaceCurrentQuestion(
+    runtime,
+    {
+      ...question,
+      state: "QUESTION_DONE",
+      repairedAnswer: question.latestCheckpoint.transcriptSnapshot,
+      repairStatus: null,
+      afterEvaluation: freezeSemanticCheckResult(afterEvaluation),
+      repairOutcome: outcome,
+      latestCheckpoint: null,
+      semanticIssueCandidate: null,
+    },
     interviewState,
     nextQuestion === undefined ? runtime.currentQuestionIndex : nextQuestionIndex,
   );

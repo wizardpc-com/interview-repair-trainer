@@ -64,11 +64,11 @@ Across all stages, internal protocol identifiers remain English machine values w
 
 - **Goal:** Evaluate checkpoints for the three MVP issue types and pass validated results through the Gate Arbiter.
 - **Files / modules likely involved:** evaluator orchestration under `src/server`, semantic schemas, Gate Arbiter integration, semantic fixture tests.
-- **Acceptance criteria:** Only stable, versioned checkpoints are evaluated; one server-side call is in flight per session; timeout, ambiguity, low confidence, repeated invalid output, stale results, insufficient context, transient issues, optional evidence, and honest no-measurement boundaries continue. Only the application Gate Arbiter can freeze the answer and enter `REPAIR`; the near-full-screen gate exposes one deterministic Chinese gap and one action without internal terms or confidence. Override records disagreement, resumes the same frozen plan, and cannot restore gate capacity. Re-answer preparation preserves the original answer for Stage 9.
-- **Tests:** Cover all fixtures below plus timeout, retry-once, single-flight, stale, state, max-gate, frozen transcript, microphone shutdown, late STT and evaluator results, override, re-answer preparation, fixed-copy mapping, and user-visible internal-term regression cases.
+- **Acceptance criteria:** Only stable, versioned checkpoints are evaluated; one server-side call is in flight per session; timeout, ambiguity, low confidence, repeated invalid output, stale results, insufficient context, transient issues, optional evidence, and honest no-measurement boundaries continue. Only the application Gate Arbiter can freeze the answer and enter `REPAIR`; the near-full-screen gate exposes one deterministic Chinese gap and one action without internal terms or confidence. Override records disagreement, resumes the same frozen plan, and cannot restore gate capacity. The Hard Gate preserves the original answer for the repair loop.
+- **Tests:** Cover all fixtures below plus timeout, retry-once, single-flight, stale, state, max-gate, frozen transcript, microphone shutdown, late STT and evaluator results, override, repair handoff, fixed-copy mapping, and user-visible internal-term regression cases.
 - **Explicit non-goals:** Domain-knowledge truth grading, multiple simultaneous issues, calibrated probability claims, elaborate coaching.
 
-## 9. Repair loop
+## 9. Repair loop — complete
 
 - **Goal:** Freeze the original answer, accept a re-answer, and re-evaluate it against the same precommitted target.
 - **Files / modules likely involved:** repair state transitions, repair Route Handler, session updates, repair tests.

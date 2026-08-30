@@ -210,7 +210,7 @@ function createHarness(
   now = 11_000;
   const transcript =
     options.transcript ?? "我先完整说明当前回答中与问题相关的事实和理由。";
-  let checkpointed = service.updateTranscript(session.sessionId, transcript);
+  let checkpointed = service.updateTranscript(session.sessionId, transcript, 1);
   if ((options.checkpointKind ?? "FINAL") === "FINAL") {
     const stored = store.get(session.sessionId);
     if (stored === null) {
@@ -397,6 +397,7 @@ describe("semantic evaluator orchestration", () => {
     const secondSnapshot = harness.service.updateTranscript(
       harness.sessionId,
       `${harness.transcript}我继续说明它的输入、输出和执行流程。`,
+      1,
     );
     const secondCheckpoint = harness.store.get(harness.sessionId)?.runtime.questions[0]
       .latestCheckpoint;
@@ -649,6 +650,7 @@ describe("semantic evaluator orchestration", () => {
     const revised = harness.service.updateTranscript(
       harness.sessionId,
       revisedTranscript,
+      1,
     );
     expect(revised.answerVersion).toBe(harness.identity.answerVersion + 1);
     const input = harness.evaluateSemanticCheckpoint.mock.calls[0]?.[0];
@@ -705,6 +707,7 @@ describe("semantic evaluator orchestration", () => {
       harness.service.updateTranscript(
         harness.sessionId,
         `${harness.transcript}不应继续追加`,
+        1,
       ),
     ).toThrow(InterviewRuntimeError);
 
@@ -732,6 +735,7 @@ describe("semantic evaluator orchestration", () => {
     const revised = harness.service.updateTranscript(
       harness.sessionId,
       `${harness.transcript}我认为需要继续补充。`,
+      1,
     );
     const question = harness.store.get(harness.sessionId)?.runtime.questions[0];
 
@@ -749,7 +753,7 @@ describe("semantic evaluator orchestration", () => {
     expect(harness.service.getPublic(harness.sessionId).state).toBe("ANSWERING");
   });
 
-  it("prepares a re-answer without losing the frozen original answer", async () => {
+  it("starts an independent re-answer without losing the frozen original answer", async () => {
     const harness = createHarness(
       resultPlan,
       successfulEvaluator((input) =>
@@ -763,18 +767,21 @@ describe("semantic evaluator orchestration", () => {
     const frozenPlan = harness.store.get(harness.sessionId)?.questionPlans[0];
     await harness.service.evaluateCheckpoint(harness.sessionId, harness.identity);
 
-    const prepared = harness.service.prepareReanswer(harness.sessionId);
+    const prepared = harness.service.startReanswer(harness.sessionId);
     const stored = harness.store.get(harness.sessionId);
 
     expect(prepared).toMatchObject({
-      state: "REPAIR",
-      transcript: harness.transcript,
+      state: "REANSWER",
+      transcript: "",
       hardGate: {
-        status: "REANSWER_PREPARED",
+        status: "REANSWERING",
         originalAnswer: harness.transcript,
       },
     });
-    expect(stored?.runtime.questions[0].originalAnswer).toBe(harness.transcript);
+    expect(stored?.runtime.questions[0]).toMatchObject({
+      originalAnswer: harness.transcript,
+      answerAttempt: 2,
+    });
     expect(stored?.questionPlans[0]).toBe(frozenPlan);
     expect(() => harness.service.overrideGate(harness.sessionId)).toThrow(
       InterviewRuntimeError,

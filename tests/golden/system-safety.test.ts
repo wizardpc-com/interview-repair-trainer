@@ -4,6 +4,7 @@ import {
   completeAnswer,
   interruptForHardGate,
   isCheckpointResultStale,
+  startReanswer,
   type HardGateInterruption,
   type InterviewRuntime,
 } from "../../src/domain/interview/runtime";
@@ -61,7 +62,9 @@ function completionResponse(output: unknown): Response {
   );
 }
 
-function issueResult(checkpointVersion: number): SemanticCheckResult {
+function issueResult(
+  checkpointVersion: number,
+): Extract<SemanticCheckResult, { decision: "ISSUE_DETECTED" }> {
   return {
     questionId: technicalChoicePlan.id,
     checkpointVersion,
@@ -119,6 +122,7 @@ function createHarness(provider: FetchHandler) {
   const checkpointed = service.updateTranscript(
     session.sessionId,
     persistentTranscript,
+    1,
   );
   const checkpoint = checkpointed.checkpoint;
   if (checkpoint === null) {
@@ -161,24 +165,12 @@ function interruptionFor(identity: CheckpointIdentity): HardGateInterruption {
     triggeredAt: 12_000,
     whyPaused: "当前回答没有回应问题核心。",
     repairCue: "先直接回答当前问题。",
+    beforeEvaluation: issueResult(identity.checkpointVersion),
   };
 }
 
 function reservedReanswerSnapshot(runtime: InterviewRuntime): InterviewRuntime {
-  const question = runtime.questions[runtime.currentQuestionIndex];
-  if (question === undefined) {
-    throw new Error("Safety harness runtime has no current question");
-  }
-  const questions = [...runtime.questions];
-  questions[runtime.currentQuestionIndex] = Object.freeze({
-    ...question,
-    state: "REANSWER" as const,
-  });
-  return Object.freeze({
-    ...runtime,
-    runtimeRevision: runtime.runtimeRevision + 1,
-    questions: Object.freeze(questions),
-  });
+  return startReanswer(runtime, 13_000);
 }
 
 describe("system semantic safety Golden", () => {
@@ -234,6 +226,7 @@ describe("system semantic safety Golden", () => {
     const revised = harness.service.updateTranscript(
       harness.sessionId,
       revisedTranscript,
+      1,
     );
     pending.resolve(
       completionResponse(issueResult(harness.identity.checkpointVersion)),
@@ -305,6 +298,7 @@ describe("system semantic safety Golden", () => {
     const updated = harness.service.updateTranscript(
       harness.sessionId,
       `${persistentTranscript}我选择继续回答并补充选择理由。`,
+      1,
     );
     const secondDecision = await harness.service.evaluateCheckpoint(
       harness.sessionId,

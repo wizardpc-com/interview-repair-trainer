@@ -116,6 +116,7 @@ export function toPublicInterviewRuntime(
     }),
     state: questionRuntime.state,
     transcript: questionRuntime.transcript,
+    answerAttempt: questionRuntime.answerAttempt,
     answerVersion: questionRuntime.answerVersion,
     checkpointVersion: questionRuntime.checkpointVersion,
     checkpoint:
@@ -127,25 +128,40 @@ export function toPublicInterviewRuntime(
             createdAt: checkpoint.createdAt,
             kind: checkpoint.kind,
             freshness:
-              questionRuntime.state === "ANSWERING" &&
+              (questionRuntime.state === "ANSWERING" ||
+                questionRuntime.state === "REANSWER") &&
               questionRuntime.answerVersion === checkpoint.answerVersion &&
               questionRuntime.checkpointVersion === checkpoint.checkpointVersion
                 ? "CURRENT"
                 : "STALE",
           }),
     hardGate:
-      questionRuntime.state === "REPAIR" &&
+      (questionRuntime.state === "REPAIR" ||
+        questionRuntime.state === "REANSWER") &&
       questionRuntime.hardGate !== null &&
       questionRuntime.repairStatus !== null
         ? Object.freeze({
             status: questionRuntime.repairStatus,
-            title: "回答已暂停",
+            title:
+              questionRuntime.state === "REANSWER"
+                ? "正在重新回答"
+                : "回答已暂停",
             whyPaused: questionRuntime.hardGate.whyPaused,
             repairCue: questionRuntime.hardGate.repairCue,
             originalAnswer:
               questionRuntime.originalAnswer ?? questionRuntime.transcript,
           })
         : null,
+    repairResult:
+      questionRuntime.repairOutcome === null
+        ? null
+        : Object.freeze({
+            status: questionRuntime.repairOutcome,
+            title:
+              questionRuntime.repairOutcome === "SUCCESSFUL"
+                ? "修复成功"
+                : "仍未解决",
+          }),
   });
 }
 

@@ -1,6 +1,6 @@
 {
   "id": "science-engineering-project-deep-dive",
-  "version": 1,
+  "version": 2,
   "title": "Science and Engineering Project / Research Deep Dive",
   "description": "A text-first deep dive into one undergraduate science or engineering project or research experience.",
   "trainingTargets": [
@@ -32,43 +32,53 @@
   "evidenceKinds": [
     {
       "id": "problem-context",
-      "description": "A concrete description of the problem or research question."
+      "description": "A concrete description of the problem or research question.",
+      "honestNoMeasurementSatisfies": false
     },
     {
       "id": "motivation-or-stakes",
-      "description": "Why the problem mattered within the stated project scope."
+      "description": "Why the problem mattered within the stated project scope.",
+      "honestNoMeasurementSatisfies": false
     },
     {
       "id": "personal-action",
-      "description": "A specific action, decision, implementation, or analysis performed by the candidate."
+      "description": "A specific action, decision, implementation, or analysis performed by the candidate.",
+      "honestNoMeasurementSatisfies": false
     },
     {
       "id": "decision-rationale",
-      "description": "Reasoning or tradeoffs behind a technical choice."
+      "description": "Reasoning or tradeoffs behind a technical choice.",
+      "honestNoMeasurementSatisfies": false
     },
     {
       "id": "technical-detail",
-      "description": "A concrete technical detail that clarifies the work."
+      "description": "A concrete technical detail that clarifies the work.",
+      "honestNoMeasurementSatisfies": false
     },
     {
       "id": "observed-result",
-      "description": "A result that was actually observed, or a clear statement that no reliable result was measured."
+      "description": "A result that was actually observed, or a clear statement that no reliable result was measured.",
+      "honestNoMeasurementSatisfies": true
     },
     {
       "id": "validation-method",
-      "description": "How an observation was checked, or a clear statement that it was not reliably validated."
+      "description": "How an observation was checked, or a clear statement that it was not reliably validated.",
+      "honestNoMeasurementSatisfies": true
     },
     {
       "id": "iteration-evidence",
-      "description": "The problem encountered, response taken, and resulting change."
+      "description": "The problem encountered, response taken, and resulting change.",
+      "honestNoMeasurementSatisfies": false
     },
     {
       "id": "limitation",
-      "description": "A specific limitation, uncertainty, or unsupported conclusion."
+      "description": "A specific limitation, uncertainty, or unsupported conclusion.",
+      "honestNoMeasurementSatisfies": false
     },
     {
       "id": "team-context",
-      "description": "Context about collaborators or team responsibilities."
+      "description": "Context about collaborators or team responsibilities.",
+      "honestNoMeasurementSatisfies": false
     }
   ],
   "gateIssueTypes": [

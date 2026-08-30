@@ -1,6 +1,6 @@
 # Architecture
 
-The repository keeps portable interview assets separate from product execution. The current code has completed Stages 1–8: domain contracts, deterministic Gate Arbiter policy, the core protocol and first scenario, a provider-independent single-model Qwen integration, hidden in-memory sessions, the text-first interview runtime, an immersive browser voice-answer shell with text fallback, and the first complete Semantic Evaluator to Hard Gate interaction.
+The repository keeps portable interview assets separate from product execution. The current code has completed Stages 1–9: domain contracts, deterministic Gate Arbiter policy, the core protocol and first scenario, a provider-independent single-model Qwen integration, hidden in-memory sessions, the text-first interview runtime, an immersive browser voice-answer shell with text fallback, Semantic Evaluator to Hard Gate interaction, and one same-target Repair and Re-answer loop.
 
 | Layer | Responsibility | Location |
 | --- | --- | --- |
@@ -109,19 +109,25 @@ Parsed JSON cannot enter the domain through an unchecked type cast.
 
 ## Interview runtime and public API
 
-Each hidden session now owns an immutable runtime snapshot alongside its frozen QuestionPlan. The active Stage 6 path is deterministic:
+Each hidden session owns an immutable runtime snapshot alongside its frozen QuestionPlan. The path without a Hard Gate remains deterministic:
 
 ```text
 QUESTION_READY -> ANSWERING -> QUESTION_DONE
 ```
 
-The transition table also reserves `ANSWERING -> REPAIR -> REANSWER -> QUESTION_DONE` for later stages, but Stage 6 exposes no Repair action or UI. Application code starts, updates, checkpoints, and completes an answer; LLM output cannot invoke a transition.
+The completed repair path is also application-controlled:
 
-Every accepted transcript change increments `answerVersion`. Creating a checkpoint increments `checkpointVersion` independently and stores the session id, question id, both versions, the transcript snapshot, and creation time. A checkpoint is stale when its session or question differs, either version no longer matches, a newer checkpoint exists, or the question is no longer in `ANSWERING`. This makes all prior checkpoints invalid immediately after a transcript revision or `QUESTION_DONE`.
+```text
+ANSWERING -> REPAIR -> REANSWER -> QUESTION_DONE
+```
 
-Periodic checkpoint eligibility is an explicitly tunable MVP heuristic, not a scientifically calibrated threshold. The initial values require 80 characters in the trimmed transcript, five seconds since answer start, eight seconds since the previous checkpoint, a changed answer version, and no request already in flight. Completing a non-empty answer preserves a final snapshot even if the periodic heuristic has not fired.
+Application code starts, updates, checkpoints, and completes each answer attempt; LLM output cannot invoke a transition.
 
-`POST /api/sessions` validates project context, plans and freezes one question, and returns only the public session and runtime DTOs. `POST /api/sessions/:sessionId/answer` validates `START`, `UPDATE_TRANSCRIPT`, and `COMPLETE` actions. Public runtime responses include the surface question, state, transcript, version counters, and checkpoint freshness metadata; they exclude project context and every private QuestionPlan field.
+Every accepted transcript change increments `answerVersion`. Creating a checkpoint increments `checkpointVersion` independently and stores the session id, question id, both versions, the transcript snapshot, and creation time. A checkpoint is stale when its session or question differs, either version no longer matches, a newer checkpoint exists, or the question is no longer in the matching `ANSWERING` or `REANSWER` attempt. This makes every first-attempt checkpoint invalid on entry to `REPAIR` or `REANSWER`, and every remaining checkpoint invalid on `QUESTION_DONE`.
+
+Periodic `INTERIM` checkpoint eligibility is an explicitly tunable MVP heuristic, not a scientifically calibrated threshold. The initial values require 80 characters in the trimmed transcript, five seconds since answer start, eight seconds since the previous checkpoint, a changed answer version, and no request already in flight. Explicit completion creates a `FINAL` checkpoint once the trimmed answer has at least four characters; it does not inherit the periodic length, duration, or persistence thresholds. Shorter non-empty input completes without semantic interruption.
+
+`POST /api/sessions` validates project context, plans and freezes one question, and returns only the public session and runtime DTOs. `POST /api/sessions/:sessionId/answer` validates `START`, `UPDATE_TRANSCRIPT`, `COMPLETE`, `START_REANSWER`, and `OVERRIDE_GATE` actions; transcript writes must identify answer attempt 1 or 2. Public runtime responses include the surface question, state, transcript, version counters, and checkpoint freshness metadata; they exclude project context and every private QuestionPlan field.
 
 The Training Console is deliberately not a chat transcript. Setup contains one project/research context field. Before answering, the surface question occupies the center of a near-full-screen interview stage. During answering, the question remains visible above a microphone focus and a compact read-only transcript. Save status remains secondary; answer and checkpoint versions stay in the public DTO for synchronization but are not rendered in the ordinary interface. This stage can later be frozen behind a near-full-screen Hard Gate without turning the experience into a form layout.
 
@@ -141,7 +147,7 @@ The same microphone stream feeds a Web Audio `AnalyserNode`. The UI derives a no
 
 Microphone permission denial, missing SpeechRecognition support, audio setup failure, or recognition failure switches the answer stage to an explicit text fallback. Manual completion remains the only Stage 7 end condition. A future conservative silence-based completion candidate may be added separately, but it must remain independent from Semantic Hard Gate decisions.
 
-Stopping an answer, switching to text, leaving the page, or leaving `ANSWERING` stops SpeechRecognition, cancels animation and restart timers, disconnects audio nodes, closes the AudioContext, and stops every microphone track. A Hard Gate performs this shutdown immediately, freezes the stable transcript, and invalidates late recognition callbacks before showing the repair decision.
+Stopping an answer attempt, switching to text, leaving the page, or leaving `ANSWERING` or `REANSWER` stops SpeechRecognition, cancels animation and restart timers, disconnects audio nodes, closes the AudioContext, and stops every microphone track. A Hard Gate performs this shutdown immediately, freezes the stable transcript, and invalidates late recognition callbacks before showing the repair decision.
 
 ## Stage 8 semantic interruption
 
@@ -149,9 +155,17 @@ Only a versioned checkpoint created from stable or final transcript text is elig
 
 The server reloads the session after each evaluator response. A result can affect the Runtime only when its session, question, answer version, checkpoint version, and current state still match. Provider errors, timeouts, ambiguous or low-confidence results, invalid structured output after one retry, insufficient context, transient issues, unsupported criteria, and honest no-measurement boundaries all continue without interruption.
 
-Stage 8 centralizes its initial precision-first heuristic in the Runtime: a checkpoint needs at least 80 stable characters and five seconds before evaluation; a blocking issue needs at least 120 characters and ten seconds plus an explicit supported target or required-evidence criterion, `GATE_ELIGIBLE`, and the configured confidence floor. These values are product heuristics, not calibrated probabilities.
+Stage 8 centralizes its precision-first heuristic in the Runtime. An `INTERIM` checkpoint needs at least 80 stable characters and five seconds before evaluation; its first gateable issue is only a candidate, and the same issue on a newer stable checkpoint is required before interruption. A `FINAL` checkpoint represents explicit completion, so an otherwise eligible issue can proceed directly to the Arbiter without a second checkpoint. Both paths still require sufficient context for their checkpoint kind, an explicitly supported target or required-evidence criterion, `GATE_ELIGIBLE`, and the configured confidence floor. These values are product heuristics, not calibrated probabilities.
 
-Only the application-level Gate Arbiter can enter `REPAIR`. A successful gate consumes the question's single gate capacity, stores the frozen original answer, invalidates previous checkpoints, and exposes only deterministic Chinese presentation fields. The near-full-screen Hard Gate keeps the original surface question and answer visible. `PREPARE_REANSWER` records `REANSWER_PREPARED` without implementing Stage 9 re-recording; `OVERRIDE_GATE` records the disagreement, returns to `ANSWERING`, keeps the frozen QuestionPlan, and cannot open another Hard Gate for that question.
+Only the application-level Gate Arbiter can enter `REPAIR`. A successful gate consumes the question's single gate capacity, stores the frozen original answer and validated before-result, invalidates previous checkpoints, and exposes only deterministic Chinese presentation fields. The near-full-screen Hard Gate keeps the original surface question and answer visible. `OVERRIDE_GATE` records the disagreement, returns to `ANSWERING`, keeps the frozen QuestionPlan, and cannot open another Hard Gate for that question.
+
+## Stage 9 repair and re-answer
+
+`START_REANSWER` is the only transition from a pending Hard Gate into `REANSWER`. It preserves the original answer and interruption record, clears the active transcript, advances to a distinct answer attempt with monotonic versions, invalidates every old checkpoint, and starts a fresh browser speech-capture adapter only after the server accepts the transition. The same repair cue and original answer remain visible while the user records or types the replacement answer.
+
+Completing a re-answer creates a final checkpoint and evaluates it with the exact frozen QuestionPlan already stored in the session. Repair does not invoke planning and accepts no replacement plan, target, or evidence definitions from the client or evaluator. A current, validated result is `UNRESOLVED` only when it still identifies the original Gate issue type or criterion on that frozen primary target or required evidence; a different issue on a different criterion does not impose a perfect-answer threshold. Optional evidence, ambiguity, low confidence, foreign criteria, and normal `CONTINUE` results cannot produce `UNRESOLVED`; a provider failure or stale result leaves `REANSWER` unchanged for a safe retry. An honest no-measurement boundary resolves an original required-evidence gap only when the portable Scenario Pack precommitted that boundary as satisfying the evidence kind.
+
+A terminal repair stores the original answer, repaired answer, issue record, override record, before and after evaluator results, and `SUCCESSFUL` or `UNRESOLVED` outcome for the later report stage. The public DTO exposes only the deterministic repair cue, preserved original answer while re-answering, and the concise Chinese terminal title `修复成功` or `仍未解决`.
 
 ## Dependency direction
 

@@ -1,23 +1,84 @@
 import { describe, expect, it } from "vitest";
 import {
+  completeRepair,
   completeAnswer,
   createCheckpoint,
   createInterviewRuntime,
   getCheckpointEligibility,
+  interruptForHardGate,
   InterviewRuntimeError,
   isCheckpointResultStale,
   isCheckpointStale,
   isQuestionTransitionAllowed,
+  overrideHardGate,
   startAnswer,
+  startReanswer,
   updateTranscript,
   type CheckpointHeuristic,
+  type InterviewRuntime,
+  type SemanticCheckpoint,
 } from "../../src/domain/interview/runtime";
+import type { SemanticCheckResult } from "../../src/domain/semantic/contracts";
 
 const immediateCheckpoint: CheckpointHeuristic = {
   minTranscriptCharacters: 1,
   minAnswerDurationMs: 0,
   minCheckpointIntervalMs: 0,
 };
+
+type IssueDetectedResult = Extract<
+  SemanticCheckResult,
+  { decision: "ISSUE_DETECTED" }
+>;
+
+function issueResult(
+  checkpointVersion: number,
+  overrides: Partial<IssueDetectedResult> = {},
+): IssueDetectedResult {
+  return {
+    questionId: "question-1",
+    checkpointVersion,
+    decision: "ISSUE_DETECTED",
+    issueType: "NOT_ANSWERING_QUESTION",
+    confidence: 0.98,
+    gateability: "GATE_ELIGIBLE",
+    answerBoundary: "NONE",
+    triggeringCriterion: { kind: "PRIMARY_TARGET", id: "reason" },
+    issueExplanation: "The answer describes what happened but not why.",
+    repairCue: "Explain the reason for the choice.",
+    ...overrides,
+  };
+}
+
+function gatedRuntime(): Readonly<{
+  runtime: InterviewRuntime;
+  checkpoint: SemanticCheckpoint;
+  beforeEvaluation: IssueDetectedResult;
+}> {
+  let runtime = startAnswer(
+    createInterviewRuntime("session-1", ["question-1"]),
+    1_000,
+  );
+  runtime = updateTranscript(runtime, "We selected the smaller model.");
+  const checkpointed = createCheckpoint(runtime, 2_000);
+  const beforeEvaluation = issueResult(
+    checkpointed.checkpoint.checkpointVersion,
+  );
+
+  return {
+    checkpoint: checkpointed.checkpoint,
+    beforeEvaluation,
+    runtime: interruptForHardGate(checkpointed.runtime, {
+      issueType: beforeEvaluation.issueType,
+      triggeringCriterion: beforeEvaluation.triggeringCriterion,
+      checkpointVersion: beforeEvaluation.checkpointVersion,
+      triggeredAt: 2_100,
+      whyPaused: "请先补充选择原因。",
+      repairCue: "说明一个关键取舍。",
+      beforeEvaluation,
+    }),
+  };
+}
 
 describe("text-first interview runtime", () => {
   it("allows the active and reserved question transitions only", () => {
@@ -261,6 +322,208 @@ describe("text-first interview runtime", () => {
     expect(Object.isFrozen(result.checkpoint)).toBe(true);
     expect(getCheckpointEligibility(runtime, 2_000, false, immediateCheckpoint)).toEqual(
       { eligible: true, reason: "ELIGIBLE" },
+    );
+  });
+
+  it("freezes the original answer and complete before-evaluation at the Hard Gate", () => {
+    const { runtime, beforeEvaluation } = gatedRuntime();
+    const question = runtime.questions[0];
+
+    expect(question).toMatchObject({
+      state: "REPAIR",
+      gateCount: 1,
+      answerAttempt: 1,
+      originalAnswer: "We selected the smaller model.",
+      repairedAnswer: null,
+      repairStatus: "GATE_PENDING",
+      afterEvaluation: null,
+      repairOutcome: null,
+    });
+    expect(question.hardGate?.beforeEvaluation).toEqual(beforeEvaluation);
+    expect(Object.isFrozen(question.hardGate)).toBe(true);
+    expect(Object.isFrozen(question.hardGate?.triggeringCriterion)).toBe(true);
+    expect(Object.isFrozen(question.hardGate?.beforeEvaluation)).toBe(true);
+    expect(
+      Object.isFrozen(question.hardGate?.beforeEvaluation.triggeringCriterion),
+    ).toBe(true);
+  });
+
+  it("starts an independent re-answer without restoring periodic gate eligibility", () => {
+    const gated = gatedRuntime();
+    const reanswering = startReanswer(gated.runtime, 3_000);
+    const question = reanswering.questions[0];
+
+    expect(question).toMatchObject({
+      state: "REANSWER",
+      transcript: "",
+      answerStartedAt: 3_000,
+      lastCheckpointAt: null,
+      latestCheckpoint: null,
+      answerAttempt: 2,
+      originalAnswer: "We selected the smaller model.",
+      repairedAnswer: null,
+      gateCount: 1,
+      repairStatus: "REANSWERING",
+    });
+    expect(question.answerVersion).toBe(2);
+    expect(question.checkpointVersion).toBe(1);
+    expect(question.hardGate?.beforeEvaluation).toEqual(gated.beforeEvaluation);
+    expect(getCheckpointEligibility(reanswering, 99_000, false).reason).toBe(
+      "INVALID_STATE",
+    );
+    expect(isCheckpointStale(gated.checkpoint, reanswering)).toBe(true);
+  });
+
+  it("checkpoints the re-answer while every earlier answer result stays stale", () => {
+    const gated = gatedRuntime();
+    let runtime = startReanswer(gated.runtime, 3_000);
+    runtime = updateTranscript(runtime, "I chose it to meet the latency budget.");
+    const reanswer = createCheckpoint(runtime, 4_000);
+
+    expect(reanswer.checkpoint).toMatchObject({
+      answerVersion: 3,
+      checkpointVersion: 2,
+      transcriptSnapshot: "I chose it to meet the latency budget.",
+    });
+    expect(isCheckpointStale(gated.checkpoint, reanswer.runtime)).toBe(true);
+    expect(isCheckpointStale(reanswer.checkpoint, reanswer.runtime)).toBe(false);
+    expect(
+      isCheckpointResultStale(gated.beforeEvaluation, reanswer.runtime),
+    ).toBe(true);
+    expect(
+      isCheckpointResultStale(
+        {
+          questionId: reanswer.checkpoint.questionId,
+          checkpointVersion: reanswer.checkpoint.checkpointVersion,
+        },
+        reanswer.runtime,
+      ),
+    ).toBe(false);
+  });
+
+  it("records a successful repair and both evaluator snapshots", () => {
+    const gated = gatedRuntime();
+    let runtime = startReanswer(gated.runtime, 3_000);
+    runtime = updateTranscript(runtime, "I chose it to meet the latency budget.");
+    const checkpointed = createCheckpoint(runtime, 4_000);
+    const afterEvaluation = {
+      questionId: "question-1",
+      checkpointVersion: checkpointed.checkpoint.checkpointVersion,
+      decision: "CONTINUE",
+      issueType: null,
+      confidence: 0.91,
+      gateability: "UNCERTAIN",
+      answerBoundary: "NONE",
+      triggeringCriterion: null,
+      issueExplanation: null,
+      repairCue: null,
+    } satisfies SemanticCheckResult;
+    const done = completeRepair(
+      checkpointed.runtime,
+      afterEvaluation,
+      "SUCCESSFUL",
+    );
+    const question = done.questions[0];
+
+    expect(question).toMatchObject({
+      state: "QUESTION_DONE",
+      originalAnswer: "We selected the smaller model.",
+      repairedAnswer: "I chose it to meet the latency budget.",
+      answerAttempt: 2,
+      gateCount: 1,
+      repairStatus: null,
+      repairOutcome: "SUCCESSFUL",
+    });
+    expect(question.hardGate?.beforeEvaluation).toEqual(gated.beforeEvaluation);
+    expect(question.afterEvaluation).toEqual(afterEvaluation);
+    expect(Object.isFrozen(question.afterEvaluation)).toBe(true);
+    expect(isCheckpointStale(checkpointed.checkpoint, done)).toBe(true);
+    expect(done.interviewState.state).toBe("INTERVIEW_DONE");
+  });
+
+  it("records an unresolved repair without losing either answer", () => {
+    const gated = gatedRuntime();
+    let runtime = startReanswer(gated.runtime, 3_000);
+    runtime = updateTranscript(runtime, "It was suitable for the edge device.");
+    const checkpointed = createCheckpoint(runtime, 4_000);
+    const afterEvaluation = issueResult(
+      checkpointed.checkpoint.checkpointVersion,
+    );
+    const done = completeRepair(
+      checkpointed.runtime,
+      afterEvaluation,
+      "UNRESOLVED",
+    );
+
+    expect(done.questions[0]).toMatchObject({
+      state: "QUESTION_DONE",
+      originalAnswer: "We selected the smaller model.",
+      repairedAnswer: "It was suitable for the edge device.",
+      repairOutcome: "UNRESOLVED",
+    });
+    expect(Object.isFrozen(done.questions[0].afterEvaluation)).toBe(true);
+    expect(
+      Object.isFrozen(done.questions[0].afterEvaluation?.triggeringCriterion),
+    ).toBe(true);
+  });
+
+  it("rejects stale repair results and completion paths that bypass evaluation", () => {
+    const gated = gatedRuntime();
+    let runtime = startReanswer(gated.runtime, 3_000);
+    runtime = updateTranscript(runtime, "I chose it for the memory constraint.");
+
+    expect(() => completeAnswer(runtime)).toThrow(
+      "Cannot complete an initial answer while question is REANSWER",
+    );
+    expect(() =>
+      completeRepair(runtime, gated.beforeEvaluation, "SUCCESSFUL"),
+    ).toThrow("does not match the current re-answer checkpoint");
+
+    const checkpointed = createCheckpoint(runtime, 4_000);
+    runtime = updateTranscript(
+      checkpointed.runtime,
+      "I chose it for both memory and latency constraints.",
+    );
+    const staleAfter = {
+      questionId: "question-1",
+      checkpointVersion: checkpointed.checkpoint.checkpointVersion,
+      decision: "CONTINUE",
+      issueType: null,
+      confidence: 0.9,
+      gateability: "UNCERTAIN",
+      answerBoundary: "NONE",
+      triggeringCriterion: null,
+      issueExplanation: null,
+      repairCue: null,
+    } satisfies SemanticCheckResult;
+
+    expect(() => completeRepair(runtime, staleAfter, "SUCCESSFUL")).toThrow(
+      "does not match the current re-answer checkpoint",
+    );
+  });
+
+  it("keeps an override out of Repair and permanently consumes gate capacity", () => {
+    const gated = gatedRuntime();
+    const overridden = overrideHardGate(gated.runtime, 2_500);
+    const question = overridden.questions[0];
+
+    expect(question).toMatchObject({
+      state: "ANSWERING",
+      gateCount: 1,
+      answerAttempt: 1,
+      repairStatus: null,
+      repairedAnswer: null,
+      repairOutcome: null,
+    });
+    expect(question.gateOverride).toEqual({
+      checkpointVersion: gated.beforeEvaluation.checkpointVersion,
+      recordedAt: 2_500,
+    });
+    expect(getCheckpointEligibility(overridden, 99_000, false).reason).toBe(
+      "GATE_CAPACITY_EXHAUSTED",
+    );
+    expect(() => startReanswer(overridden, 3_000)).toThrow(
+      "Cannot start a re-answer",
     );
   });
 });

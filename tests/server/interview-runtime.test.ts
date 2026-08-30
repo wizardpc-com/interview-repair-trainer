@@ -115,6 +115,7 @@ describe("interview runtime service", () => {
     const updated = runtimeService.updateTranscript(
       created.session.sessionId,
       "I personally designed and implemented the experiment harness.",
+      1,
     );
     expect(updated).toMatchObject({
       state: "ANSWERING",
@@ -140,15 +141,18 @@ describe("interview runtime service", () => {
       answerActionRequestSchema.parse({
         action: "UPDATE_TRANSCRIPT",
         transcript: "stable speech snapshot",
+        answerAttempt: 1,
       }),
     ).toEqual({
       action: "UPDATE_TRANSCRIPT",
       transcript: "stable speech snapshot",
+      answerAttempt: 1,
     });
     expect(
       answerActionRequestSchema.safeParse({
         action: "UPDATE_TRANSCRIPT",
         transcript: "completed answer snapshot",
+        answerAttempt: 1,
         checkpointKind: "FINAL",
       }).success,
     ).toBe(false);
@@ -170,7 +174,7 @@ describe("interview runtime service", () => {
 
     const storedPlan = store.get("session-frozen-plan")?.questionPlans[0];
     runtimeService.start("session-frozen-plan");
-    runtimeService.updateTranscript("session-frozen-plan", "My answer.");
+    runtimeService.updateTranscript("session-frozen-plan", "My answer.", 1);
     await runtimeService.complete("session-frozen-plan");
 
     expect(store.get("session-frozen-plan")?.questionPlans[0]).toBe(storedPlan);
@@ -199,10 +203,12 @@ describe("interview runtime service", () => {
       "question",
       "state",
       "transcript",
+      "answerAttempt",
       "answerVersion",
       "checkpointVersion",
       "checkpoint",
       "hardGate",
+      "repairResult",
     ]);
     expect(serialized).not.toContain("primaryTarget");
     expect(serialized).not.toContain("requiredEvidence");

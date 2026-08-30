@@ -25,12 +25,18 @@ const STATE_LABELS: Record<PublicInterviewRuntimeDto["state"], string> = {
   QUESTION_READY: "待回答",
   ANSWERING: "回答中",
   REPAIR: "回答已暂停",
-  REANSWER: "准备重新回答",
+  REANSWER: "重新回答中",
   QUESTION_DONE: "本题完成",
 };
 
 type InputMode = "voice" | "text";
 type MicrophoneStatus = "idle" | "requesting" | "listening" | "fallback";
+
+function isAnswerCaptureState(
+  state: PublicInterviewRuntimeDto["state"] | undefined,
+): boolean {
+  return state === "ANSWERING" || state === "REANSWER";
+}
 
 async function readApiResponse(response: Response): Promise<unknown> {
   let body: unknown;
@@ -185,8 +191,6 @@ export function HardGateView({
     return null;
   }
 
-  const isPrepared = hardGate.status === "REANSWER_PREPARED";
-
   return (
     <section
       aria-label="回答暂停"
@@ -200,12 +204,10 @@ export function HardGateView({
             实时回答修复
           </p>
           <h1 className="mt-5 text-5xl font-semibold leading-none tracking-[-0.055em] text-[#fff8ee] sm:text-7xl lg:text-8xl">
-            {isPrepared ? "已准备重新回答" : hardGate.title}
+            {hardGate.title}
           </h1>
           <p className="mt-6 max-w-xl text-base leading-7 text-[#c9aaa0] sm:text-lg">
-            {isPrepared
-              ? "原回答已经保留。下一阶段会从同一个问题开始重新作答。"
-              : "先停在这里，修复一个关键缺口，再决定是否重新回答。"}
+            先停在这里，修复一个关键缺口，再决定是否重新回答。
           </p>
 
           <div className="mt-10 space-y-7 border-l border-[#e6a58e]/25 pl-5 sm:pl-7">
@@ -235,27 +237,25 @@ export function HardGateView({
             </section>
           </div>
 
-          {!isPrepared && (
-            <div className="mt-10 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-              <button
-                ref={primaryActionRef}
-                className="rounded-full bg-[#fff1e4] px-8 py-3.5 text-sm font-semibold text-[#4a2118] shadow-[0_18px_55px_rgba(0,0,0,0.22)] transition hover:-translate-y-0.5 hover:bg-white focus-visible:outline-[#ffd1be] disabled:cursor-not-allowed disabled:opacity-45"
-                type="button"
-                onClick={onPrepareReanswer}
-                disabled={isPending}
-              >
-                {isPending ? "正在准备…" : "重新回答"}
-              </button>
-              <button
-                className="px-2 py-2 text-sm text-[#caa99d] underline decoration-[#caa99d]/30 underline-offset-4 transition hover:text-[#fff4e9] disabled:cursor-not-allowed disabled:opacity-45"
-                type="button"
-                onClick={onOverride}
-                disabled={isPending}
-              >
-                我认为判断不合理，继续回答
-              </button>
-            </div>
-          )}
+          <div className="mt-10 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+            <button
+              ref={primaryActionRef}
+              className="rounded-full bg-[#fff1e4] px-8 py-3.5 text-sm font-semibold text-[#4a2118] shadow-[0_18px_55px_rgba(0,0,0,0.22)] transition hover:-translate-y-0.5 hover:bg-white focus-visible:outline-[#ffd1be] disabled:cursor-not-allowed disabled:opacity-45"
+              type="button"
+              onClick={onPrepareReanswer}
+              disabled={isPending}
+            >
+              {isPending ? "正在开始…" : "重新回答"}
+            </button>
+            <button
+              className="px-2 py-2 text-sm text-[#caa99d] underline decoration-[#caa99d]/30 underline-offset-4 transition hover:text-[#fff4e9] disabled:cursor-not-allowed disabled:opacity-45"
+              type="button"
+              onClick={onOverride}
+              disabled={isPending}
+            >
+              我认为判断不合理，继续回答
+            </button>
+          </div>
         </div>
 
         <aside className="flex min-h-72 flex-col justify-end rounded-[32px] border border-[#f4b39c]/12 bg-black/15 p-6 sm:p-8 lg:min-h-0">
@@ -268,6 +268,52 @@ export function HardGateView({
           </p>
         </aside>
       </div>
+    </section>
+  );
+}
+
+export function RepairResultView({
+  runtime,
+  onReset,
+}: Readonly<{
+  runtime: PublicInterviewRuntimeDto;
+  onReset(): void;
+}>) {
+  const result = runtime.repairResult;
+  if (result === null) {
+    return null;
+  }
+
+  const successful = result.status === "SUCCESSFUL";
+  return (
+    <section className="gate-enter relative z-20 mx-auto flex min-h-[calc(100dvh-69px)] w-full max-w-5xl flex-col items-center justify-center px-5 py-12 text-center sm:px-8">
+      <div
+        className={`grid size-20 place-items-center rounded-full border text-3xl ${
+          successful
+            ? "border-[#a7ceb9]/35 bg-[#a7ceb9]/10 text-[#b8ddca]"
+            : "border-[#efb09a]/30 bg-[#efb09a]/10 text-[#ffd0bf]"
+        }`}
+      >
+        {successful ? "✓" : "·"}
+      </div>
+      <p className="mt-8 text-xs font-semibold uppercase tracking-[0.24em] text-[#c99a89]">
+        重新回答结果
+      </p>
+      <h1 className="mt-5 text-5xl font-semibold tracking-[-0.05em] text-[#fff8ee] sm:text-7xl">
+        {result.title}
+      </h1>
+      <p className="mt-5 max-w-xl text-base leading-7 text-[#c9aaa0]">
+        {successful
+          ? "这次回答已经修复了刚才的关键缺口。"
+          : "这次回答仍未补上刚才的关键缺口。"}
+      </p>
+      <button
+        className="mt-10 rounded-full bg-[#fff1e4] px-8 py-3 text-sm font-semibold text-[#4a2118] transition hover:bg-white"
+        type="button"
+        onClick={onReset}
+      >
+        开始新的训练
+      </button>
     </section>
   );
 }
@@ -304,7 +350,10 @@ export function TrainingConsole() {
       return false;
     }
 
-    if (current?.state === "ANSWERING" && candidate.state !== "ANSWERING") {
+    if (
+      isAnswerCaptureState(current?.state) &&
+      !isAnswerCaptureState(candidate.state)
+    ) {
       captureEpochRef.current += 1;
     }
     runtimeRef.current = candidate;
@@ -365,18 +414,22 @@ export function TrainingConsole() {
   const persistTranscript = useCallback(
     async (transcript: string) => {
       const currentRuntime = runtimeRef.current;
-      if (currentRuntime === null || currentRuntime.state !== "ANSWERING") {
+      if (
+        currentRuntime === null ||
+        !isAnswerCaptureState(currentRuntime.state)
+      ) {
         return;
       }
 
       const sessionId = currentRuntime.sessionId;
+      const answerAttempt = currentRuntime.answerAttempt;
       const captureEpoch = captureEpochRef.current;
       const pendingSave = saveChainRef.current.then(async () => {
         const latestRuntime = runtimeRef.current;
         if (
           captureEpoch !== captureEpochRef.current ||
           latestRuntime?.sessionId !== sessionId ||
-          latestRuntime.state !== "ANSWERING"
+          !isAnswerCaptureState(latestRuntime.state)
         ) {
           return;
         }
@@ -386,14 +439,23 @@ export function TrainingConsole() {
           const nextRuntime = await postAnswerAction(sessionId, {
             action: "UPDATE_TRANSCRIPT",
             transcript,
+            answerAttempt,
           });
+          if (
+            captureEpoch !== captureEpochRef.current ||
+            runtimeRef.current?.answerAttempt !== answerAttempt
+          ) {
+            return;
+          }
           if (applyRuntime(nextRuntime)) {
-            void evaluateCheckpoint(nextRuntime);
+            if (nextRuntime.state === "ANSWERING") {
+              void evaluateCheckpoint(nextRuntime);
+            }
           }
         } catch (cause) {
           if (
             captureEpoch === captureEpochRef.current &&
-            runtimeRef.current?.state === "ANSWERING"
+            isAnswerCaptureState(runtimeRef.current?.state)
           ) {
             throw cause;
           }
@@ -425,7 +487,7 @@ export function TrainingConsole() {
 
     const captureIsCurrent = () =>
       captureEpoch === captureEpochRef.current &&
-      runtimeRef.current?.state === "ANSWERING";
+      isAnswerCaptureState(runtimeRef.current?.state);
 
     const adapter = new BrowserSttAdapter({
       onInterim: (transcript) => {
@@ -490,7 +552,7 @@ export function TrainingConsole() {
 
   useEffect(() => {
     if (
-      runtime?.state !== "ANSWERING" ||
+      !isAnswerCaptureState(runtime?.state) ||
       inputMode !== "text" ||
       isPending
     ) {
@@ -511,7 +573,7 @@ export function TrainingConsole() {
   }, [inputMode, isPending, persistTranscript, runtime?.state, stableTranscript]);
 
   useEffect(() => {
-    if (runtime?.state !== "ANSWERING" || isPending) {
+    if (!isAnswerCaptureState(runtime?.state) || isPending) {
       return;
     }
 
@@ -547,13 +609,13 @@ export function TrainingConsole() {
   }, [interimTranscript, stableTranscript]);
 
   useEffect(() => {
-    if (runtime?.state === "ANSWERING" && inputMode === "text") {
+    if (isAnswerCaptureState(runtime?.state) && inputMode === "text") {
       textFallbackRef.current?.focus();
     }
   }, [inputMode, runtime?.state]);
 
   useEffect(() => {
-    if (runtime?.state !== "ANSWERING") {
+    if (!isAnswerCaptureState(runtime?.state)) {
       void stopVoiceCapture();
     }
   }, [runtime?.state, stopVoiceCapture]);
@@ -619,7 +681,7 @@ export function TrainingConsole() {
       stableTranscriptRef.current = started.transcript;
       setStableTranscript(started.transcript);
       captureEpochRef.current += 1;
-      await startVoiceCapture();
+      void startVoiceCapture();
     } catch (cause) {
       setError(
         cause instanceof Error ? cause.message : "这次请求没有完成，请重试。",
@@ -633,19 +695,34 @@ export function TrainingConsole() {
     if (runtime === null) {
       return;
     }
+    const shouldResumeVoice = inputMode === "voice";
     setIsPending(true);
     setError(null);
     try {
       await stopVoiceCapture();
       await persistTranscript(stableTranscriptRef.current);
       await saveChainRef.current;
-      if (runtimeRef.current?.state !== "ANSWERING") {
+      if (!isAnswerCaptureState(runtimeRef.current?.state)) {
         return;
       }
       const completed = await postAnswerAction(runtime.sessionId, {
         action: "COMPLETE",
       });
-      applyRuntime(completed);
+      if (!applyRuntime(completed)) {
+        return;
+      }
+      stableTranscriptRef.current = completed.transcript;
+      setStableTranscript(completed.transcript);
+      setInterimTranscript("");
+      if (completed.state === "REANSWER") {
+        setError("暂时无法完成修复判断，请检查回答后重试。");
+        if (shouldResumeVoice) {
+          captureEpochRef.current += 1;
+          void startVoiceCapture();
+        } else {
+          setMicrophoneStatus("fallback");
+        }
+      }
     } catch (cause) {
       setError(
         cause instanceof Error ? cause.message : "这次请求没有完成，请重试。",
@@ -655,7 +732,7 @@ export function TrainingConsole() {
     }
   }
 
-  async function prepareReanswerAction() {
+  async function startReanswerAction() {
     const current = runtimeRef.current;
     if (current === null || current.state !== "REPAIR") {
       return;
@@ -664,12 +741,21 @@ export function TrainingConsole() {
     setIsPending(true);
     setError(null);
     try {
-      const prepared = await postAnswerAction(current.sessionId, {
-        action: "PREPARE_REANSWER",
+      await stopVoiceCapture();
+      const reanswer = await postAnswerAction(current.sessionId, {
+        action: "START_REANSWER",
       });
-      applyRuntime(prepared);
-      stableTranscriptRef.current = prepared.transcript;
-      setStableTranscript(prepared.transcript);
+      if (!applyRuntime(reanswer) || reanswer.state !== "REANSWER") {
+        return;
+      }
+      attemptedCheckpointKeysRef.current.clear();
+      stableTranscriptRef.current = reanswer.transcript;
+      setStableTranscript(reanswer.transcript);
+      setInterimTranscript("");
+      setAmplitude(0);
+      setVoiceNotice(null);
+      captureEpochRef.current += 1;
+      void startVoiceCapture();
     } catch (cause) {
       setError(
         cause instanceof Error ? cause.message : "这次请求没有完成，请重试。",
@@ -698,7 +784,7 @@ export function TrainingConsole() {
       setStableTranscript(resumed.transcript);
       setInterimTranscript("");
       captureEpochRef.current += 1;
-      await startVoiceCapture();
+      void startVoiceCapture();
     } catch (cause) {
       setError(
         cause instanceof Error ? cause.message : "这次请求没有完成，请重试。",
@@ -816,21 +902,25 @@ export function TrainingConsole() {
 
   const isReady = runtime.state === "QUESTION_READY";
   const isAnswering = runtime.state === "ANSWERING";
+  const isReanswer = runtime.state === "REANSWER";
+  const isRecording = isAnswering || isReanswer;
   const isRepair = runtime.state === "REPAIR" && runtime.hardGate !== null;
   const isDone = runtime.state === "QUESTION_DONE";
+  const hasRepairResult = runtime.repairResult !== null;
+  const isRepairExperience = isRepair || isReanswer || hasRepairResult;
   const displayedTranscript = stableTranscript.trim();
 
   return (
     <main
       className={`relative min-h-dvh overflow-x-hidden text-[#f8f5ed] transition-colors duration-500 ${
-        isRepair ? "bg-[#281713]" : "bg-[#0d251e]"
+        isRepairExperience ? "bg-[#281713]" : "bg-[#0d251e]"
       }`}
       data-runtime-state={runtime.state}
     >
       <div
         aria-hidden="true"
         className={`pointer-events-none absolute inset-0 ${
-          isRepair
+          isRepairExperience
             ? "bg-[radial-gradient(circle_at_25%_34%,rgba(186,91,61,0.2),transparent_42%),linear-gradient(180deg,rgba(255,255,255,0.025),transparent_35%)]"
             : "bg-[radial-gradient(circle_at_50%_38%,rgba(77,132,105,0.18),transparent_42%),linear-gradient(180deg,rgba(255,255,255,0.025),transparent_30%)]"
         }`}
@@ -849,7 +939,7 @@ export function TrainingConsole() {
           <div className="flex items-center gap-2.5 text-xs text-[#b5c4bd]">
             <span
               className={`size-1.5 rounded-full ${
-                isAnswering ? "bg-[#8ed0ae]" : "bg-[#d2a177]"
+                isRecording && !isReanswer ? "bg-[#8ed0ae]" : "bg-[#d2a177]"
               }`}
             />
             <span>{STATE_LABELS[runtime.state]}</span>
@@ -862,9 +952,11 @@ export function TrainingConsole() {
           runtime={runtime}
           isPending={isPending}
           primaryActionRef={hardGateActionRef}
-          onPrepareReanswer={() => void prepareReanswerAction()}
+          onPrepareReanswer={() => void startReanswerAction()}
           onOverride={() => void overrideGateAction()}
         />
+      ) : hasRepairResult ? (
+        <RepairResultView runtime={runtime} onReset={reset} />
       ) : (
       <section className="relative z-10 mx-auto flex min-h-[calc(100dvh-69px)] max-w-7xl flex-col items-center px-5 pb-6 pt-8 sm:px-8 sm:pb-8 lg:pt-10">
         <div
@@ -873,7 +965,7 @@ export function TrainingConsole() {
           }`}
         >
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#9ab9aa]">
-            本题问题
+            {isReanswer ? "同一问题 · 重新回答" : "本题问题"}
           </p>
           <h1
             className={`mt-5 text-balance font-medium leading-[1.16] tracking-[-0.04em] transition-all duration-500 ${
@@ -885,6 +977,30 @@ export function TrainingConsole() {
             {runtime.question.surfaceQuestion}
           </h1>
         </div>
+
+        {isReanswer && runtime.hardGate !== null && (
+          <section
+            aria-label="重新回答提示"
+            className="mt-6 grid w-full max-w-5xl gap-4 rounded-3xl border border-[#f4b39c]/15 bg-black/15 p-5 text-left sm:grid-cols-[0.9fr_1.1fr] sm:p-6"
+          >
+            <div>
+              <p className="text-xs font-semibold tracking-[0.16em] text-[#c79482]">
+                这次先补上
+              </p>
+              <p className="mt-2 text-base font-semibold leading-7 text-[#ffd9c7]">
+                {runtime.hardGate.repairCue}
+              </p>
+            </div>
+            <div className="border-t border-[#f4b39c]/12 pt-4 sm:border-l sm:border-t-0 sm:pl-6 sm:pt-0">
+              <p className="text-xs font-semibold tracking-[0.16em] text-[#a98579]">
+                原回答已保留
+              </p>
+              <p className="mt-2 max-h-20 overflow-y-auto whitespace-pre-wrap text-sm leading-6 text-[#cdb9b1]">
+                {runtime.hardGate.originalAnswer}
+              </p>
+            </div>
+          </section>
+        )}
 
         {isReady && (
           <div className="mb-auto mt-12 flex flex-col items-center">
@@ -910,7 +1026,7 @@ export function TrainingConsole() {
           </div>
         )}
 
-        {isAnswering && (
+        {isRecording && (
           <div className="mt-5 flex w-full max-w-5xl flex-1 flex-col items-center">
             <div className="flex min-h-64 flex-col items-center justify-center sm:min-h-72">
               {inputMode === "voice" ? (
@@ -1013,8 +1129,12 @@ export function TrainingConsole() {
                 disabled={isPending || stableTranscript.trim().length === 0}
               >
                 {isPending && microphoneStatus !== "requesting"
-                  ? "正在结束…"
-                  : "结束回答"}
+                  ? isReanswer
+                    ? "正在判断修复…"
+                    : "正在结束…"
+                  : isReanswer
+                    ? "完成重新回答"
+                    : "结束回答"}
               </button>
             </div>
           </div>

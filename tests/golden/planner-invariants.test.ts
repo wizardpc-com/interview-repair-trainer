@@ -6,8 +6,8 @@ import {
 import {
   createCheckpoint,
   interruptForHardGate,
-  prepareReanswer,
   startAnswer,
+  startReanswer,
   updateTranscript,
 } from "../../src/domain/interview/runtime";
 import { phaseOneScenario } from "../../src/server/phase-one-scenario";
@@ -91,7 +91,7 @@ describe("Golden QuestionPlan invariants", () => {
   );
 
   it.each(fixtures)(
-    "$oracleId remains frozen through answering and repair preparation",
+    "$oracleId remains frozen through answering and re-answer startup",
     ({ oracleId, plan }) => {
       const store = new InMemoryInterviewSessionStore({
         ttlMs: 60_000,
@@ -127,8 +127,23 @@ describe("Golden QuestionPlan invariants", () => {
         triggeredAt: 3_000,
         whyPaused: "Golden fixture interruption.",
         repairCue: "Golden fixture repair cue.",
+        beforeEvaluation: {
+          questionId: plan.id,
+          checkpointVersion: checkpointed.checkpoint.checkpointVersion,
+          decision: "ISSUE_DETECTED",
+          issueType,
+          triggeringCriterion: {
+            kind: "PRIMARY_TARGET",
+            id: plan.primaryTarget.id,
+          },
+          issueExplanation: "Golden fixture interruption.",
+          repairCue: "Golden fixture repair cue.",
+          confidence: 0.95,
+          gateability: "GATE_ELIGIBLE",
+          answerBoundary: "NONE",
+        },
       });
-      runtime = prepareReanswer(runtime);
+      runtime = startReanswer(runtime, 4_000);
       const updated = store.updateRuntime(session.sessionId, runtime);
 
       expect(updated?.questionPlans[0]).toBe(storedPlan);
@@ -137,8 +152,9 @@ describe("Golden QuestionPlan invariants", () => {
       expect(Object.isFrozen(storedPlan.requiredEvidence)).toBe(true);
       expect(Object.isFrozen(storedPlan.optionalEvidence)).toBe(true);
       expect(updated?.runtime.questions[0]).toMatchObject({
-        state: "REPAIR",
-        repairStatus: "REANSWER_PREPARED",
+        state: "REANSWER",
+        repairStatus: "REANSWERING",
+        answerAttempt: 2,
       });
     },
   );
