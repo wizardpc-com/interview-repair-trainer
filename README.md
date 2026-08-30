@@ -22,11 +22,15 @@ Interview Repair Trainer 面向 Science and Engineering Undergraduates，用于�
 - Scenario Pack：`protocols/scenarios/`，承载具体面试场景。
 - Runtime Engine：`src/domain/`、`src/server/` 与 `src/services/`，作为未来状态机、checkpoint、gate、repair 和 metrics 的运行边界。
 
-`protocols/exports/` 预留给协议导出产物。第一阶段只建立工程与架构边界，尚未接入 LLM、STT 或面试修复业务逻辑。
+`protocols/exports/` 预留给协议导出产物。当前代码仍只包含工程骨架，尚未接入 LLM、STT 或面试修复业务逻辑。
+
+下一阶段按 text-first 纵向切片开发：一个 provider-independent LLM service 复用一个实际模型，QuestionPlan 在服务端预先冻结，应用层 Gate Arbiter 控制状态转换，Session 使用单实例内存存储与 TTL。Browser STT、持久化和双模型优化均延后。
+
+详细约束见 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)，执行顺序见 [`docs/IMPLEMENTATION_PLAN.md`](docs/IMPLEMENTATION_PLAN.md)。
 
 ## 本地启动
 
-需要 Node.js 20.9 或更高版本。
+推荐使用与 Docker 一致的 Node.js 24；最低支持版本为 Node.js 20.9。
 
 ```bash
 npm install
