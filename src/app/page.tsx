@@ -3,7 +3,7 @@ export default function Home() {
     <main className="mx-auto flex min-h-screen max-w-3xl items-center px-6 py-16">
       <section className="space-y-5">
         <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
-          Phase one scaffold
+          Current scaffold
         </p>
         <h1 className="text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl">
           Interview Repair Trainer

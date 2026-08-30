@@ -16,7 +16,7 @@ Phase 1 does not include a model router, automatic model selection, separate pla
 
 ## Integration boundaries
 
-LLM and STT adapters belong under `src/services/llm` and `src/services/stt`. Domain and orchestration code depend on service interfaces, not provider SDKs. LLM output is advisory data: application code validates it and owns UI behavior and state transitions.
+LLM and STT adapters belong under `src/services/llm` and `src/services/stt`. Domain code has no LLM or STT dependency. Planner and evaluator orchestration depend on provider-independent service interfaces, not provider SDKs. LLM output is advisory data: application code validates it and owns UI behavior and state transitions.
 
 Browser STT is deferred until the text-first runtime is stable. It remains an input adapter and cannot become a domain dependency.
 

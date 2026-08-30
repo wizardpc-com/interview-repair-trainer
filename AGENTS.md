@@ -5,7 +5,7 @@
 - Keep Persona, Core Interview Protocol, Scenario Pack, and Runtime Engine as separate architectural layers.
 - Treat `protocols/core`, `protocols/personas`, and `protocols/scenarios` as portable source assets. Treat `protocols/exports` as generated output.
 - Put deterministic runtime behavior under `src/domain`; external integrations belong under `src/services`.
-- Domain and orchestration code may depend only on a provider-independent LLM service interface, never a provider SDK.
+- Domain code must not depend on LLM or STT services. Planner and evaluator orchestration may depend only on a provider-independent LLM service interface, never a provider SDK.
 - Treat LLM output as validated input to application logic. Never let an LLM directly mutate UI state or choose a state transition.
 
 ## Phase 1 boundaries

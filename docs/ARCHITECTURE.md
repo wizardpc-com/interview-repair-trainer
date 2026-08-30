@@ -14,9 +14,10 @@ Protocol export artifacts belong in `protocols/exports/`. Provider-specific LLM 
 ## Phase 1 vertical slice
 
 ```text
-text input
-  -> generate and freeze QuestionPlan
-  -> hidden in-memory server session
+project or research context input
+  -> generate and freeze QuestionPlan in the hidden server session
+  -> expose the surface question
+  -> text answer input
   -> semantic checkpoint
   -> Semantic Evaluator
   -> Gate Arbiter
@@ -36,7 +37,7 @@ Phase 1 configures one real LLM. The same model performs two roles through one p
 - before answering, it generates deep-dive questions, the frozen Hidden QuestionPlan, the primary training target, and evidence requirements;
 - during answering, it evaluates semantic checkpoints for `NOT_ANSWERING_QUESTION`, `VAGUE_WITHOUT_EVIDENCE`, and `OWNERSHIP_AMBIGUOUS` and returns structured data to the Gate Arbiter.
 
-Planner and Semantic Evaluator must not import a provider SDK. Provider-specific code stays inside `src/services/llm`. LLM output never directly controls the UI or state machine.
+Planner and Semantic Evaluator orchestration depend only on the provider-independent service interface. Domain code has no LLM service dependency, and provider-specific code stays inside `src/services/llm`. LLM output never directly controls the UI or state machine.
 
 A future extension may use a stronger model for planning and final review and a faster model for real-time monitoring. Phase 1 does not implement the router, selection logic, or second provider configuration required for that split.
 
@@ -104,4 +105,4 @@ Parsed JSON cannot enter the domain through an unchecked type cast.
 
 ## Dependency direction
 
-Dependencies flow from application and infrastructure boundaries toward domain code. Domain code must not import provider SDKs, STT implementations, UI code, or generated protocol exports. Application code owns state transitions and Gate Arbiter decisions.
+Dependencies flow from application and infrastructure boundaries toward domain code. Domain code must not import LLM or STT services, provider SDKs, UI code, or generated protocol exports. Application code owns state transitions and Gate Arbiter decisions.
