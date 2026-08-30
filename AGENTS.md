@@ -38,6 +38,13 @@
 - Run `npm test` and `npm run build` successfully before committing.
 - Do not rewrite or squash the existing scaffold history; add new commits only.
 
+## Third-party reuse
+
+- For non-core infrastructure, prefer in order: an official SDK or existing dependency; a small, maintained library with a clear compatible license; selective reuse of the minimum necessary compatible open-source code; and only then a local implementation.
+- Never copy source from a repository without an explicit compatible license. Do not fork or import an entire interview product for a small feature; reuse only the smallest necessary component.
+- Implement this repository's core product logic locally rather than copying or substantially adapting competitor implementations: QuestionPlan and Hidden Target semantics, Semantic Checkpoint policy, Gate Arbiter, Hard Gate state transitions, Repair and Re-answer flow, and Repair metrics.
+- Before committing directly copied or substantially adapted third-party source, update `THIRD_PARTY_NOTICES.md` with the source repository URL, exact license, and affected repository files; preserve and record every required notice or copyright statement.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know
