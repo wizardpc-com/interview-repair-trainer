@@ -41,6 +41,46 @@ const technicalChoicePlan: QuestionPlan = {
     "VAGUE_WITHOUT_EVIDENCE",
   ],
 };
+const noisyAsrTechnicalChoiceTranscript =
+  "我选择inc8电话因为设备内存和石延预算很紧我用固定的验证检查进度并在设备上测量延迟";
+const noisyAsrProjectContext =
+  "我在边缘设备上完成了目标检测模型选型、量化和部署，主要负责模型压缩、性能验证与部署脚本。";
+
+describe.runIf(runLiveSmoke)("Qwen ASR noise semantic regression", () => {
+  it(
+    "continues when local ASR errors preserve the choice, reason, constraint, and validation structure",
+    async () => {
+      const service = createConfiguredLlmService();
+      expect(service.model).toBe(DEFAULT_QWEN_MODEL);
+      const checkpointVersion = 1;
+      const result = await service.evaluateSemanticCheckpoint({
+        projectContext: noisyAsrProjectContext,
+        questionPlan: technicalChoicePlan,
+        transcript: noisyAsrTechnicalChoiceTranscript,
+        checkpointVersion,
+        checkpointKind: "FINAL",
+      });
+      if (!result.ok) {
+        throw new Error(
+          `evaluateSemanticCheckpoint failed: ${result.error.code} after ${result.error.attempts} attempt(s)`,
+        );
+      }
+
+      const semanticResult = createSemanticCheckResultSchema(
+        technicalChoicePlan,
+        checkpointVersion,
+      ).parse(result.value);
+      expect(
+        semanticResult,
+        JSON.stringify(semanticResult, null, 2),
+      ).toMatchObject({
+        decision: "CONTINUE",
+        issueType: null,
+      });
+    },
+    130_000,
+  );
+});
 
 describe.runIf(runLiveSmoke)("Qwen live smoke", () => {
   let service: LlmService;

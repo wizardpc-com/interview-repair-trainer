@@ -276,6 +276,28 @@ describe("provider-independent LLM service", () => {
     expect(prompt).toContain(
       "If every required dimension is addressed, never use NOT_ANSWERING_QUESTION",
     );
+    expect(prompt).toContain("comes from real-time ASR");
+    expect(prompt).toContain(
+      "Recover the most plausible overall semantic structure",
+    );
+    expect(prompt).toContain(
+      "Never use NOT_ANSWERING_QUESTION solely because of such local ASR noise",
+    );
+    expect(prompt).toContain(
+      "a stated selection followed by an explicit causal relation and a concrete project constraint",
+    );
+    expect(prompt).toContain(
+      "A concrete project constraint or tradeoff directly connected to the selection is explanatory evidence",
+    );
+    expect(prompt).toContain(
+      "Do not use VAGUE_WITHOUT_EVIDENCE solely because ASR corrupts a local technical noun",
+    );
+    expect(prompt).toContain(
+      "Mandatory ASR fail-open rule: when the choice-to-reason or choice-to-constraint relation is clear",
+    );
+    expect(prompt).toContain(
+      "When ASR noise leaves multiple plausible readings and there is no clear semantic omission, fail open with CONTINUE",
+    );
     expect(prompt).toContain(
       "completely omits or substitutes for an explicitly requested dimension",
     );
@@ -312,6 +334,7 @@ describe("provider-independent LLM service", () => {
       "do not infer that it is unfinished merely because it is short",
     );
     expect(prompt).not.toMatch(/\bG\d{2}\b/);
+    expect(prompt).not.toContain("inc8");
   });
 
   it("retries one malformed structured response and accepts a valid correction", async () => {
