@@ -18,10 +18,10 @@ Each stage is one verifiable vertical increment. Finish its acceptance criteria,
 - **Tests:** Write positive and negative cases first, including confidence-only, partial-answer, stale-result, invalid-state, and gate-count cases.
 - **Explicit non-goals:** LLM evaluation, API integration, repair UI, numeric calibration claims.
 
-## 3. Core protocol and first scenario
+## 3. Core protocol and first scenario — complete
 
 - **Goal:** Add reusable interview rules and one science/engineering project-research deep-dive scenario.
-- **Files / modules likely involved:** `protocols/core/interviewer.md`, `protocols/core/boundaries.md`, `protocols/scenarios/science-engineering-project-deep-dive.yaml`, `tests/protocols/scenario.test.ts`.
+- **Files / modules involved:** `protocols/core/interview-rules.md`, `protocols/scenarios/science-engineering-project-deep-dive.json`, `src/domain/interview/scenario.ts`, `tests/protocols/scenario.test.ts`.
 - **Acceptance criteria:** Required hidden criteria are supported by their surface questions; optional evidence is non-gating; the scenario declares one primary target per question.
 - **Tests:** Validate required scenario fields, allowed gate types, and the required-versus-optional evidence split.
 - **Explicit non-goals:** Additional personas, additional scenarios, protocol export, broad question bank.

@@ -56,6 +56,6 @@ When LLM and API integration begins, API request bodies, generated QuestionPlans
 
 Node.js 24 is the reference local and Docker runtime. `package.json` retains the Next.js-supported minimum of Node.js 20.9, but project verification and the container use Node.js 24 until a deliberate runtime change is made.
 
-## Current scaffold state
+## Current implementation state
 
-The repository contains the scaffold, Stage 1 domain contracts, and the Stage 2 deterministic Gate Arbiter policy. It contains no database, external AI or speech connection, semantic evaluator, hard gate runtime, repair loop, or multi-agent implementation.
+The repository contains the scaffold, Stage 1 domain contracts, the Stage 2 deterministic Gate Arbiter policy, and the Stage 3 core protocol plus one project/research deep-dive scenario. It contains no database, external AI or speech connection, semantic evaluator, hard gate runtime, repair loop, or multi-agent implementation.

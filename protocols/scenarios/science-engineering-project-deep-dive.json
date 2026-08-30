@@ -1,0 +1,194 @@
+{
+  "id": "science-engineering-project-deep-dive",
+  "version": 1,
+  "title": "Science and Engineering Project / Research Deep Dive",
+  "description": "A text-first deep dive into one undergraduate science or engineering project or research experience.",
+  "trainingTargets": [
+    {
+      "id": "problem-framing",
+      "description": "Explain the concrete problem, motivation, and scope."
+    },
+    {
+      "id": "personal-ownership",
+      "description": "Separate the candidate's own contribution from team activity."
+    },
+    {
+      "id": "technical-reasoning",
+      "description": "Explain a technical choice and the reasoning behind it."
+    },
+    {
+      "id": "evidence-based-result",
+      "description": "Describe an observed result and how it was validated."
+    },
+    {
+      "id": "iteration-and-recovery",
+      "description": "Explain how the candidate responded to a problem or failed attempt."
+    },
+    {
+      "id": "boundary-awareness",
+      "description": "State what the work could not establish and why."
+    }
+  ],
+  "evidenceKinds": [
+    {
+      "id": "problem-context",
+      "description": "A concrete description of the problem or research question."
+    },
+    {
+      "id": "motivation-or-stakes",
+      "description": "Why the problem mattered within the stated project scope."
+    },
+    {
+      "id": "personal-action",
+      "description": "A specific action, decision, implementation, or analysis performed by the candidate."
+    },
+    {
+      "id": "decision-rationale",
+      "description": "Reasoning or tradeoffs behind a technical choice."
+    },
+    {
+      "id": "technical-detail",
+      "description": "A concrete technical detail that clarifies the work."
+    },
+    {
+      "id": "observed-result",
+      "description": "A result that was actually observed, or a clear statement that no reliable result was measured."
+    },
+    {
+      "id": "validation-method",
+      "description": "How an observation was checked, or a clear statement that it was not reliably validated."
+    },
+    {
+      "id": "iteration-evidence",
+      "description": "The problem encountered, response taken, and resulting change."
+    },
+    {
+      "id": "limitation",
+      "description": "A specific limitation, uncertainty, or unsupported conclusion."
+    },
+    {
+      "id": "team-context",
+      "description": "Context about collaborators or team responsibilities."
+    }
+  ],
+  "gateIssueTypes": [
+    "NOT_ANSWERING_QUESTION",
+    "VAGUE_WITHOUT_EVIDENCE",
+    "OWNERSHIP_AMBIGUOUS"
+  ],
+  "questionFamilies": [
+    {
+      "id": "problem-and-motivation",
+      "surfaceQuestion": "What problem were you trying to solve, and why did it matter in this project?",
+      "primaryTargetId": "problem-framing",
+      "requiredEvidence": [
+        {
+          "evidenceKindId": "problem-context",
+          "surfaceQuestionBasis": "The question explicitly asks what problem was being solved."
+        },
+        {
+          "evidenceKindId": "motivation-or-stakes",
+          "surfaceQuestionBasis": "The question explicitly asks why the problem mattered."
+        }
+      ],
+      "optionalEvidenceKindIds": ["technical-detail"],
+      "allowedGateIssueTypes": [
+        "NOT_ANSWERING_QUESTION",
+        "VAGUE_WITHOUT_EVIDENCE"
+      ]
+    },
+    {
+      "id": "personal-contribution",
+      "surfaceQuestion": "What did you personally design, implement, analyze, or decide?",
+      "primaryTargetId": "personal-ownership",
+      "requiredEvidence": [
+        {
+          "evidenceKindId": "personal-action",
+          "surfaceQuestionBasis": "The question explicitly asks for the candidate's own contribution."
+        }
+      ],
+      "optionalEvidenceKindIds": ["team-context", "technical-detail"],
+      "allowedGateIssueTypes": [
+        "NOT_ANSWERING_QUESTION",
+        "OWNERSHIP_AMBIGUOUS"
+      ]
+    },
+    {
+      "id": "technical-choice",
+      "surfaceQuestion": "What important technical approach did you choose, and why did you choose it?",
+      "primaryTargetId": "technical-reasoning",
+      "requiredEvidence": [
+        {
+          "evidenceKindId": "decision-rationale",
+          "surfaceQuestionBasis": "The question explicitly asks for the reasoning behind a technical choice."
+        }
+      ],
+      "optionalEvidenceKindIds": ["technical-detail"],
+      "allowedGateIssueTypes": [
+        "NOT_ANSWERING_QUESTION",
+        "VAGUE_WITHOUT_EVIDENCE"
+      ]
+    },
+    {
+      "id": "results-and-validation",
+      "surfaceQuestion": "What result did you observe, and how did you validate it?",
+      "primaryTargetId": "evidence-based-result",
+      "requiredEvidence": [
+        {
+          "evidenceKindId": "observed-result",
+          "surfaceQuestionBasis": "The question explicitly asks for an observed result."
+        },
+        {
+          "evidenceKindId": "validation-method",
+          "surfaceQuestionBasis": "The question explicitly asks how the result was validated."
+        }
+      ],
+      "optionalEvidenceKindIds": ["technical-detail"],
+      "allowedGateIssueTypes": [
+        "NOT_ANSWERING_QUESTION",
+        "VAGUE_WITHOUT_EVIDENCE"
+      ]
+    },
+    {
+      "id": "challenge-and-iteration",
+      "surfaceQuestion": "Describe a significant problem during the work, what you changed, and what happened afterward.",
+      "primaryTargetId": "iteration-and-recovery",
+      "requiredEvidence": [
+        {
+          "evidenceKindId": "iteration-evidence",
+          "surfaceQuestionBasis": "The question explicitly asks for the problem, response, and resulting change."
+        }
+      ],
+      "optionalEvidenceKindIds": ["technical-detail", "team-context"],
+      "allowedGateIssueTypes": [
+        "NOT_ANSWERING_QUESTION",
+        "VAGUE_WITHOUT_EVIDENCE"
+      ]
+    },
+    {
+      "id": "limitations-and-boundaries",
+      "surfaceQuestion": "What could your work not establish, and what uncertainty remained?",
+      "primaryTargetId": "boundary-awareness",
+      "requiredEvidence": [
+        {
+          "evidenceKindId": "limitation",
+          "surfaceQuestionBasis": "The question explicitly asks for a limitation or remaining uncertainty."
+        }
+      ],
+      "optionalEvidenceKindIds": ["validation-method"],
+      "allowedGateIssueTypes": ["NOT_ANSWERING_QUESTION"]
+    }
+  ],
+  "hints": {
+    "planner": [
+      "Select one family that follows naturally from the candidate's stated project or research context.",
+      "Keep one primary target and require only evidence that the generated surface question explicitly asks for.",
+      "Freeze the target, evidence split, and allowed issue types before the answer starts."
+    ],
+    "evaluator": [
+      "Evaluate question alignment, explicitly required evidence, and personal ownership only.",
+      "Allow brief setup, team context, and self-correction before treating an issue as persistent.",
+      "Do not judge specialist factual truth or require a number when the candidate honestly states that no reliable measurement exists."
+    ]
+  }
+}

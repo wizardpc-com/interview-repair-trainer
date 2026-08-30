@@ -1,6 +1,6 @@
 # Architecture
 
-The repository keeps portable interview assets separate from product execution. The current code contains the scaffold, Stage 1 domain contracts, and the Stage 2 deterministic Gate Arbiter policy; this document freezes the remaining text-first MVP boundaries rather than claiming those runtime features are implemented.
+The repository keeps portable interview assets separate from product execution. The current code contains the scaffold, Stage 1 domain contracts, the Stage 2 deterministic Gate Arbiter policy, and the Stage 3 core protocol plus one project/research deep-dive scenario; this document freezes the remaining text-first MVP boundaries rather than claiming those runtime features are implemented.
 
 | Layer | Responsibility | Location |
 | --- | --- | --- |
