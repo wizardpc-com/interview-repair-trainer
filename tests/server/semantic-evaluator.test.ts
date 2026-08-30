@@ -614,6 +614,61 @@ describe("semantic evaluator orchestration", () => {
     });
   });
 
+  it("single-flights duplicate completion across INTERIM and FINAL evaluation", async () => {
+    const pendingInterim = deferred<LlmResult<SemanticCheckResult>>();
+    const pendingFinal = deferred<LlmResult<SemanticCheckResult>>();
+    let callCount = 0;
+    const harness = createHarness(
+      whyPlan,
+      async () => {
+        callCount += 1;
+        return callCount === 1 ? pendingInterim.promise : pendingFinal.promise;
+      },
+      {
+        transcript: "我只说明了方法的定义、输入和执行步骤，没有给出选择理由。",
+        checkpointKind: "INTERIM",
+      },
+    );
+
+    const interimEvaluation = harness.service.evaluateCheckpoint(
+      harness.sessionId,
+      harness.identity,
+    );
+    const firstCompletion = harness.service.complete(harness.sessionId);
+    const secondCompletion = harness.service.complete(harness.sessionId);
+
+    expect(firstCompletion).toBe(secondCompletion);
+    const interimInput = harness.evaluateSemanticCheckpoint.mock.calls[0]?.[0];
+    if (interimInput === undefined) {
+      throw new Error("Expected the INTERIM evaluator input");
+    }
+    pendingInterim.resolve({ ok: true, value: continueResult(interimInput) });
+    await expect(interimEvaluation).resolves.toMatchObject({
+      state: "ANSWERING",
+    });
+    await vi.waitFor(() => {
+      expect(harness.evaluateSemanticCheckpoint).toHaveBeenCalledTimes(2);
+    });
+
+    expect(harness.service.getPublic(harness.sessionId).state).toBe("ANSWERING");
+    const finalInput = harness.evaluateSemanticCheckpoint.mock.calls[1]?.[0];
+    if (finalInput === undefined) {
+      throw new Error("Expected the FINAL evaluator input");
+    }
+    expect(finalInput.checkpointKind).toBe("FINAL");
+    pendingFinal.resolve({
+      ok: true,
+      value: issueResult(finalInput, "NOT_ANSWERING_QUESTION", {
+        kind: "PRIMARY_TARGET",
+        id: "technical-reasoning",
+      }),
+    });
+
+    await expect(firstCompletion).resolves.toMatchObject({ state: "REPAIR" });
+    await expect(secondCompletion).resolves.toMatchObject({ state: "REPAIR" });
+    expect(harness.evaluateSemanticCheckpoint).toHaveBeenCalledTimes(2);
+  });
+
   it("keeps COMPLETE in REPAIR when the forced FINAL checkpoint gates", async () => {
     const harness = createHarness(
       whyPlan,

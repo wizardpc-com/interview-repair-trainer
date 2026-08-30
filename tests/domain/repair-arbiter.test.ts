@@ -155,6 +155,30 @@ describe("Repair Arbiter", () => {
     ).toBe("SUCCESSFUL");
   });
 
+  it("does not apply an honest-boundary exception to another required criterion", () => {
+    expect(
+      arbitrateRepair(
+        repairInput({
+          originalIssueType: "VAGUE_WITHOUT_EVIDENCE",
+          originalTriggeringCriterion: {
+            kind: "REQUIRED_EVIDENCE",
+            id: "validation",
+          },
+          honestNoMeasurementSatisfiesOriginalCriterion: true,
+          semanticResult: {
+            ...unresolvedResult,
+            issueType: "VAGUE_WITHOUT_EVIDENCE",
+            triggeringCriterion: {
+              kind: "REQUIRED_EVIDENCE",
+              id: "personal-action",
+            },
+            answerBoundary: "HONEST_NO_MEASUREMENT",
+          },
+        }),
+      ),
+    ).toBe("UNRESOLVED");
+  });
+
   it("keeps a reason repair unresolved when the supported primary issue remains", () => {
     expect(arbitrateRepair(repairInput())).toBe("UNRESOLVED");
   });

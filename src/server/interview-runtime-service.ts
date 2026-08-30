@@ -174,6 +174,10 @@ export class InterviewRuntimeService {
   readonly #checkpointHeuristic: CheckpointHeuristic;
   readonly #semanticGateHeuristic: SemanticGateHeuristic;
   readonly #inFlightEvaluations = new Map<string, InFlightEvaluation>();
+  readonly #inFlightInitialCompletions = new Map<
+    string,
+    Promise<PublicInterviewRuntimeDto>
+  >();
 
   constructor(
     private readonly sessionStore: InMemoryInterviewSessionStore,
@@ -296,12 +300,23 @@ export class InterviewRuntimeService {
       return Promise.resolve(toPublicInterviewRuntime(session));
     }
 
-    const inFlight = this.#inFlightEvaluations.get(sessionId);
-    if (inFlight !== undefined) {
-      return inFlight.promise.then(() => this.completeInitialAnswer(sessionId));
+    const existingCompletion = this.#inFlightInitialCompletions.get(sessionId);
+    if (existingCompletion !== undefined) {
+      return existingCompletion;
     }
 
-    return this.completeInitialAnswer(sessionId);
+    const inFlight = this.#inFlightEvaluations.get(sessionId);
+    const completion =
+      inFlight === undefined
+        ? this.completeInitialAnswer(sessionId)
+        : inFlight.promise.then(() => this.completeInitialAnswer(sessionId));
+    const promise = completion.finally(() => {
+      if (this.#inFlightInitialCompletions.get(sessionId) === promise) {
+        this.#inFlightInitialCompletions.delete(sessionId);
+      }
+    });
+    this.#inFlightInitialCompletions.set(sessionId, promise);
+    return promise;
   }
 
   private async completeInitialAnswer(

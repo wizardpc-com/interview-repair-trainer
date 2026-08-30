@@ -650,6 +650,7 @@ export function completeRepair(
     question.hardGate === null ||
     question.gateCount !== 1 ||
     question.latestCheckpoint === null ||
+    question.latestCheckpoint.kind !== "FINAL" ||
     question.latestCheckpoint.answerVersion !== question.answerVersion ||
     question.latestCheckpoint.transcriptSnapshot !== question.transcript ||
     afterEvaluation.questionId !== question.questionId ||

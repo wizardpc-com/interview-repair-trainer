@@ -405,7 +405,7 @@ describe("text-first interview runtime", () => {
     const gated = gatedRuntime();
     let runtime = startReanswer(gated.runtime, 3_000);
     runtime = updateTranscript(runtime, "I chose it to meet the latency budget.");
-    const checkpointed = createCheckpoint(runtime, 4_000);
+    const checkpointed = createCheckpoint(runtime, 4_000, "FINAL");
     const afterEvaluation = {
       questionId: "question-1",
       checkpointVersion: checkpointed.checkpoint.checkpointVersion,
@@ -445,7 +445,7 @@ describe("text-first interview runtime", () => {
     const gated = gatedRuntime();
     let runtime = startReanswer(gated.runtime, 3_000);
     runtime = updateTranscript(runtime, "It was suitable for the edge device.");
-    const checkpointed = createCheckpoint(runtime, 4_000);
+    const checkpointed = createCheckpoint(runtime, 4_000, "FINAL");
     const afterEvaluation = issueResult(
       checkpointed.checkpoint.checkpointVersion,
     );
@@ -480,6 +480,22 @@ describe("text-first interview runtime", () => {
     ).toThrow("does not match the current re-answer checkpoint");
 
     const checkpointed = createCheckpoint(runtime, 4_000);
+    const currentAfter = {
+      questionId: "question-1",
+      checkpointVersion: checkpointed.checkpoint.checkpointVersion,
+      decision: "CONTINUE",
+      issueType: null,
+      confidence: 0.9,
+      gateability: "UNCERTAIN",
+      answerBoundary: "NONE",
+      triggeringCriterion: null,
+      issueExplanation: null,
+      repairCue: null,
+    } satisfies SemanticCheckResult;
+    expect(() =>
+      completeRepair(checkpointed.runtime, currentAfter, "SUCCESSFUL"),
+    ).toThrow("does not match the current re-answer checkpoint");
+
     runtime = updateTranscript(
       checkpointed.runtime,
       "I chose it for both memory and latency constraints.",

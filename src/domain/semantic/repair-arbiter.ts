@@ -88,6 +88,10 @@ export function arbitrateRepair(input: RepairArbiterInput): RepairOutcome {
     result.issueType === "VAGUE_WITHOUT_EVIDENCE" &&
     input.originalTriggeringCriterion.kind === "REQUIRED_EVIDENCE" &&
     result.triggeringCriterion.kind === "REQUIRED_EVIDENCE" &&
+    sameCriterion(
+      result.triggeringCriterion,
+      input.originalTriggeringCriterion,
+    ) &&
     input.honestNoMeasurementSatisfiesOriginalCriterion
   ) {
     return "SUCCESSFUL";
