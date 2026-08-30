@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "postbuild": "node scripts/prepare-standalone.mjs",
     "start": "node .next/standalone/server.js",
     "test": "vitest run",
     "test:golden:ownership:qwen": "node --env-file=.env.local ./node_modules/vitest/vitest.mjs run --config vitest.golden-ownership.config.mts",
