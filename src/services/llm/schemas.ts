@@ -225,6 +225,29 @@ const gateCriterionSchema = z.discriminatedUnion("kind", [
     .strict(),
 ]);
 
+const semanticCheckStructuredOutputSchema = z
+  .object({
+    ...semanticMetadata,
+    decision: z.enum(["CONTINUE", "ISSUE_DETECTED"]),
+    issueType: gateIssueTypeSchema.nullable(),
+    triggeringCriterion: gateCriterionSchema.nullable(),
+    issueExplanation: nonEmptyString.max(500).nullable(),
+    repairCue: nonEmptyString.max(300).nullable(),
+  })
+  .strict();
+
+function toProviderJsonSchema(schema: z.ZodType) {
+  const { $schema: _dialect, ...jsonSchema } = z.toJSONSchema(schema, {
+    target: "draft-7",
+  });
+  return jsonSchema;
+}
+
+export const questionPlanJsonSchema = toProviderJsonSchema(questionPlanSchema);
+export const semanticCheckResultJsonSchema = toProviderJsonSchema(
+  semanticCheckStructuredOutputSchema,
+);
+
 export const semanticCheckResultSchema = z.discriminatedUnion("decision", [
   z
     .object({

@@ -1,4 +1,5 @@
 import type { QuestionPlan } from "../../domain/interview/contracts";
+import type { CheckpointKind } from "../../domain/interview/runtime";
 import type { InterviewScenarioPack } from "../../domain/interview/scenario";
 import type { SemanticCheckResult } from "../../domain/semantic/contracts";
 
@@ -32,6 +33,7 @@ export type EvaluateSemanticCheckpointInput = Readonly<{
   questionPlan: QuestionPlan;
   transcript: string;
   checkpointVersion: number;
+  checkpointKind: CheckpointKind;
 }>;
 
 export interface LlmService {

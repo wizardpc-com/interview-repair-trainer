@@ -7,15 +7,18 @@ import {
   isCheckpointResultStale,
   isCheckpointStale,
   MVP_CHECKPOINT_HEURISTIC,
+  MVP_FINAL_CHECKPOINT_MIN_CHARACTERS,
   MVP_SEMANTIC_GATE_HEURISTIC,
   overrideHardGate,
   prepareReanswer,
+  setSemanticIssueCandidate,
   startAnswer,
   updateTranscript,
   type CheckpointHeuristic,
   type InterviewRuntime,
   type SemanticCheckpoint,
   type SemanticGateHeuristic,
+  type SemanticIssueCandidate,
 } from "../domain/interview/runtime";
 import {
   arbitrateGate,
@@ -76,6 +79,18 @@ function sameCheckpoint(
     checkpoint.questionId === identity.questionId &&
     checkpoint.answerVersion === identity.answerVersion &&
     checkpoint.checkpointVersion === identity.checkpointVersion
+  );
+}
+
+function sameCandidateIssue(
+  candidate: SemanticIssueCandidate,
+  issueType: SemanticIssueCandidate["issueType"],
+  criterion: GateCriterion,
+): boolean {
+  return (
+    candidate.issueType === issueType &&
+    candidate.triggeringCriterion.kind === criterion.kind &&
+    candidate.triggeringCriterion.id === criterion.id
   );
 }
 
@@ -160,10 +175,11 @@ export class InterviewRuntimeService {
       now,
       this.hasInFlightEvaluation(sessionId, question.questionId),
       this.#checkpointHeuristic,
+      "INTERIM",
     );
 
     if (eligibility.eligible) {
-      runtime = createCheckpoint(runtime, now).runtime;
+      runtime = createCheckpoint(runtime, now, "INTERIM").runtime;
     }
 
     return this.saveAndPublish(sessionId, runtime);
@@ -215,21 +231,56 @@ export class InterviewRuntimeService {
     return this.saveAndPublish(sessionId, runtime);
   }
 
-  complete(sessionId: string): PublicInterviewRuntimeDto {
-    const session = this.requireSession(sessionId);
+  async complete(sessionId: string): Promise<PublicInterviewRuntimeDto> {
+    const inFlight = this.#inFlightEvaluations.get(sessionId);
+    if (inFlight !== undefined) {
+      await inFlight.promise;
+    }
+
+    let session = this.requireSession(sessionId);
     let runtime = session.runtime;
-    const question = runtime.questions[runtime.currentQuestionIndex];
+    let question = runtime.questions[runtime.currentQuestionIndex];
 
     if (question === undefined) {
       throw new Error("Stored runtime has no current question");
     }
+    if (question.state !== "ANSWERING") {
+      return toPublicInterviewRuntime(session);
+    }
 
     if (
-      question.transcript.trim().length > 0 &&
-      (question.latestCheckpoint === null ||
-        isCheckpointStale(question.latestCheckpoint, runtime))
+      question.transcript.trim().length <
+      MVP_FINAL_CHECKPOINT_MIN_CHARACTERS
     ) {
-      runtime = createCheckpoint(runtime, this.#now()).runtime;
+      runtime = completeAnswer(runtime);
+      return this.saveAndPublish(sessionId, runtime);
+    }
+
+    const finalCheckpoint = createCheckpoint(runtime, this.#now(), "FINAL");
+    runtime = finalCheckpoint.runtime;
+    this.saveAndPublish(sessionId, runtime);
+
+    const identity: CheckpointIdentity = {
+      questionId: finalCheckpoint.checkpoint.questionId,
+      answerVersion: finalCheckpoint.checkpoint.answerVersion,
+      checkpointVersion: finalCheckpoint.checkpoint.checkpointVersion,
+    };
+    const evaluated = await this.evaluateCheckpoint(sessionId, identity);
+    if (evaluated.state !== "ANSWERING") {
+      return evaluated;
+    }
+
+    session = this.requireSession(sessionId);
+    runtime = session.runtime;
+    question = runtime.questions[runtime.currentQuestionIndex];
+    if (
+      question === undefined ||
+      question.state !== "ANSWERING" ||
+      question.latestCheckpoint?.kind !== "FINAL" ||
+      !sameCheckpoint(question.latestCheckpoint, identity) ||
+      isCheckpointStale(question.latestCheckpoint, runtime)
+    ) {
+      return toPublicInterviewRuntime(session);
     }
 
     runtime = completeAnswer(runtime);
@@ -262,20 +313,23 @@ export class InterviewRuntimeService {
       questionPlan,
       transcript: checkpoint.transcriptSnapshot,
       checkpointVersion: checkpoint.checkpointVersion,
+      checkpointKind: checkpoint.kind,
     });
 
     const latestSession = this.requireSession(initialSession.sessionId);
-    if (!evaluation.ok) {
+    if (isCheckpointStale(checkpoint, latestSession.runtime)) {
       return toPublicInterviewRuntime(latestSession);
+    }
+    if (!evaluation.ok) {
+      return this.clearSemanticIssueCandidate(latestSession);
     }
 
     const result = evaluation.value;
-    if (
-      isCheckpointStale(checkpoint, latestSession.runtime) ||
-      isCheckpointResultStale(result, latestSession.runtime) ||
-      result.decision !== "ISSUE_DETECTED"
-    ) {
+    if (isCheckpointResultStale(result, latestSession.runtime)) {
       return toPublicInterviewRuntime(latestSession);
+    }
+    if (result.decision !== "ISSUE_DETECTED") {
+      return this.clearSemanticIssueCandidate(latestSession);
     }
 
     const question = latestSession.runtime.questions[questionIndex];
@@ -285,7 +339,8 @@ export class InterviewRuntimeService {
 
     const transcriptCharacters = checkpoint.transcriptSnapshot.trim().length;
     const answerDurationMs = checkpoint.createdAt - question.answerStartedAt;
-    const gateDecision = arbitrateGate({
+    const isFinalCheckpoint = checkpoint.kind === "FINAL";
+    const gateDecisionIfPersistent = arbitrateGate({
       questionPlan,
       interviewState: latestSession.runtime.interviewState,
       questionState: question,
@@ -298,18 +353,40 @@ export class InterviewRuntimeService {
         result.triggeringCriterion,
       ),
       hasSufficientAnswerContext:
-        transcriptCharacters >=
-          this.#semanticGateHeuristic.minContextCharacters &&
-        answerDurationMs >= this.#semanticGateHeuristic.minContextDurationMs,
-      issueIsPersistent:
-        transcriptCharacters >=
-          this.#semanticGateHeuristic.minPersistentCharacters &&
-        answerDurationMs >=
-          this.#semanticGateHeuristic.minPersistentDurationMs,
+        isFinalCheckpoint
+          ? transcriptCharacters >= MVP_FINAL_CHECKPOINT_MIN_CHARACTERS
+          : transcriptCharacters >=
+                this.#semanticGateHeuristic.minContextCharacters &&
+              answerDurationMs >=
+                this.#semanticGateHeuristic.minContextDurationMs,
+      issueIsPersistent: true,
     });
 
-    if (gateDecision !== "GATE") {
-      return toPublicInterviewRuntime(latestSession);
+    if (gateDecisionIfPersistent !== "GATE") {
+      return this.clearSemanticIssueCandidate(latestSession);
+    }
+
+    if (!isFinalCheckpoint) {
+      const candidate = question.semanticIssueCandidate;
+      if (
+        candidate === null ||
+        !sameCandidateIssue(candidate, result.issueType, result.triggeringCriterion)
+      ) {
+        const runtime = setSemanticIssueCandidate(latestSession.runtime, {
+          issueType: result.issueType,
+          triggeringCriterion: result.triggeringCriterion,
+          answerVersion: checkpoint.answerVersion,
+          checkpointVersion: checkpoint.checkpointVersion,
+        });
+        return this.saveAndPublish(initialSession.sessionId, runtime);
+      }
+
+      if (
+        candidate.answerVersion >= checkpoint.answerVersion ||
+        candidate.checkpointVersion >= checkpoint.checkpointVersion
+      ) {
+        return toPublicInterviewRuntime(latestSession);
+      }
     }
 
     const presentation = createHardGatePresentation(questionPlan, result);
@@ -321,6 +398,24 @@ export class InterviewRuntimeService {
       ...presentation,
     });
     return this.saveAndPublish(initialSession.sessionId, runtime);
+  }
+
+  private clearSemanticIssueCandidate(
+    session: InterviewSession,
+  ): PublicInterviewRuntimeDto {
+    const question = session.runtime.questions[session.runtime.currentQuestionIndex];
+    if (
+      question === undefined ||
+      question.state !== "ANSWERING" ||
+      question.semanticIssueCandidate === null
+    ) {
+      return toPublicInterviewRuntime(session);
+    }
+
+    return this.saveAndPublish(
+      session.sessionId,
+      setSemanticIssueCandidate(session.runtime, null),
+    );
   }
 
   private requireSession(sessionId: string): InterviewSession {

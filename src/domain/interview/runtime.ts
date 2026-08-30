@@ -16,12 +16,12 @@ export const MVP_CHECKPOINT_HEURISTIC = Object.freeze({
   minCheckpointIntervalMs: 8_000,
 });
 
+export const MVP_FINAL_CHECKPOINT_MIN_CHARACTERS = 4;
+
 /** MVP tunable heuristic; confidence is an uncalibrated gating input. */
 export const MVP_SEMANTIC_GATE_HEURISTIC = Object.freeze({
   minContextCharacters: 80,
   minContextDurationMs: 5_000,
-  minPersistentCharacters: 120,
-  minPersistentDurationMs: 10_000,
   minConfidence: 0.8,
 });
 
@@ -34,10 +34,11 @@ export type CheckpointHeuristic = Readonly<{
 export type SemanticGateHeuristic = Readonly<{
   minContextCharacters: number;
   minContextDurationMs: number;
-  minPersistentCharacters: number;
-  minPersistentDurationMs: number;
   minConfidence: number;
 }>;
+
+export const CHECKPOINT_KINDS = ["INTERIM", "FINAL"] as const;
+export type CheckpointKind = (typeof CHECKPOINT_KINDS)[number];
 
 export type SemanticCheckpoint = Readonly<{
   sessionId: string;
@@ -46,6 +47,14 @@ export type SemanticCheckpoint = Readonly<{
   checkpointVersion: number;
   transcriptSnapshot: string;
   createdAt: number;
+  kind: CheckpointKind;
+}>;
+
+export type SemanticIssueCandidate = Readonly<{
+  issueType: GateIssueType;
+  triggeringCriterion: GateCriterion;
+  answerVersion: number;
+  checkpointVersion: number;
 }>;
 
 export type HardGateInterruption = Readonly<{
@@ -74,6 +83,7 @@ export type AnswerRuntimeState = QuestionRuntimeState &
     hardGate: HardGateInterruption | null;
     gateOverride: GateOverrideRecord | null;
     repairStatus: RepairStatus | null;
+    semanticIssueCandidate: SemanticIssueCandidate | null;
   }>;
 
 export type InterviewRuntime = Readonly<{
@@ -142,6 +152,15 @@ function freezeQuestionState(
       state.gateOverride === null
         ? null
         : Object.freeze({ ...state.gateOverride }),
+    semanticIssueCandidate:
+      state.semanticIssueCandidate === null
+        ? null
+        : Object.freeze({
+            ...state.semanticIssueCandidate,
+            triggeringCriterion: Object.freeze({
+              ...state.semanticIssueCandidate.triggeringCriterion,
+            }),
+          }),
   });
 }
 
@@ -243,6 +262,7 @@ export function createInterviewRuntime(
       hardGate: null,
       gateOverride: null,
       repairStatus: null,
+      semanticIssueCandidate: null,
     })),
   });
 }
@@ -288,6 +308,7 @@ export function getCheckpointEligibility(
   now: number,
   isRequestInFlight: boolean,
   heuristic: CheckpointHeuristic = MVP_CHECKPOINT_HEURISTIC,
+  kind: CheckpointKind = "INTERIM",
 ): CheckpointEligibility {
   const question = currentQuestion(runtime);
 
@@ -300,11 +321,21 @@ export function getCheckpointEligibility(
   if (question.gateCount !== 0) {
     return { eligible: false, reason: "GATE_CAPACITY_EXHAUSTED" };
   }
-  if (question.latestCheckpoint?.answerVersion === question.answerVersion) {
+  if (
+    question.latestCheckpoint?.answerVersion === question.answerVersion &&
+    (kind === "INTERIM" || question.latestCheckpoint.kind === "FINAL")
+  ) {
     return { eligible: false, reason: "ANSWER_UNCHANGED" };
   }
-  if (question.transcript.trim().length < heuristic.minTranscriptCharacters) {
+  const minimumTranscriptCharacters =
+    kind === "FINAL"
+      ? MVP_FINAL_CHECKPOINT_MIN_CHARACTERS
+      : heuristic.minTranscriptCharacters;
+  if (question.transcript.trim().length < minimumTranscriptCharacters) {
     return { eligible: false, reason: "TRANSCRIPT_TOO_SHORT" };
+  }
+  if (kind === "FINAL") {
+    return { eligible: true, reason: "ELIGIBLE" };
   }
   if (now - question.answerStartedAt < heuristic.minAnswerDurationMs) {
     return { eligible: false, reason: "ANSWER_TOO_NEW" };
@@ -322,6 +353,7 @@ export function getCheckpointEligibility(
 export function createCheckpoint(
   runtime: InterviewRuntime,
   createdAt: number,
+  kind: CheckpointKind = "INTERIM",
 ): Readonly<{ runtime: InterviewRuntime; checkpoint: SemanticCheckpoint }> {
   const question = currentQuestion(runtime);
   assertAnswering(question);
@@ -340,6 +372,7 @@ export function createCheckpoint(
     checkpointVersion: question.checkpointVersion + 1,
     transcriptSnapshot: question.transcript,
     createdAt,
+    kind,
   });
 
   return Object.freeze({
@@ -350,6 +383,27 @@ export function createCheckpoint(
       lastCheckpointAt: createdAt,
       latestCheckpoint: checkpoint,
     }),
+  });
+}
+
+export function setSemanticIssueCandidate(
+  runtime: InterviewRuntime,
+  candidate: SemanticIssueCandidate | null,
+): InterviewRuntime {
+  const question = currentQuestion(runtime);
+  assertAnswering(question);
+
+  const current = question.semanticIssueCandidate;
+  if (
+    current === candidate ||
+    (current === null && candidate === null)
+  ) {
+    return runtime;
+  }
+
+  return replaceCurrentQuestion(runtime, {
+    ...question,
+    semanticIssueCandidate: candidate,
   });
 }
 
@@ -418,6 +472,7 @@ export function interruptForHardGate(
     gateOverride: null,
     repairStatus: "GATE_PENDING",
     latestCheckpoint: null,
+    semanticIssueCandidate: null,
   });
 }
 
@@ -449,6 +504,7 @@ export function overrideHardGate(
     }),
     repairStatus: null,
     latestCheckpoint: null,
+    semanticIssueCandidate: null,
   });
 }
 
@@ -498,7 +554,7 @@ export function completeAnswer(runtime: InterviewRuntime): InterviewRuntime {
 
   return replaceCurrentQuestion(
     runtime,
-    { ...question, state: "QUESTION_DONE" },
+    { ...question, state: "QUESTION_DONE", semanticIssueCandidate: null },
     interviewState,
     nextQuestion === undefined ? runtime.currentQuestionIndex : nextQuestionIndex,
   );

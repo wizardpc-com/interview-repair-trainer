@@ -56,7 +56,7 @@ export async function POST(
         runtime = runtimeService.prepareReanswer(sessionId);
         break;
       case "COMPLETE":
-        runtime = runtimeService.complete(sessionId);
+        runtime = await runtimeService.complete(sessionId);
         break;
     }
 

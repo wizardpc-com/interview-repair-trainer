@@ -7,6 +7,10 @@
     "build": "next build",
     "start": "node .next/standalone/server.js",
     "test": "vitest run",
+    "test:golden:focus:qwen": "node --env-file=.env.local ./node_modules/vitest/vitest.mjs run --config vitest.golden-focus.config.mts",
+    "test:golden:full-once:qwen": "node --env-file=.env.local ./node_modules/vitest/vitest.mjs run --config vitest.golden-full-once.config.mts",
+    "test:golden:qwen": "node --env-file=.env.local ./node_modules/vitest/vitest.mjs run --config vitest.golden.config.mts",
+    "test:golden:planner:qwen": "node --env-file=.env.local ./node_modules/vitest/vitest.mjs run --config vitest.planner-golden.config.mts",
     "test:watch": "vitest"
   },
   "dependencies": {

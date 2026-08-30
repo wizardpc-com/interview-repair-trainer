@@ -11,11 +11,18 @@ import type {
 import {
   createQuestionPlanSchema,
   createSemanticCheckResultSchema,
+  questionPlanJsonSchema,
+  semanticCheckResultJsonSchema,
 } from "./schemas";
 
 type ChatMessage = Readonly<{
   role: "system" | "user";
   content: string;
+}>;
+
+type StrictStructuredOutput = Readonly<{
+  name: string;
+  schema: Readonly<Record<string, unknown>>;
 }>;
 
 const QWEN_REQUEST_TIMEOUT_MS = 60_000;
@@ -126,8 +133,18 @@ function semanticCheckpointMessages(
         "Do not write user-facing feedback and do not criticize or infer the candidate's attitude, honesty, confidence, intelligence, or interview readiness.",
         "Judge only the frozen surface question, primary target, and explicitly required evidence; do not judge specialist factual truth.",
         "Detect at most one of NOT_ANSWERING_QUESTION, VAGUE_WITHOUT_EVIDENCE, or OWNERSHIP_AMBIGUOUS.",
+        "Assess every dimension explicitly requested by the surface question and requiredEvidence independently.",
+        "Use NOT_ANSWERING_QUESTION only when the answer completely omits or substitutes for an explicitly requested dimension. If every required dimension is addressed, never use NOT_ANSWERING_QUESTION.",
+        "Judge dimension presence before evidence quality. Material that answers one dimension does not implicitly answer another: a result or metric does not answer how it was validated, implementation activity does not answer why a choice was made, and team activity does not answer personal ownership.",
+        "Use VAGUE_WITHOUT_EVIDENCE only after the answer addresses that same required dimension but its claim, explanation, or validation lacks a concrete basis. Never use it for a completely omitted dimension.",
+        "Apply this ownership threshold before assigning any issue: an explicit first-person statement that the candidate was responsible for, owned, or handled a named work area, subsystem, component, function, artifact, or task fully satisfies basic ownership. For ownership, return CONTINUE even when that statement is terse, broad, or lacks implementation detail; neither OWNERSHIP_AMBIGUOUS nor VAGUE_WITHOUT_EVIDENCE is allowed solely because more detail could be requested.",
+        "A list of named responsibility objects governed by one explicit first-person responsibility phrase counts as personal contribution; do not require a separate action verb for every listed object.",
+        "A title, identity, leadership status, or blanket claim of overall responsibility that names no work area or personal action does not establish personal ownership.",
+        "For a validation dimension, a described evaluation setup or method such as a test corpus, procedure, controlled run, repeated measurement, comparison, or aggregation is validation evidence. Do not demand a separate independent audit or repeated wording for every nearby result; only a bare result with no described evaluation method omits validation.",
         "When the surface question explicitly asks why, a sustained answer that only defines, describes, or implements what was chosen has not answered the reason; do not infer a rationale from technical detail alone.",
-        "Use CONTINUE when uncertain, when context is insufficient, or when the answer states an honest measurement boundary.",
+        "Use CONTINUE when semantically uncertain or when the answer states an honest measurement boundary.",
+        "For checkpointKind INTERIM only, also prefer CONTINUE when context is insufficient or the transcript is clearly unfinished or self-interrupted, even if a required dimension has not appeared yet; do not treat a transient partial answer as a complete omission.",
+        "For checkpointKind FINAL, the user has actively ended the answer. Evaluate the supplied content as complete: do not infer that it is unfinished merely because it is short, ends abruptly, or lacks elaboration, and apply the omission-versus-vagueness rules above.",
         "For ISSUE_DETECTED, identify exactly one triggeringCriterion from the primaryTarget or requiredEvidence. Never use optionalEvidence.",
         "Use gateability GATE_ELIGIBLE only for a clear issue; use UNCERTAIN for possible drift, ambiguity, or a transient partial answer.",
         "Set answerBoundary to HONEST_NO_MEASUREMENT when the candidate explicitly says no reliable measurement or validation was made, UNCERTAIN when unclear, otherwise NONE.",
@@ -143,6 +160,7 @@ function semanticCheckpointMessages(
         "Frozen QuestionPlan:",
         JSON.stringify(input.questionPlan),
         `Checkpoint version: ${input.checkpointVersion}`,
+        `Checkpoint kind: ${input.checkpointKind}`,
         "Transcript:",
         input.transcript,
         "Return JSON with exactly these fields: questionId, checkpointVersion, confidence, gateability, answerBoundary, decision, issueType, triggeringCriterion, issueExplanation, repairCue. For CONTINUE, issueType, triggeringCriterion, issueExplanation, and repairCue are null. For ISSUE_DETECTED, issueType is one supported issue, triggeringCriterion is {kind: PRIMARY_TARGET|REQUIRED_EVIDENCE, id}, and issueExplanation plus repairCue are short non-empty strings.",
@@ -181,6 +199,10 @@ export class QwenLlmService implements LlmService {
     const result = await this.requestValidated(
       questionPlanMessages(input),
       presentationSchema,
+      {
+        name: "question_plan",
+        schema: questionPlanJsonSchema,
+      },
       (decoded) => {
         const structuralResult = structuralSchema.safeParse(decoded);
         if (!structuralResult.success) {
@@ -235,12 +257,17 @@ export class QwenLlmService implements LlmService {
         input.questionPlan,
         input.checkpointVersion,
       ),
+      {
+        name: "semantic_checkpoint",
+        schema: semanticCheckResultJsonSchema,
+      },
     );
   }
 
   private async requestValidated<T>(
     messages: readonly ChatMessage[],
     schema: ZodType<T>,
+    structuredOutput: StrictStructuredOutput,
     recoverInvalid?: (decoded: unknown) => T | null,
   ): Promise<LlmResult<T>> {
     let correction =
@@ -257,7 +284,11 @@ export class QwenLlmService implements LlmService {
                 content: correction,
               },
             ];
-      const completion = await this.requestCompletion(attemptMessages, attempt);
+      const completion = await this.requestCompletion(
+        attemptMessages,
+        attempt,
+        structuredOutput,
+      );
 
       if (!completion.ok) {
         return completion;
@@ -306,6 +337,7 @@ export class QwenLlmService implements LlmService {
   private async requestCompletion(
     messages: readonly ChatMessage[],
     attempt: number,
+    structuredOutput: StrictStructuredOutput,
   ): Promise<LlmResult<string>> {
     let response: Response;
 
@@ -321,7 +353,15 @@ export class QwenLlmService implements LlmService {
           model: this.model,
           messages,
           enable_thinking: false,
-          response_format: { type: "json_object" },
+          temperature: 0,
+          response_format: {
+            type: "json_schema",
+            json_schema: {
+              name: structuredOutput.name,
+              strict: true,
+              schema: structuredOutput.schema,
+            },
+          },
         }),
       });
     } catch {

@@ -4,7 +4,10 @@ import { describe, expect, it } from "vitest";
 import scenarioData from "../../protocols/scenarios/science-engineering-project-deep-dive.json";
 import type { QuestionPlan } from "../../src/domain/interview/contracts";
 import { parseScenarioPack } from "../../src/domain/interview/scenario";
-import { publicInterviewRuntimeSchema } from "../../src/lib/interview-api-contracts";
+import {
+  answerActionRequestSchema,
+  publicInterviewRuntimeSchema,
+} from "../../src/lib/interview-api-contracts";
 import { InterviewRuntimeService } from "../../src/server/interview-runtime-service";
 import { InterviewSessionService } from "../../src/server/interview-session-service";
 import { InMemoryInterviewSessionStore } from "../../src/server/session-store";
@@ -43,8 +46,22 @@ function planningService(): LlmService {
     async generateQuestionPlan() {
       return { ok: true, value: plan };
     },
-    async evaluateSemanticCheckpoint() {
-      throw new Error("Stage 6 must not orchestrate semantic evaluation");
+    async evaluateSemanticCheckpoint(input) {
+      return {
+        ok: true,
+        value: {
+          questionId: input.questionPlan.id,
+          checkpointVersion: input.checkpointVersion,
+          confidence: 0.95,
+          gateability: "GATE_ELIGIBLE",
+          answerBoundary: "NONE",
+          decision: "CONTINUE",
+          issueType: null,
+          triggeringCriterion: null,
+          issueExplanation: null,
+          repairCue: null,
+        },
+      };
     },
   };
 }
@@ -105,15 +122,36 @@ describe("interview runtime service", () => {
       checkpointVersion: 1,
     });
     expect(updated.checkpoint?.freshness).toBe("CURRENT");
+    expect(updated.checkpoint?.kind).toBe("INTERIM");
 
-    const done = runtimeService.complete(created.session.sessionId);
+    const done = await runtimeService.complete(created.session.sessionId);
     expect(done).toMatchObject({
       state: "QUESTION_DONE",
       transcript: "I personally designed and implemented the experiment harness.",
       answerVersion: 1,
-      checkpointVersion: 1,
+      checkpointVersion: 2,
     });
     expect(done.checkpoint?.freshness).toBe("STALE");
+    expect(done.checkpoint?.kind).toBe("FINAL");
+  });
+
+  it("keeps FINAL out of the transcript update contract", () => {
+    expect(
+      answerActionRequestSchema.parse({
+        action: "UPDATE_TRANSCRIPT",
+        transcript: "stable speech snapshot",
+      }),
+    ).toEqual({
+      action: "UPDATE_TRANSCRIPT",
+      transcript: "stable speech snapshot",
+    });
+    expect(
+      answerActionRequestSchema.safeParse({
+        action: "UPDATE_TRANSCRIPT",
+        transcript: "completed answer snapshot",
+        checkpointKind: "FINAL",
+      }).success,
+    ).toBe(false);
   });
 
   it("never changes the frozen server-side QuestionPlan during runtime updates", async () => {
@@ -133,7 +171,7 @@ describe("interview runtime service", () => {
     const storedPlan = store.get("session-frozen-plan")?.questionPlans[0];
     runtimeService.start("session-frozen-plan");
     runtimeService.updateTranscript("session-frozen-plan", "My answer.");
-    runtimeService.complete("session-frozen-plan");
+    await runtimeService.complete("session-frozen-plan");
 
     expect(store.get("session-frozen-plan")?.questionPlans[0]).toBe(storedPlan);
     expect(storedPlan).toEqual(plan);

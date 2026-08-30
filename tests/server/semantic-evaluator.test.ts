@@ -1,8 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 import type { QuestionPlan } from "../../src/domain/interview/contracts";
 import {
+  createCheckpoint,
   InterviewRuntimeError,
   isCheckpointStale,
+  type CheckpointHeuristic,
+  type CheckpointKind,
   type SemanticGateHeuristic,
 } from "../../src/domain/interview/runtime";
 import type {
@@ -162,6 +165,8 @@ function createHarness(
   evaluator: Evaluator,
   options: Readonly<{
     transcript?: string;
+    checkpointKind?: CheckpointKind;
+    checkpointHeuristic?: Partial<CheckpointHeuristic>;
     semanticGateHeuristic?: Partial<SemanticGateHeuristic>;
   }> = {},
 ) {
@@ -187,8 +192,6 @@ function createHarness(
   const semanticGateHeuristic: SemanticGateHeuristic = {
     minContextCharacters: 1,
     minContextDurationMs: 0,
-    minPersistentCharacters: 1,
-    minPersistentDurationMs: 0,
     minConfidence: 0.8,
     ...options.semanticGateHeuristic,
   };
@@ -198,6 +201,7 @@ function createHarness(
       minTranscriptCharacters: 1,
       minAnswerDurationMs: 0,
       minCheckpointIntervalMs: 0,
+      ...options.checkpointHeuristic,
     },
     semanticGateHeuristic,
   });
@@ -206,7 +210,16 @@ function createHarness(
   now = 11_000;
   const transcript =
     options.transcript ?? "我先完整说明当前回答中与问题相关的事实和理由。";
-  const checkpointed = service.updateTranscript(session.sessionId, transcript);
+  let checkpointed = service.updateTranscript(session.sessionId, transcript);
+  if ((options.checkpointKind ?? "FINAL") === "FINAL") {
+    const stored = store.get(session.sessionId);
+    if (stored === null) {
+      throw new Error("Test harness lost its session");
+    }
+    const finalCheckpoint = createCheckpoint(stored.runtime, now, "FINAL");
+    store.updateRuntime(session.sessionId, finalCheckpoint.runtime);
+    checkpointed = service.getPublic(session.sessionId);
+  }
   const checkpoint = store.get(session.sessionId)?.runtime.questions[0]
     .latestCheckpoint;
   if (checkpoint === null || checkpoint === undefined) {
@@ -225,6 +238,9 @@ function createHarness(
     identity,
     service,
     sessionId: session.sessionId,
+    setNow(value: number) {
+      now = value;
+    },
     store,
     transcript,
   };
@@ -317,22 +333,88 @@ describe("semantic evaluator orchestration", () => {
     expect(runtime.hardGate?.whyPaused).toContain(fixture.expectedWhy);
   });
 
-  it.each([
-    {
-      name: "insufficient context",
-      semanticGateHeuristic: {
-        minContextCharacters: 200,
-        minPersistentCharacters: 1,
+  it("lets a FINAL issue reach the Arbiter without interim timing thresholds", async () => {
+    const harness = createHarness(
+      whyPlan,
+      successfulEvaluator((input) =>
+        issueResult(input, "NOT_ANSWERING_QUESTION", {
+          kind: "PRIMARY_TARGET",
+          id: "technical-reasoning",
+        }),
+      ),
+      {
+        transcript: "我只介绍了这个方法的定义和工作步骤，没有解释选择理由。",
+        checkpointKind: "FINAL",
+        checkpointHeuristic: {
+          minTranscriptCharacters: 10_000,
+          minAnswerDurationMs: 60_000,
+          minCheckpointIntervalMs: 60_000,
+        },
+        semanticGateHeuristic: {
+          minContextCharacters: 10_000,
+          minContextDurationMs: 60_000,
+        },
       },
-    },
-    {
-      name: "non-persistent issue",
-      semanticGateHeuristic: {
-        minContextCharacters: 1,
-        minPersistentCharacters: 200,
-      },
-    },
-  ])("fails open for $name", async ({ semanticGateHeuristic }) => {
+    );
+
+    expect(harness.checkpoint.kind).toBe("FINAL");
+    await expect(
+      harness.service.evaluateCheckpoint(harness.sessionId, harness.identity),
+    ).resolves.toMatchObject({ state: "REPAIR" });
+    expect(harness.evaluateSemanticCheckpoint).toHaveBeenCalledWith(
+      expect.objectContaining({ checkpointKind: "FINAL" }),
+    );
+  });
+
+  it("requires the same issue on a newer stable INTERIM checkpoint", async () => {
+    const evaluator = successfulEvaluator((input) =>
+      issueResult(input, "NOT_ANSWERING_QUESTION", {
+        kind: "PRIMARY_TARGET",
+        id: "technical-reasoning",
+      }),
+    );
+    const harness = createHarness(whyPlan, evaluator, {
+      transcript: "我先介绍这个方法是什么，以及它按哪些步骤工作。",
+      checkpointKind: "INTERIM",
+    });
+
+    const first = await harness.service.evaluateCheckpoint(
+      harness.sessionId,
+      harness.identity,
+    );
+    expect(harness.evaluateSemanticCheckpoint).toHaveBeenCalledWith(
+      expect.objectContaining({ checkpointKind: "INTERIM" }),
+    );
+    const firstQuestion = harness.store.get(harness.sessionId)?.runtime.questions[0];
+    expect(first).toMatchObject({ state: "ANSWERING", hardGate: null });
+    expect(firstQuestion?.semanticIssueCandidate).toMatchObject({
+      issueType: "NOT_ANSWERING_QUESTION",
+      answerVersion: harness.identity.answerVersion,
+      checkpointVersion: harness.identity.checkpointVersion,
+    });
+
+    harness.setNow(20_000);
+    const secondSnapshot = harness.service.updateTranscript(
+      harness.sessionId,
+      `${harness.transcript}我继续说明它的输入、输出和执行流程。`,
+    );
+    const secondCheckpoint = harness.store.get(harness.sessionId)?.runtime.questions[0]
+      .latestCheckpoint;
+    if (secondCheckpoint === null || secondCheckpoint === undefined) {
+      throw new Error("Expected a newer INTERIM checkpoint");
+    }
+
+    expect(secondSnapshot.checkpoint?.kind).toBe("INTERIM");
+    const gated = await harness.service.evaluateCheckpoint(harness.sessionId, {
+      questionId: secondCheckpoint.questionId,
+      answerVersion: secondCheckpoint.answerVersion,
+      checkpointVersion: secondCheckpoint.checkpointVersion,
+    });
+    expect(gated.state).toBe("REPAIR");
+    expect(harness.evaluateSemanticCheckpoint).toHaveBeenCalledTimes(2);
+  });
+
+  it("fails open for insufficient INTERIM context", async () => {
     const harness = createHarness(
       whyPlan,
       successfulEvaluator((input) =>
@@ -343,7 +425,10 @@ describe("semantic evaluator orchestration", () => {
       ),
       {
         transcript: "这只是尚未展开的一小段回答。",
-        semanticGateHeuristic,
+        checkpointKind: "INTERIM",
+        semanticGateHeuristic: {
+          minContextCharacters: 200,
+        },
       },
     );
 
@@ -353,6 +438,10 @@ describe("semantic evaluator orchestration", () => {
     );
 
     expect(runtime).toMatchObject({ state: "ANSWERING", hardGate: null });
+    expect(
+      harness.store.get(harness.sessionId)?.runtime.questions[0]
+        .semanticIssueCandidate,
+    ).toBeNull();
   });
 
   it.each([
@@ -480,6 +569,72 @@ describe("semantic evaluator orchestration", () => {
 
     await expect(first).resolves.toMatchObject({ state: "ANSWERING" });
     await expect(second).resolves.toMatchObject({ state: "ANSWERING" });
+  });
+
+  it("waits for an in-flight INTERIM evaluation before forcing FINAL completion", async () => {
+    const pending = deferred<LlmResult<SemanticCheckResult>>();
+    let callCount = 0;
+    const harness = createHarness(
+      whyPlan,
+      async (input) => {
+        callCount += 1;
+        return callCount === 1
+          ? pending.promise
+          : { ok: true, value: continueResult(input) };
+      },
+      { checkpointKind: "INTERIM" },
+    );
+
+    const interimEvaluation = harness.service.evaluateCheckpoint(
+      harness.sessionId,
+      harness.identity,
+    );
+    const completion = harness.service.complete(harness.sessionId);
+
+    expect(harness.evaluateSemanticCheckpoint).toHaveBeenCalledOnce();
+    const interimInput = harness.evaluateSemanticCheckpoint.mock.calls[0]?.[0];
+    if (interimInput === undefined) {
+      throw new Error("Expected the INTERIM evaluator input");
+    }
+    pending.resolve({ ok: true, value: continueResult(interimInput) });
+
+    await expect(interimEvaluation).resolves.toMatchObject({
+      state: "ANSWERING",
+    });
+    const done = await completion;
+    expect(done).toMatchObject({ state: "QUESTION_DONE" });
+    expect(done.checkpoint).toMatchObject({
+      kind: "FINAL",
+      freshness: "STALE",
+    });
+    expect(harness.evaluateSemanticCheckpoint).toHaveBeenCalledTimes(2);
+    expect(harness.evaluateSemanticCheckpoint.mock.calls[1]?.[0]).toMatchObject({
+      checkpointKind: "FINAL",
+    });
+  });
+
+  it("keeps COMPLETE in REPAIR when the forced FINAL checkpoint gates", async () => {
+    const harness = createHarness(
+      whyPlan,
+      successfulEvaluator((input) =>
+        issueResult(input, "NOT_ANSWERING_QUESTION", {
+          kind: "PRIMARY_TARGET",
+          id: "technical-reasoning",
+        }),
+      ),
+      {
+        transcript: "我只说明了方法的定义、输入和执行步骤，没有给出选择理由。",
+        checkpointKind: "INTERIM",
+      },
+    );
+
+    const gated = await harness.service.complete(harness.sessionId);
+
+    expect(gated).toMatchObject({ state: "REPAIR" });
+    expect(harness.evaluateSemanticCheckpoint).toHaveBeenCalledOnce();
+    expect(harness.evaluateSemanticCheckpoint).toHaveBeenCalledWith(
+      expect.objectContaining({ checkpointKind: "FINAL" }),
+    );
   });
 
   it("discards an in-flight result after a newer transcript version arrives", async () => {

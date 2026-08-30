@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { CHECKPOINT_KINDS } from "../domain/interview/runtime";
 import { QUESTION_STATES } from "../domain/interview/state";
 
 const nonEmptyString = z.string().trim().min(1);
@@ -49,6 +50,7 @@ const publicCheckpointSchema = z
     answerVersion: z.number().int().nonnegative(),
     checkpointVersion: z.number().int().positive(),
     createdAt: z.number().finite(),
+    kind: z.enum(CHECKPOINT_KINDS),
     freshness: z.enum(["CURRENT", "STALE"]),
   })
   .strict();
@@ -132,6 +134,7 @@ export type PublicInterviewRuntimeDto = Readonly<{
     answerVersion: number;
     checkpointVersion: number;
     createdAt: number;
+    kind: (typeof CHECKPOINT_KINDS)[number];
     freshness: "CURRENT" | "STALE";
   }> | null;
   hardGate: Readonly<{

@@ -125,6 +125,57 @@ describe("text-first interview runtime", () => {
       "CHECKPOINT_TOO_RECENT",
     );
     expect(getCheckpointEligibility(revised, 14_000, false).eligible).toBe(true);
+
+    expect(
+      getCheckpointEligibility(
+        checkpointed,
+        6_001,
+        false,
+        immediateCheckpoint,
+        "FINAL",
+      ),
+    ).toEqual({ eligible: true, reason: "ELIGIBLE" });
+  });
+
+  it("lets a non-trivial FINAL snapshot bypass interim timing thresholds", () => {
+    const started = startAnswer(
+      createInterviewRuntime("session-1", ["question-1"]),
+      1_000,
+    );
+    const tooShort = updateTranscript(started, "太短");
+    const final = updateTranscript(started, "这是一个已经结束的完整回答片段。");
+
+    expect(
+      getCheckpointEligibility(
+        tooShort,
+        1_001,
+        false,
+        immediateCheckpoint,
+        "FINAL",
+      ).reason,
+    ).toBe("TRANSCRIPT_TOO_SHORT");
+    expect(
+      getCheckpointEligibility(
+        final,
+        1_001,
+        true,
+        immediateCheckpoint,
+        "FINAL",
+      ).reason,
+    ).toBe("REQUEST_IN_FLIGHT");
+    expect(
+      getCheckpointEligibility(
+        final,
+        1_001,
+        false,
+        {
+          minTranscriptCharacters: 10_000,
+          minAnswerDurationMs: 60_000,
+          minCheckpointIntervalMs: 60_000,
+        },
+        "FINAL",
+      ),
+    ).toEqual({ eligible: true, reason: "ELIGIBLE" });
   });
 
   it("increments checkpointVersion monotonically and snapshots its answer version", () => {
@@ -133,9 +184,9 @@ describe("text-first interview runtime", () => {
       1_000,
     );
     runtime = updateTranscript(runtime, "First answer");
-    const first = createCheckpoint(runtime, 2_000);
+    const first = createCheckpoint(runtime, 2_000, "INTERIM");
     runtime = updateTranscript(first.runtime, "Revised answer");
-    const second = createCheckpoint(runtime, 3_000);
+    const second = createCheckpoint(runtime, 3_000, "FINAL");
 
     expect(first.checkpoint).toEqual({
       sessionId: "session-1",
@@ -144,11 +195,13 @@ describe("text-first interview runtime", () => {
       checkpointVersion: 1,
       transcriptSnapshot: "First answer",
       createdAt: 2_000,
+      kind: "INTERIM",
     });
     expect(second.checkpoint).toMatchObject({
       answerVersion: 2,
       checkpointVersion: 2,
       transcriptSnapshot: "Revised answer",
+      kind: "FINAL",
     });
     expect(isCheckpointStale(first.checkpoint, runtime)).toBe(true);
     expect(isCheckpointStale(second.checkpoint, second.runtime)).toBe(false);

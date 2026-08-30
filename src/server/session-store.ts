@@ -125,6 +125,7 @@ export function toPublicInterviewRuntime(
             answerVersion: checkpoint.answerVersion,
             checkpointVersion: checkpoint.checkpointVersion,
             createdAt: checkpoint.createdAt,
+            kind: checkpoint.kind,
             freshness:
               questionRuntime.state === "ANSWERING" &&
               questionRuntime.answerVersion === checkpoint.answerVersion &&

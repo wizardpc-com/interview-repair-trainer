@@ -1,0 +1,182 @@
+{
+  "generatedAt": "2026-08-30T10:55:11.773Z",
+  "suite": "Planner Golden invariants, separate from Semantic Evaluator",
+  "credentialSafety": "The serialized report was redacted and checked against the configured API key before writing.",
+  "results": [
+    {
+      "run": 1,
+      "model": "qwen3.8-flash",
+      "questionPlan": {
+        "id": "technical-choice",
+        "surfaceQuestion": "你选择了哪项重要的技术方案？为什么这样选择？",
+        "primaryTarget": {
+          "id": "technical-reasoning",
+          "description": "Explain a technical choice and the reasoning behind it."
+        },
+        "requiredEvidence": [
+          {
+            "id": "decision-rationale",
+            "description": "Reasoning or tradeoffs behind a technical choice."
+          }
+        ],
+        "optionalEvidence": [
+          {
+            "id": "technical-detail",
+            "description": "A concrete technical detail that clarifies the work."
+          }
+        ],
+        "allowedGateIssueTypes": [
+          "NOT_ANSWERING_QUESTION",
+          "VAGUE_WITHOUT_EVIDENCE"
+        ]
+      },
+      "rawAttempts": [
+        {
+          "attempt": 1,
+          "httpStatus": 200,
+          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"id\\\": \\\"technical-choice\\\",\\n  \\\"surfaceQuestion\\\": \\\"你选择了哪项重要的技术方案？为什么这样选择？\\\",\\n  \\\"primaryTarget\\\": {\\n    \\\"id\\\": \\\"technical-reasoning\\\",\\n    \\\"description\\\": \\\"Explain a technical choice and the reasoning behind it.\\\"\\n  },\\n  \\\"requiredEvidence\\\": [\\n    {\\n      \\\"id\\\": \\\"decision-rationale\\\",\\n      \\\"description\\\": \\\"Reasoning or tradeoffs behind a technical choice.\\\"\\n    }\\n  ],\\n  \\\"optionalEvidence\\\": [\\n    {\\n      \\\"id\\\": \\\"technical-detail\\\",\\n      \\\"description\\\": \\\"A concrete technical detail that clarifies the work.\\\"\\n    }\\n  ],\\n  \\\"allowedGateIssueTypes\\\": [\\n    \\\"NOT_ANSWERING_QUESTION\\\",\\n    \\\"VAGUE_WITHOUT_EVIDENCE\\\"\\n  ]\\n}\",\"role\":\"assistant\"}}],\"created\":1788087303,\"id\":\"chatcmpl-257a88a6-f3b2-9ce7-86c7-246fcdd2dd69\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":185,\"prompt_tokens\":1309,\"prompt_tokens_details\":{\"cached_tokens\":0,\"text_tokens\":1309},\"total_tokens\":1494}}",
+          "structuredOutput": "{\n  \"id\": \"technical-choice\",\n  \"surfaceQuestion\": \"你选择了哪项重要的技术方案？为什么这样选择？\",\n  \"primaryTarget\": {\n    \"id\": \"technical-reasoning\",\n    \"description\": \"Explain a technical choice and the reasoning behind it.\"\n  },\n  \"requiredEvidence\": [\n    {\n      \"id\": \"decision-rationale\",\n      \"description\": \"Reasoning or tradeoffs behind a technical choice.\"\n    }\n  ],\n  \"optionalEvidence\": [\n    {\n      \"id\": \"technical-detail\",\n      \"description\": \"A concrete technical detail that clarifies the work.\"\n    }\n  ],\n  \"allowedGateIssueTypes\": [\n    \"NOT_ANSWERING_QUESTION\",\n    \"VAGUE_WITHOUT_EVIDENCE\"\n  ]\n}",
+          "transportErrorName": null
+        }
+      ],
+      "invariants": {
+        "exactlyOnePrimaryTarget": true,
+        "requiredEvidenceExplicitlyAsked": true,
+        "optionalEvidenceCannotGate": true,
+        "planFrozenAfterAnswerStarts": true
+      }
+    },
+    {
+      "run": 2,
+      "model": "qwen3.8-flash",
+      "questionPlan": {
+        "id": "technical-choice",
+        "surfaceQuestion": "你选择了哪项重要的技术方案？为什么这样选择？",
+        "primaryTarget": {
+          "id": "technical-reasoning",
+          "description": "Explain a technical choice and the reasoning behind it."
+        },
+        "requiredEvidence": [
+          {
+            "id": "decision-rationale",
+            "description": "Reasoning or tradeoffs behind a technical choice."
+          }
+        ],
+        "optionalEvidence": [
+          {
+            "id": "technical-detail",
+            "description": "A concrete technical detail that clarifies the work."
+          }
+        ],
+        "allowedGateIssueTypes": [
+          "NOT_ANSWERING_QUESTION",
+          "VAGUE_WITHOUT_EVIDENCE"
+        ]
+      },
+      "rawAttempts": [
+        {
+          "attempt": 1,
+          "httpStatus": 200,
+          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"id\\\": \\\"technical-choice\\\",\\n  \\\"surfaceQuestion\\\": \\\"你选择了哪项重要的技术方案？为什么这样选择？\\\",\\n  \\\"primaryTarget\\\": {\\n    \\\"id\\\": \\\"technical-reasoning\\\",\\n    \\\"description\\\": \\\"Explain a technical choice and the reasoning behind it.\\\"\\n  },\\n  \\\"requiredEvidence\\\": [\\n    {\\n      \\\"id\\\": \\\"decision-rationale\\\",\\n      \\\"description\\\": \\\"Reasoning or tradeoffs behind a technical choice.\\\"\\n    }\\n  ],\\n  \\\"optionalEvidence\\\": [\\n    {\\n      \\\"id\\\": \\\"technical-detail\\\",\\n      \\\"description\\\": \\\"A concrete technical detail that clarifies the work.\\\"\\n    }\\n  ],\\n  \\\"allowedGateIssueTypes\\\": [\\n    \\\"NOT_ANSWERING_QUESTION\\\",\\n    \\\"VAGUE_WITHOUT_EVIDENCE\\\"\\n  ]\\n}\",\"role\":\"assistant\"}}],\"created\":1788087305,\"id\":\"chatcmpl-c78784cd-6c4e-992c-bb7e-091e727b1635\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":185,\"prompt_tokens\":1304,\"prompt_tokens_details\":{\"cached_tokens\":0,\"text_tokens\":1304},\"total_tokens\":1489}}",
+          "structuredOutput": "{\n  \"id\": \"technical-choice\",\n  \"surfaceQuestion\": \"你选择了哪项重要的技术方案？为什么这样选择？\",\n  \"primaryTarget\": {\n    \"id\": \"technical-reasoning\",\n    \"description\": \"Explain a technical choice and the reasoning behind it.\"\n  },\n  \"requiredEvidence\": [\n    {\n      \"id\": \"decision-rationale\",\n      \"description\": \"Reasoning or tradeoffs behind a technical choice.\"\n    }\n  ],\n  \"optionalEvidence\": [\n    {\n      \"id\": \"technical-detail\",\n      \"description\": \"A concrete technical detail that clarifies the work.\"\n    }\n  ],\n  \"allowedGateIssueTypes\": [\n    \"NOT_ANSWERING_QUESTION\",\n    \"VAGUE_WITHOUT_EVIDENCE\"\n  ]\n}",
+          "transportErrorName": null
+        }
+      ],
+      "invariants": {
+        "exactlyOnePrimaryTarget": true,
+        "requiredEvidenceExplicitlyAsked": true,
+        "optionalEvidenceCannotGate": true,
+        "planFrozenAfterAnswerStarts": true
+      }
+    },
+    {
+      "run": 3,
+      "model": "qwen3.8-flash",
+      "questionPlan": {
+        "id": "results-and-validation",
+        "surfaceQuestion": "你实际观察到了什么结果？你是如何验证这个结果的？",
+        "primaryTarget": {
+          "id": "evidence-based-result",
+          "description": "Describe an observed result and how it was validated."
+        },
+        "requiredEvidence": [
+          {
+            "id": "observed-result",
+            "description": "A result that was actually observed, or a clear statement that no reliable result was measured."
+          },
+          {
+            "id": "validation-method",
+            "description": "How an observation was checked, or a clear statement that it was not reliably validated."
+          }
+        ],
+        "optionalEvidence": [
+          {
+            "id": "technical-detail",
+            "description": "A concrete technical detail that clarifies the work."
+          }
+        ],
+        "allowedGateIssueTypes": [
+          "NOT_ANSWERING_QUESTION",
+          "VAGUE_WITHOUT_EVIDENCE"
+        ]
+      },
+      "rawAttempts": [
+        {
+          "attempt": 1,
+          "httpStatus": 200,
+          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"id\\\": \\\"results-and-validation\\\",\\n  \\\"surfaceQuestion\\\": \\\"你实际观察到了什么结果？你是如何验证这个结果的？\\\",\\n  \\\"primaryTarget\\\": {\\n    \\\"id\\\": \\\"evidence-based-result\\\",\\n    \\\"description\\\": \\\"Describe an observed result and how it was validated.\\\"\\n  },\\n  \\\"requiredEvidence\\\": [\\n    {\\n      \\\"id\\\": \\\"observed-result\\\",\\n      \\\"description\\\": \\\"A result that was actually observed, or a clear statement that no reliable result was measured.\\\"\\n    },\\n    {\\n      \\\"id\\\": \\\"validation-method\\\",\\n      \\\"description\\\": \\\"How an observation was checked, or a clear statement that it was not reliably validated.\\\"\\n    }\\n  ],\\n  \\\"optionalEvidence\\\": [\\n    {\\n      \\\"id\\\": \\\"technical-detail\\\",\\n      \\\"description\\\": \\\"A concrete technical detail that clarifies the work.\\\"\\n    }\\n  ],\\n  \\\"allowedGateIssueTypes\\\": [\\n    \\\"NOT_ANSWERING_QUESTION\\\",\\n    \\\"VAGUE_WITHOUT_EVIDENCE\\\"\\n  ]\\n}\",\"role\":\"assistant\"}}],\"created\":1788087307,\"id\":\"chatcmpl-9d1de851-68f5-955c-8b32-011263c12935\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":233,\"prompt_tokens\":1305,\"prompt_tokens_details\":{\"cached_tokens\":0,\"text_tokens\":1305},\"total_tokens\":1538}}",
+          "structuredOutput": "{\n  \"id\": \"results-and-validation\",\n  \"surfaceQuestion\": \"你实际观察到了什么结果？你是如何验证这个结果的？\",\n  \"primaryTarget\": {\n    \"id\": \"evidence-based-result\",\n    \"description\": \"Describe an observed result and how it was validated.\"\n  },\n  \"requiredEvidence\": [\n    {\n      \"id\": \"observed-result\",\n      \"description\": \"A result that was actually observed, or a clear statement that no reliable result was measured.\"\n    },\n    {\n      \"id\": \"validation-method\",\n      \"description\": \"How an observation was checked, or a clear statement that it was not reliably validated.\"\n    }\n  ],\n  \"optionalEvidence\": [\n    {\n      \"id\": \"technical-detail\",\n      \"description\": \"A concrete technical detail that clarifies the work.\"\n    }\n  ],\n  \"allowedGateIssueTypes\": [\n    \"NOT_ANSWERING_QUESTION\",\n    \"VAGUE_WITHOUT_EVIDENCE\"\n  ]\n}",
+          "transportErrorName": null
+        }
+      ],
+      "invariants": {
+        "exactlyOnePrimaryTarget": true,
+        "requiredEvidenceExplicitlyAsked": true,
+        "optionalEvidenceCannotGate": true,
+        "planFrozenAfterAnswerStarts": true
+      }
+    },
+    {
+      "run": 4,
+      "model": "qwen3.8-flash",
+      "questionPlan": {
+        "id": "limitations-and-boundaries",
+        "surfaceQuestion": "这项工作尚不能证明什么？还存在哪些不确定性？",
+        "primaryTarget": {
+          "id": "boundary-awareness",
+          "description": "State what the work could not establish and why."
+        },
+        "requiredEvidence": [
+          {
+            "id": "limitation",
+            "description": "A specific limitation, uncertainty, or unsupported conclusion."
+          }
+        ],
+        "optionalEvidence": [
+          {
+            "id": "validation-method",
+            "description": "How an observation was checked, or a clear statement that it was not reliably validated."
+          }
+        ],
+        "allowedGateIssueTypes": [
+          "NOT_ANSWERING_QUESTION"
+        ]
+      },
+      "rawAttempts": [
+        {
+          "attempt": 1,
+          "httpStatus": 200,
+          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"id\\\": \\\"limitations-and-boundaries\\\",\\n  \\\"surfaceQuestion\\\": \\\"这项工作尚不能证明什么？还存在哪些不确定性？\\\",\\n  \\\"primaryTarget\\\": {\\n    \\\"id\\\": \\\"boundary-awareness\\\",\\n    \\\"description\\\": \\\"State what the work could not establish and why.\\\"\\n  },\\n  \\\"requiredEvidence\\\": [\\n    {\\n      \\\"id\\\": \\\"limitation\\\",\\n      \\\"description\\\": \\\"A specific limitation, uncertainty, or unsupported conclusion.\\\"\\n    }\\n  ],\\n  \\\"optionalEvidence\\\": [\\n    {\\n      \\\"id\\\": \\\"validation-method\\\",\\n      \\\"description\\\": \\\"How an observation was checked, or a clear statement that it was not reliably validated.\\\"\\n    }\\n  ],\\n  \\\"allowedGateIssueTypes\\\": [\\n    \\\"NOT_ANSWERING_QUESTION\\\"\\n  ]\\n}\",\"role\":\"assistant\"}}],\"created\":1788087310,\"id\":\"chatcmpl-2c3b20c5-4422-945d-afde-160eedf081e6\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":178,\"prompt_tokens\":1306,\"prompt_tokens_details\":{\"cached_tokens\":0,\"text_tokens\":1306},\"total_tokens\":1484}}",
+          "structuredOutput": "{\n  \"id\": \"limitations-and-boundaries\",\n  \"surfaceQuestion\": \"这项工作尚不能证明什么？还存在哪些不确定性？\",\n  \"primaryTarget\": {\n    \"id\": \"boundary-awareness\",\n    \"description\": \"State what the work could not establish and why.\"\n  },\n  \"requiredEvidence\": [\n    {\n      \"id\": \"limitation\",\n      \"description\": \"A specific limitation, uncertainty, or unsupported conclusion.\"\n    }\n  ],\n  \"optionalEvidence\": [\n    {\n      \"id\": \"validation-method\",\n      \"description\": \"How an observation was checked, or a clear statement that it was not reliably validated.\"\n    }\n  ],\n  \"allowedGateIssueTypes\": [\n    \"NOT_ANSWERING_QUESTION\"\n  ]\n}",
+          "transportErrorName": null
+        }
+      ],
+      "invariants": {
+        "exactlyOnePrimaryTarget": true,
+        "requiredEvidenceExplicitlyAsked": true,
+        "optionalEvidenceCannotGate": true,
+        "planFrozenAfterAnswerStarts": true
+      }
+    }
+  ]
+}

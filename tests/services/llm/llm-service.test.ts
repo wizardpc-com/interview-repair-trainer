@@ -78,6 +78,7 @@ const evaluatorInput: EvaluateSemanticCheckpointInput = {
   questionPlan,
   transcript: "The project addressed unreliable indoor navigation for a small robot.",
   checkpointVersion: semanticResult.checkpointVersion,
+  checkpointKind: "FINAL",
 };
 
 function completionResponse(content: string): Response {
@@ -151,7 +152,22 @@ describe("provider-independent LLM service", () => {
       model: z.string(),
       messages: z.array(z.object({ content: z.string() }).passthrough()),
       enable_thinking: z.literal(false),
-      response_format: z.object({ type: z.literal("json_object") }),
+      temperature: z.literal(0),
+      response_format: z.object({
+        type: z.literal("json_schema"),
+        json_schema: z.object({
+          name: z.string(),
+          strict: z.literal(true),
+          schema: z
+            .object({
+              type: z.literal("object"),
+              properties: z.record(z.string(), z.unknown()),
+              required: z.array(z.string()),
+              additionalProperties: z.literal(false),
+            })
+            .passthrough(),
+        }),
+      }),
     });
     const requestBodies = requests.map(({ init }) =>
       requestSchema.parse(JSON.parse(String(init?.body))),
@@ -165,6 +181,47 @@ describe("provider-independent LLM service", () => {
     expect(requestBodies.every(({ enable_thinking }) => !enable_thinking)).toBe(
       true,
     );
+    expect(
+      requestBodies.map(({ response_format }) =>
+        response_format.json_schema.name,
+      ),
+    ).toEqual(["question_plan", "semantic_checkpoint"]);
+    expect(
+      requestBodies.map(({ response_format }) =>
+        response_format.json_schema.schema.required,
+      ),
+    ).toEqual([
+      [
+        "id",
+        "surfaceQuestion",
+        "primaryTarget",
+        "requiredEvidence",
+        "optionalEvidence",
+        "allowedGateIssueTypes",
+      ],
+      [
+        "questionId",
+        "checkpointVersion",
+        "confidence",
+        "gateability",
+        "answerBoundary",
+        "decision",
+        "issueType",
+        "triggeringCriterion",
+        "issueExplanation",
+        "repairCue",
+      ],
+    ]);
+    expect(
+      requestBodies.every(({ response_format }) => {
+        const { properties, required } = response_format.json_schema.schema;
+        return (
+          Object.keys(properties).length === required.length &&
+          required.every((field) => field in properties) &&
+          !("$schema" in response_format.json_schema.schema)
+        );
+      }),
+    ).toBe(true);
     expect(
       requestBodies.every(({ messages }) =>
         messages.some(({ content }) => /json/i.test(content)),
@@ -186,6 +243,77 @@ describe("provider-independent LLM service", () => {
     ]);
   });
 
+  it("states the evaluator boundaries and distinguishes INTERIM from FINAL", async () => {
+    const { fetcher, requests } = queuedFetcher([
+      completionResponse(JSON.stringify(semanticResult)),
+      completionResponse(JSON.stringify(semanticResult)),
+    ]);
+
+    const service = qwenService(fetcher);
+    await service.evaluateSemanticCheckpoint({
+      ...evaluatorInput,
+      checkpointKind: "INTERIM",
+    });
+    await service.evaluateSemanticCheckpoint({
+      ...evaluatorInput,
+      checkpointKind: "FINAL",
+    });
+
+    const prompts = requests.map(({ init }) => {
+      const request = z
+        .object({
+          messages: z.array(z.object({ content: z.string() }).passthrough()),
+        })
+        .passthrough()
+        .parse(JSON.parse(String(init?.body)));
+      return request.messages.map(({ content }) => content).join("\n");
+    });
+    const [interimPrompt, finalPrompt] = prompts;
+    expect(interimPrompt).toBeDefined();
+    expect(finalPrompt).toBeDefined();
+    const prompt = prompts.join("\n");
+
+    expect(prompt).toContain(
+      "If every required dimension is addressed, never use NOT_ANSWERING_QUESTION",
+    );
+    expect(prompt).toContain(
+      "completely omits or substitutes for an explicitly requested dimension",
+    );
+    expect(prompt).toContain(
+      "Use VAGUE_WITHOUT_EVIDENCE only after the answer addresses that same required dimension",
+    );
+    expect(prompt).toContain(
+      "Apply this ownership threshold before assigning any issue",
+    );
+    expect(prompt).toContain(
+      "return CONTINUE even when that statement is terse, broad, or lacks implementation detail",
+    );
+    expect(prompt).toContain(
+      "counts as personal contribution; do not require a separate action verb",
+    );
+    expect(prompt).toContain(
+      "a result or metric does not answer how it was validated",
+    );
+    expect(prompt).toContain(
+      "A title, identity, leadership status, or blanket claim of overall responsibility that names no work area or personal action does not establish personal ownership",
+    );
+    expect(prompt).toContain(
+      "a described evaluation setup or method",
+    );
+    expect(prompt).toContain(
+      "For checkpointKind INTERIM only, also prefer CONTINUE",
+    );
+    expect(prompt).toContain(
+      "For checkpointKind FINAL, the user has actively ended the answer",
+    );
+    expect(interimPrompt).toContain("Checkpoint kind: INTERIM");
+    expect(finalPrompt).toContain("Checkpoint kind: FINAL");
+    expect(finalPrompt).toContain(
+      "do not infer that it is unfinished merely because it is short",
+    );
+    expect(prompt).not.toMatch(/\bG\d{2}\b/);
+  });
+
   it("retries one malformed structured response and accepts a valid correction", async () => {
     const { fetcher, requests } = queuedFetcher([
       completionResponse("not JSON"),
@@ -196,6 +324,22 @@ describe("provider-independent LLM service", () => {
       qwenService(fetcher).generateQuestionPlan(plannerInput),
     ).resolves.toEqual({ ok: true, value: canonicalQuestionPlan });
     expect(requests).toHaveLength(2);
+    const responseFormats = requests.map(({ init }) =>
+      z
+        .object({
+          response_format: z.object({
+            type: z.literal("json_schema"),
+            json_schema: z.object({
+              name: z.literal("question_plan"),
+              strict: z.literal(true),
+            }).passthrough(),
+          }),
+        })
+        .passthrough()
+        .parse(JSON.parse(String(init?.body))).response_format,
+    );
+    expect(responseFormats).toHaveLength(2);
+    expect(responseFormats[1]).toEqual(responseFormats[0]);
   });
 
   it("retries an English surface question and accepts a Chinese correction", async () => {
