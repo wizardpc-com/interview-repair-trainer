@@ -40,7 +40,7 @@ npm run dev
 
 打开 `http://localhost:3000`。健康检查地址为 `http://localhost:3000/api/healthz`。
 
-如需实际调用 Qwen，将 `.env.example` 复制为被 Git 忽略的 `.env.local`，并填写 `QWEN_API_KEY`。测试和构建不需要真实 key。
+如需实际调用 Qwen，将 `.env.example` 复制为被 Git 忽略的 `.env.local`，并填写 `QWEN_API_KEY`。默认模型为 `qwen3.8-flash`，同一非 thinking 配置用于问题规划和语义检查。测试和构建不需要真实 key。
 
 ```bash
 npm test

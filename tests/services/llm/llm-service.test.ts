@@ -93,7 +93,7 @@ function qwenService(fetcher: typeof fetch): QwenLlmService {
   return new QwenLlmService({
     apiKey: "test-api-key",
     baseUrl: "https://example.test/compatible-mode/v1",
-    model: "qwen-plus",
+    model: "qwen3.8-flash",
     fetcher,
   });
 }
@@ -137,14 +137,31 @@ describe("provider-independent LLM service", () => {
 
     const requestSchema = z.object({
       model: z.string(),
+      messages: z.array(z.object({ content: z.string() }).passthrough()),
+      enable_thinking: z.literal(false),
       response_format: z.object({ type: z.literal("json_object") }),
     });
-    const requestModels = requests.map(({ init }) =>
-      requestSchema.parse(JSON.parse(String(init?.body))).model,
+    const requestBodies = requests.map(({ init }) =>
+      requestSchema.parse(JSON.parse(String(init?.body))),
     );
 
-    expect(service.model).toBe("qwen-plus");
-    expect(requestModels).toEqual(["qwen-plus", "qwen-plus"]);
+    expect(service.model).toBe("qwen3.8-flash");
+    expect(requestBodies.map(({ model }) => model)).toEqual([
+      "qwen3.8-flash",
+      "qwen3.8-flash",
+    ]);
+    expect(requestBodies.every(({ enable_thinking }) => !enable_thinking)).toBe(
+      true,
+    );
+    expect(
+      requestBodies.every(({ messages }) =>
+        messages.some(({ content }) => /json/i.test(content)),
+      ),
+    ).toBe(true);
+    expect(requests.map(({ input }) => input)).toEqual([
+      "https://example.test/compatible-mode/v1/chat/completions",
+      "https://example.test/compatible-mode/v1/chat/completions",
+    ]);
   });
 
   it("retries one malformed structured response and accepts a valid correction", async () => {

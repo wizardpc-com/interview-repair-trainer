@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { LlmService } from "../services/llm/llm-service";
 import { QwenLlmService } from "../services/llm/qwen-llm-service";
 
-export const DEFAULT_QWEN_MODEL = "qwen-plus";
+export const DEFAULT_QWEN_MODEL = "qwen3.8-flash";
 export const DEFAULT_QWEN_BASE_URL =
   "https://dashscope.aliyuncs.com/compatible-mode/v1";
 

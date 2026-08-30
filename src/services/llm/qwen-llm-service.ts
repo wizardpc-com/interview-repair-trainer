@@ -222,6 +222,7 @@ export class QwenLlmService implements LlmService {
         body: JSON.stringify({
           model: this.model,
           messages,
+          enable_thinking: false,
           response_format: { type: "json_object" },
         }),
       });

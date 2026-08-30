@@ -39,7 +39,7 @@ Phase 1 configures one real LLM. The same model performs two roles through one p
 
 Planner and Semantic Evaluator orchestration depend only on the provider-independent service interface. Domain code has no LLM service dependency, and provider-specific code stays inside `src/services/llm`. LLM output never directly controls the UI or state machine.
 
-Stage 4 uses one Qwen model configuration for both operations through Qwen's OpenAI-compatible Chat Completions endpoint. The adapter uses native `fetch` rather than a provider SDK. `QWEN_API_KEY`, `QWEN_MODEL`, and `QWEN_BASE_URL` are server environment configuration; the default model is `qwen-plus`.
+Stage 4 uses one Qwen model configuration for both operations through Qwen's OpenAI-compatible Chat Completions endpoint. The adapter uses native `fetch` rather than a provider SDK. `QWEN_API_KEY`, `QWEN_MODEL`, and `QWEN_BASE_URL` are server environment configuration; the default model is `qwen3.8-flash`. Requests use non-thinking mode and JSON Object output so the existing Zod validation and single structured-output retry remain authoritative.
 
 A future extension may use a stronger model for planning and final review and a faster model for real-time monitoring. Phase 1 does not implement the router, selection logic, or second provider configuration required for that split.
 
