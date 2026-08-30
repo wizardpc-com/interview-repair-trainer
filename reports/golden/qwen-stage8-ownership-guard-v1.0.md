@@ -17,7 +17,7 @@
 | G07 | 2 | CONTINUE | ISSUE_DETECTED | null | OWNERSHIP_AMBIGUOUS | CONTINUE | CONTINUE | Evaluator error / Product safe |
 | G07 | 3 | CONTINUE | ISSUE_DETECTED | null | OWNERSHIP_AMBIGUOUS | CONTINUE | CONTINUE | Evaluator error / Product safe |
 | G07 | 4 | CONTINUE | ISSUE_DETECTED | null | OWNERSHIP_AMBIGUOUS | CONTINUE | CONTINUE | Evaluator error / Product safe |
-| G07 | 5 | CONTINUE | ISSUE_DETECTED | null | VAGUE_WITHOUT_EVIDENCE | CONTINUE | CONTINUE | Evaluator error / Product safe |
+| G07 | 5 | CONTINUE | ISSUE_DETECTED | null | OWNERSHIP_AMBIGUOUS | CONTINUE | CONTINUE | Evaluator error / Product safe |
 | G05 | 1 | CONTINUE | CONTINUE | null | null | CONTINUE | CONTINUE | Evaluator label correct / Product correct |
 | G05 | 2 | CONTINUE | CONTINUE | null | null | CONTINUE | CONTINUE | Evaluator label correct / Product correct |
 | G05 | 3 | CONTINUE | CONTINUE | null | null | CONTINUE | CONTINUE | Evaluator label correct / Product correct |
@@ -48,8 +48,8 @@ attempt 1, HTTP 200
    "kind": "PRIMARY_TARGET",
    "id": "personal-ownership"
   },
-  "issueExplanation": "The candidate states a general role ('responsible for backend') but does not specify any concrete design, implementation, analysis, or decision they personally performed, failing to separate personal contribution from team activity as requested.",
-  "repairCue": "List specific tasks you completed (e.g., 'I designed the API schema', 'I implemented the database connection pool') rather than just stating your job title."
+  "issueExplanation": "The candidate states a role ('backend') but does not specify which designs, implementations, analyses, or decisions were personally completed, failing to separate personal contribution from general team activity.",
+  "repairCue": "List specific tasks you performed (e.g., 'I designed the API schema', 'I implemented the database layer')."
 }
 ````
 
@@ -71,8 +71,8 @@ attempt 1, HTTP 200
    "kind": "PRIMARY_TARGET",
    "id": "personal-ownership"
   },
-  "issueExplanation": "The candidate states a general role ('backend') but does not specify which particular designs, implementations, analyses, or decisions were personally completed, failing to separate individual contribution from team activity.",
-  "repairCue": "List specific tasks you performed (e.g., 'I designed the API schema', 'I implemented the database connection pool') rather than just stating your job title."
+  "issueExplanation": "The candidate states a role ('backend') but does not specify which designs, implementations, analyses, or decisions were personally completed.",
+  "repairCue": "List specific tasks you performed (e.g., 'I designed the API schema', 'I implemented the database layer')."
 }
 ````
 
@@ -94,8 +94,8 @@ attempt 1, HTTP 200
    "kind": "PRIMARY_TARGET",
    "id": "personal-ownership"
   },
-  "issueExplanation": "The candidate states a role ('backend') but does not specify which designs, implementations, analyses, or decisions were personally completed, failing to separate individual contribution from general team activity.",
-  "repairCue": "List specific tasks you performed (e.g., 'I designed the API schema', 'I implemented the database layer')."
+  "issueExplanation": "The candidate states a role ('backend') but does not specify which particular designs, implementations, analyses, or decisions were personally completed by them.",
+  "repairCue": "List specific tasks or components you personally built or decided on within the backend scope."
 }
 ````
 
@@ -117,14 +117,14 @@ attempt 1, HTTP 200
    "kind": "PRIMARY_TARGET",
    "id": "personal-ownership"
   },
-  "issueExplanation": "The candidate states a role ('backend') but does not specify which designs, implementations, analyses, or decisions were personally completed, failing to separate personal contribution from general team activity.",
-  "repairCue": "List specific tasks you performed (e.g., 'I designed the API schema', 'I implemented the database layer')."
+  "issueExplanation": "The candidate states a role ('backend') but does not specify any concrete design, implementation, analysis, or decision personally performed.",
+  "repairCue": "Please describe specific tasks you completed, such as designing an API, implementing a module, or analyzing performance data."
 }
 ````
 
 ### G07 #5
 
-Expected CONTINUE/null/CONTINUE; actual ISSUE_DETECTED/VAGUE_WITHOUT_EVIDENCE/CONTINUE.
+Expected CONTINUE/null/CONTINUE; actual ISSUE_DETECTED/OWNERSHIP_AMBIGUOUS/CONTINUE.
 
 ````text
 attempt 1, HTTP 200
@@ -135,13 +135,13 @@ attempt 1, HTTP 200
   "gateability": "GATE_ELIGIBLE",
   "answerBoundary": "NONE",
   "decision": "ISSUE_DETECTED",
-  "issueType": "VAGUE_WITHOUT_EVIDENCE",
+  "issueType": "OWNERSHIP_AMBIGUOUS",
   "triggeringCriterion": {
-   "kind": "REQUIRED_EVIDENCE",
-   "id": "personal-action"
+   "kind": "PRIMARY_TARGET",
+   "id": "personal-ownership"
   },
-  "issueExplanation": "The candidate states a general role ('responsible for backend') but provides no specific action, decision, implementation detail, or analysis to substantiate the personal contribution.",
-  "repairCue": "Provide concrete examples of what you specifically built, decided, or analyzed within the backend scope."
+  "issueExplanation": "The candidate states a role ('backend') but does not specify any concrete design, implementation, analysis, or decision personally performed.",
+  "repairCue": "Please list specific tasks you completed, such as designing an API, writing code for a module, or analyzing performance data."
 }
 ````
 

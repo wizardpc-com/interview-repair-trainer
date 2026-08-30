@@ -1,6 +1,6 @@
 # Stage 8 Qwen Golden Test Report (focus)
 
-- Generated: 2026-08-30T11:58:15.187Z
+- Generated: 2026-08-30T12:25:13.094Z
 - Mode: `focus`
 - Oracle: v1.0, SHA256 `A1678254FF31F2BF05D85D99EBBD7C101C28E23324B795CEFCD7065B983972FC`
 - Model: `qwen3.8-flash`
@@ -25,12 +25,12 @@
 - P0 Product False Gate release bar: 0/18 — PASS
 - P0 evaluator-only false issues: 3/18
 - P1 evaluator-only issue recall: 30/30 (100.0%)
-- P1 evaluator-only IssueType accuracy: 28/30 (93.3%)
+- P1 evaluator-only IssueType accuracy: 29/30 (96.7%)
 - P1 Arbiter recall with Oracle-complete context (diagnostic only): 30/30 (100.0%)
 - P1 Current Product Gate Recall release bar: 30/30 (100.0%) — PASS
 - Recovered structured-output retries: 0/56; unrecovered schema failures: 0
 - Recovered retry cases: none
-- Unstable cases: G07, G20
+- Unstable cases: G11, G20
 - Stage 9 recommendation: YES
 
 ## Focused First Pass (G07/G08/G11/G12/G19)
@@ -47,9 +47,9 @@
 
 | Case | Semantic runs | Product Gate runs | Correct Gate |
 |---|---|---|---|
-| G07 | ISSUE_DETECTED:OWNERSHIP_AMBIGUOUS / ISSUE_DETECTED:VAGUE_WITHOUT_EVIDENCE / ISSUE_DETECTED:OWNERSHIP_AMBIGUOUS | CONTINUE / CONTINUE / CONTINUE | 3/3 |
+| G07 | ISSUE_DETECTED:OWNERSHIP_AMBIGUOUS / ISSUE_DETECTED:OWNERSHIP_AMBIGUOUS / ISSUE_DETECTED:OWNERSHIP_AMBIGUOUS | CONTINUE / CONTINUE / CONTINUE | 3/3 |
 | G08 | ISSUE_DETECTED:OWNERSHIP_AMBIGUOUS / ISSUE_DETECTED:OWNERSHIP_AMBIGUOUS / ISSUE_DETECTED:OWNERSHIP_AMBIGUOUS | GATE / GATE / GATE | 3/3 |
-| G11 | CONTINUE / CONTINUE / CONTINUE | CONTINUE / CONTINUE / CONTINUE | 3/3 |
+| G11 | CONTINUE / ISSUE_DETECTED:OWNERSHIP_AMBIGUOUS / CONTINUE | CONTINUE / CONTINUE / CONTINUE | 3/3 |
 | G12 | ISSUE_DETECTED:NOT_ANSWERING_QUESTION / ISSUE_DETECTED:NOT_ANSWERING_QUESTION / ISSUE_DETECTED:NOT_ANSWERING_QUESTION | GATE / GATE / GATE | 3/3 |
 | G19 | CONTINUE / CONTINUE / CONTINUE | CONTINUE / CONTINUE / CONTINUE | 3/3 |
 
@@ -58,7 +58,7 @@
 | Case | Semantic runs | Product Gate runs | Correct Gate |
 |---|---|---|---|
 | G05 | CONTINUE / CONTINUE / CONTINUE | CONTINUE / CONTINUE / CONTINUE | 3/3 |
-| G07 | ISSUE_DETECTED:OWNERSHIP_AMBIGUOUS / ISSUE_DETECTED:VAGUE_WITHOUT_EVIDENCE / ISSUE_DETECTED:OWNERSHIP_AMBIGUOUS | CONTINUE / CONTINUE / CONTINUE | 3/3 |
+| G07 | ISSUE_DETECTED:OWNERSHIP_AMBIGUOUS / ISSUE_DETECTED:OWNERSHIP_AMBIGUOUS / ISSUE_DETECTED:OWNERSHIP_AMBIGUOUS | CONTINUE / CONTINUE / CONTINUE | 3/3 |
 | G09 | CONTINUE / CONTINUE / CONTINUE | CONTINUE / CONTINUE / CONTINUE | 3/3 |
 | G13 | CONTINUE / CONTINUE / CONTINUE | CONTINUE / CONTINUE / CONTINUE | 3/3 |
 | G17 | CONTINUE / CONTINUE / CONTINUE | CONTINUE / CONTINUE / CONTINUE | 3/3 |
@@ -77,7 +77,7 @@
 | G14 | ISSUE_DETECTED:NOT_ANSWERING_QUESTION / ISSUE_DETECTED:NOT_ANSWERING_QUESTION / ISSUE_DETECTED:NOT_ANSWERING_QUESTION | GATE / GATE / GATE | 3/3 |
 | G16 | ISSUE_DETECTED:VAGUE_WITHOUT_EVIDENCE / ISSUE_DETECTED:VAGUE_WITHOUT_EVIDENCE / ISSUE_DETECTED:VAGUE_WITHOUT_EVIDENCE | GATE / GATE / GATE | 3/3 |
 | G18 | ISSUE_DETECTED:NOT_ANSWERING_QUESTION / ISSUE_DETECTED:NOT_ANSWERING_QUESTION / ISSUE_DETECTED:NOT_ANSWERING_QUESTION | GATE / GATE / GATE | 3/3 |
-| G20 | ISSUE_DETECTED:VAGUE_WITHOUT_EVIDENCE / ISSUE_DETECTED:NOT_ANSWERING_QUESTION / ISSUE_DETECTED:VAGUE_WITHOUT_EVIDENCE | GATE / GATE / GATE | 3/3 |
+| G20 | ISSUE_DETECTED:NOT_ANSWERING_QUESTION / ISSUE_DETECTED:VAGUE_WITHOUT_EVIDENCE / ISSUE_DETECTED:NOT_ANSWERING_QUESTION | GATE / GATE / GATE | 3/3 |
 
 ## Failure Classification
 
@@ -120,11 +120,11 @@ structuredOutput:
    "kind": "PRIMARY_TARGET",
    "id": "personal-ownership"
   },
-  "issueExplanation": "The candidate states a general role ('responsible for backend') but does not specify which particular designs, implementations, analyses, or decisions were personally completed, failing to separate individual contribution from team activity as requested.",
-  "repairCue": "Please list specific tasks you personally handled (e.g., 'I designed the API schema', 'I implemented the database connection pool') rather than just stating your general role."
+  "issueExplanation": "The candidate states a role ('responsible for backend') but does not specify any concrete design, implementation, analysis, or decision they personally performed, failing to separate personal contribution from general team activity.",
+  "repairCue": "Please list specific tasks you completed, such as designing a particular API, implementing a database schema, or analyzing performance bottlenecks."
 }
 rawResponseBody:
-{"choices":[{"finish_reason":"stop","index":0,"message":{"content":"{\n  \"questionId\": \"personal-contribution\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"ISSUE_DETECTED\",\n  \"issueType\": \"OWNERSHIP_AMBIGUOUS\",\n  \"triggeringCriterion\": {\n   \"kind\": \"PRIMARY_TARGET\",\n   \"id\": \"personal-ownership\"\n  },\n  \"issueExplanation\": \"The candidate states a general role ('responsible for backend') but does not specify which particular designs, implementations, analyses, or decisions were personally completed, failing to separate individual contribution from team activity as requested.\",\n  \"repairCue\": \"Please list specific tasks you personally handled (e.g., 'I designed the API schema', 'I implemented the database connection pool') rather than just stating your general role.\"\n}","role":"assistant"}}],"created":1788090779,"id":"chatcmpl-9de98a8b-317b-9664-bc56-ab0adfad8057","model":"qwen3.8-flash","object":"chat.completion","usage":{"completion_tokens":201,"prompt_tokens":1031,"prompt_tokens_details":{"cached_tokens":1024,"text_tokens":1031},"total_tokens":1232}}
+{"choices":[{"finish_reason":"stop","index":0,"message":{"content":"{\n  \"questionId\": \"personal-contribution\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"ISSUE_DETECTED\",\n  \"issueType\": \"OWNERSHIP_AMBIGUOUS\",\n  \"triggeringCriterion\": {\n   \"kind\": \"PRIMARY_TARGET\",\n   \"id\": \"personal-ownership\"\n  },\n  \"issueExplanation\": \"The candidate states a role ('responsible for backend') but does not specify any concrete design, implementation, analysis, or decision they personally performed, failing to separate personal contribution from general team activity.\",\n  \"repairCue\": \"Please list specific tasks you completed, such as designing a particular API, implementing a database schema, or analyzing performance bottlenecks.\"\n}","role":"assistant"}}],"created":1788092566,"id":"chatcmpl-2a9a6318-a1b0-9e95-80d4-31d732fab373","model":"qwen3.8-flash","object":"chat.completion","usage":{"completion_tokens":191,"prompt_tokens":1031,"prompt_tokens_details":{"cached_tokens":1024,"text_tokens":1031},"total_tokens":1222}}
 ````
 
 Full raw outputs for all first-pass and stability runs are retained in the JSON report.

@@ -1,14 +1,14 @@
-# Stage 8 Qwen Golden Test Report (full)
+# Stage 8 Qwen Golden Test Report (full-once)
 
-- Generated: 2026-08-30T12:30:43.645Z
-- Mode: `full`
+- Generated: 2026-08-30T12:28:12.333Z
+- Mode: `full-once`
 - Oracle: v1.0, SHA256 `A1678254FF31F2BF05D85D99EBBD7C101C28E23324B795CEFCD7065B983972FC`
 - Model: `qwen3.8-flash`
 - Requested `_ONLY_` attachment was absent; the unique matching v1.0 file was used.
 - Fixed QuestionPlans use the current canonical product surface questions; Oracle example questions are preserved in the JSON record.
 - Real API output is isolated from `npm test`; no API key is written to this report.
-- Every provider response and structured output, including retry attempts, is in `qwen-stage8-v1.0.json`.
-- P0 and P1 product release metrics use only the balanced 3-run-per-case stability observations; first-pass cases do not change their weighting.
+- Every provider response and structured output, including retry attempts, is in `qwen-stage8-full-once-v1.0.json`.
+- P0/P1 stability was not rerun; this mode is admitted only by a completed passing focus report.
 - ANSWER fixtures run through COMPLETE and a FINAL checkpoint with a 4-character minimum; CHECKPOINT fixtures use INTERIM eligibility and cross-checkpoint issue confirmation.
 
 ## Metrics
@@ -22,16 +22,11 @@
 - First-pass structured output validated eventually: 20/20 (100.0%)
 - First-pass Final Gate accuracy: 20/20 (100.0%)
 - First-pass False Gate count: 0
-- P0 Product False Gate release bar: 0/18 — PASS
-- P0 evaluator-only false issues: 3/18
-- P1 evaluator-only issue recall: 30/30 (100.0%)
-- P1 evaluator-only IssueType accuracy: 29/30 (96.7%)
-- P1 Arbiter recall with Oracle-complete context (diagnostic only): 30/30 (100.0%)
-- P1 Current Product Gate Recall release bar: 30/30 (100.0%) — PASS
-- Recovered structured-output retries: 0/68; unrecovered schema failures: 0
+- P0/P1 product release bars: not rerun in full-once mode; see the prerequisite focus report.
+- Recovered structured-output retries: 0/20; unrecovered schema failures: 0
 - Recovered retry cases: none
-- Unstable cases: G07, G14
-- Stage 9 recommendation: YES
+- Unstable cases: none
+- Stage 9 recommendation: NOT RECOMPUTED (focus prerequisite passed)
 
 ## G01–G20 First Pass
 
@@ -50,45 +45,19 @@
 | G11 | CONTINUE | CONTINUE | null | null | CONTINUE | CONTINUE | Evaluator label correct / Product correct | — | FINAL | ELIGIBLE | SUFFICIENT | FINAL_COMPLETION |
 | G12 | ISSUE_DETECTED | ISSUE_DETECTED | NOT_ANSWERING_QUESTION | NOT_ANSWERING_QUESTION | GATE | GATE | Evaluator label correct / Product correct | — | FINAL | ELIGIBLE | SUFFICIENT | FINAL_COMPLETION |
 | G13 | CONTINUE | CONTINUE | null | null | CONTINUE | CONTINUE | Evaluator label correct / Product correct | — | FINAL | ELIGIBLE | SUFFICIENT | FINAL_COMPLETION |
-| G14 | ISSUE_DETECTED | ISSUE_DETECTED | NOT_ANSWERING_QUESTION | VAGUE_WITHOUT_EVIDENCE | GATE | GATE | Evaluator error / Product gate matched | evaluator semantic error | FINAL | ELIGIBLE | SUFFICIENT | FINAL_COMPLETION |
+| G14 | ISSUE_DETECTED | ISSUE_DETECTED | NOT_ANSWERING_QUESTION | NOT_ANSWERING_QUESTION | GATE | GATE | Evaluator label correct / Product correct | — | FINAL | ELIGIBLE | SUFFICIENT | FINAL_COMPLETION |
 | G15 | CONTINUE | CONTINUE | null | null | CONTINUE | CONTINUE | Evaluator label correct / Product correct | — | FINAL | ELIGIBLE | SUFFICIENT | FINAL_COMPLETION |
 | G16 | ISSUE_DETECTED | ISSUE_DETECTED | VAGUE_WITHOUT_EVIDENCE | VAGUE_WITHOUT_EVIDENCE | GATE | GATE | Evaluator label correct / Product correct | — | FINAL | ELIGIBLE | SUFFICIENT | FINAL_COMPLETION |
 | G17 | CONTINUE | CONTINUE | null | null | CONTINUE | CONTINUE | Evaluator label correct / Product correct | — | FINAL | ELIGIBLE | SUFFICIENT | FINAL_COMPLETION |
 | G18 | ISSUE_DETECTED | ISSUE_DETECTED | NOT_ANSWERING_QUESTION | NOT_ANSWERING_QUESTION | GATE | GATE | Evaluator label correct / Product correct | — | FINAL | ELIGIBLE | SUFFICIENT | FINAL_COMPLETION |
 | G19 | CONTINUE | CONTINUE | null | null | CONTINUE | CONTINUE | Evaluator label correct / Product correct | — | INTERIM | TRANSCRIPT_TOO_SHORT | INSUFFICIENT | INTERIM_REQUIRES_MATCHING_NEWER_CHECKPOINT |
-| G20 | ISSUE_DETECTED | ISSUE_DETECTED | NOT_ANSWERING_QUESTION | NOT_ANSWERING_QUESTION | GATE | GATE | Evaluator label correct / Product correct | — | FINAL | ELIGIBLE | SUFFICIENT | FINAL_COMPLETION |
-
-## P0 Stability
-
-| Case | Semantic runs | Product Gate runs | Correct Gate |
-|---|---|---|---|
-| G05 | CONTINUE / CONTINUE / CONTINUE | CONTINUE / CONTINUE / CONTINUE | 3/3 |
-| G07 | ISSUE_DETECTED:VAGUE_WITHOUT_EVIDENCE / ISSUE_DETECTED:OWNERSHIP_AMBIGUOUS / ISSUE_DETECTED:VAGUE_WITHOUT_EVIDENCE | CONTINUE / CONTINUE / CONTINUE | 3/3 |
-| G09 | CONTINUE / CONTINUE / CONTINUE | CONTINUE / CONTINUE / CONTINUE | 3/3 |
-| G13 | CONTINUE / CONTINUE / CONTINUE | CONTINUE / CONTINUE / CONTINUE | 3/3 |
-| G17 | CONTINUE / CONTINUE / CONTINUE | CONTINUE / CONTINUE / CONTINUE | 3/3 |
-| G19 | CONTINUE / CONTINUE / CONTINUE | CONTINUE / CONTINUE / CONTINUE | 3/3 |
-
-## P1 Stability
-
-| Case | Semantic runs | Product Gate runs | Correct Gate |
-|---|---|---|---|
-| G02 | ISSUE_DETECTED:NOT_ANSWERING_QUESTION / ISSUE_DETECTED:NOT_ANSWERING_QUESTION / ISSUE_DETECTED:NOT_ANSWERING_QUESTION | GATE / GATE / GATE | 3/3 |
-| G04 | ISSUE_DETECTED:VAGUE_WITHOUT_EVIDENCE / ISSUE_DETECTED:VAGUE_WITHOUT_EVIDENCE / ISSUE_DETECTED:VAGUE_WITHOUT_EVIDENCE | GATE / GATE / GATE | 3/3 |
-| G06 | ISSUE_DETECTED:OWNERSHIP_AMBIGUOUS / ISSUE_DETECTED:OWNERSHIP_AMBIGUOUS / ISSUE_DETECTED:OWNERSHIP_AMBIGUOUS | GATE / GATE / GATE | 3/3 |
-| G08 | ISSUE_DETECTED:OWNERSHIP_AMBIGUOUS / ISSUE_DETECTED:OWNERSHIP_AMBIGUOUS / ISSUE_DETECTED:OWNERSHIP_AMBIGUOUS | GATE / GATE / GATE | 3/3 |
-| G10 | ISSUE_DETECTED:VAGUE_WITHOUT_EVIDENCE / ISSUE_DETECTED:VAGUE_WITHOUT_EVIDENCE / ISSUE_DETECTED:VAGUE_WITHOUT_EVIDENCE | GATE / GATE / GATE | 3/3 |
-| G12 | ISSUE_DETECTED:NOT_ANSWERING_QUESTION / ISSUE_DETECTED:NOT_ANSWERING_QUESTION / ISSUE_DETECTED:NOT_ANSWERING_QUESTION | GATE / GATE / GATE | 3/3 |
-| G14 | ISSUE_DETECTED:VAGUE_WITHOUT_EVIDENCE / ISSUE_DETECTED:NOT_ANSWERING_QUESTION / ISSUE_DETECTED:NOT_ANSWERING_QUESTION | GATE / GATE / GATE | 3/3 |
-| G16 | ISSUE_DETECTED:VAGUE_WITHOUT_EVIDENCE / ISSUE_DETECTED:VAGUE_WITHOUT_EVIDENCE / ISSUE_DETECTED:VAGUE_WITHOUT_EVIDENCE | GATE / GATE / GATE | 3/3 |
-| G18 | ISSUE_DETECTED:NOT_ANSWERING_QUESTION / ISSUE_DETECTED:NOT_ANSWERING_QUESTION / ISSUE_DETECTED:NOT_ANSWERING_QUESTION | GATE / GATE / GATE | 3/3 |
-| G20 | ISSUE_DETECTED:NOT_ANSWERING_QUESTION / ISSUE_DETECTED:NOT_ANSWERING_QUESTION / ISSUE_DETECTED:NOT_ANSWERING_QUESTION | GATE / GATE / GATE | 3/3 |
+| G20 | ISSUE_DETECTED | ISSUE_DETECTED | NOT_ANSWERING_QUESTION | VAGUE_WITHOUT_EVIDENCE | GATE | GATE | Evaluator error / Product gate matched | evaluator semantic error | FINAL | ELIGIBLE | SUFFICIENT | FINAL_COMPLETION |
 
 ## Failure Classification
 
 ```json
 {
-  "evaluator semantic error": 6,
+  "evaluator semantic error": 2,
   "Gate Arbiter error": 0,
   "checkpoint/context eligibility error": 0,
   "schema/output instability": 0,
@@ -125,14 +94,14 @@ structuredOutput:
    "kind": "PRIMARY_TARGET",
    "id": "personal-ownership"
   },
-  "issueExplanation": "The candidate states a role ('backend') but does not specify which designs, implementations, analyses, or decisions were personally completed, failing to separate personal contribution from general team activity.",
-  "repairCue": "List specific tasks you performed (e.g., 'I designed the API schema', 'I implemented the database layer') rather than just stating your role."
+  "issueExplanation": "The candidate states a general role ('responsible for backend') but does not specify any concrete design, implementation, analysis, or decision personally performed, failing to separate personal contribution from team activity.",
+  "repairCue": "List specific tasks you completed, such as designing an API, writing code for a module, or analyzing performance data."
 }
 rawResponseBody:
-{"choices":[{"finish_reason":"stop","index":0,"message":{"content":"{\n  \"questionId\": \"personal-contribution\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"ISSUE_DETECTED\",\n  \"issueType\": \"OWNERSHIP_AMBIGUOUS\",\n  \"triggeringCriterion\": {\n   \"kind\": \"PRIMARY_TARGET\",\n   \"id\": \"personal-ownership\"\n  },\n  \"issueExplanation\": \"The candidate states a role ('backend') but does not specify which designs, implementations, analyses, or decisions were personally completed, failing to separate personal contribution from general team activity.\",\n  \"repairCue\": \"List specific tasks you performed (e.g., 'I designed the API schema', 'I implemented the database layer') rather than just stating your role.\"\n}","role":"assistant"}}],"created":1788092919,"id":"chatcmpl-389dd7b6-7e18-9ff0-90a5-fef653f47aa0","model":"qwen3.8-flash","object":"chat.completion","usage":{"completion_tokens":191,"prompt_tokens":1031,"prompt_tokens_details":{"cached_tokens":1024,"text_tokens":1031},"total_tokens":1222}}
+{"choices":[{"finish_reason":"stop","index":0,"message":{"content":"{\n  \"questionId\": \"personal-contribution\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"ISSUE_DETECTED\",\n  \"issueType\": \"OWNERSHIP_AMBIGUOUS\",\n  \"triggeringCriterion\": {\n   \"kind\": \"PRIMARY_TARGET\",\n   \"id\": \"personal-ownership\"\n  },\n  \"issueExplanation\": \"The candidate states a general role ('responsible for backend') but does not specify any concrete design, implementation, analysis, or decision personally performed, failing to separate personal contribution from team activity.\",\n  \"repairCue\": \"List specific tasks you completed, such as designing an API, writing code for a module, or analyzing performance data.\"\n}","role":"assistant"}}],"created":1788092867,"id":"chatcmpl-203e5816-b8f5-93c5-ac88-65c7f6c4ef8b","model":"qwen3.8-flash","object":"chat.completion","usage":{"completion_tokens":187,"prompt_tokens":1031,"prompt_tokens_details":{"cached_tokens":1024,"text_tokens":1031},"total_tokens":1218}}
 ````
 
-### G14 — evaluator semantic error
+### G20 — evaluator semantic error
 
 Expected: ISSUE_DETECTED/NOT_ANSWERING_QUESTION, GATE. Actual: ISSUE_DETECTED/VAGUE_WITHOUT_EVIDENCE, GATE.
 
@@ -152,11 +121,11 @@ structuredOutput:
    "kind": "REQUIRED_EVIDENCE",
    "id": "decision-rationale"
   },
-  "issueExplanation": "The candidate lists the technical choices (hybrid retrieval) and activities but provides no reasoning or tradeoffs explaining why this choice was made over alternatives.",
-  "repairCue": "Explain the specific reasons for choosing hybrid retrieval, such as performance metrics, recall/precision tradeoffs, or limitations of dense/BM25 alone."
+  "issueExplanation": "The candidate states the choice (hybrid retrieval) but provides no reasoning or tradeoffs for why this specific technical solution was selected over alternatives.",
+  "repairCue": "Explain the rationale behind choosing hybrid retrieval. What problems did it solve? Why was it better than pure vector search or keyword search in your context?"
 }
 rawResponseBody:
-{"choices":[{"finish_reason":"stop","index":0,"message":{"content":"{\n  \"questionId\": \"technical-choice\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"ISSUE_DETECTED\",\n  \"issueType\": \"VAGUE_WITHOUT_EVIDENCE\",\n  \"triggeringCriterion\": {\n   \"kind\": \"REQUIRED_EVIDENCE\",\n   \"id\": \"decision-rationale\"\n  },\n  \"issueExplanation\": \"The candidate lists the technical choices (hybrid retrieval) and activities but provides no reasoning or tradeoffs explaining why this choice was made over alternatives.\",\n  \"repairCue\": \"Explain the specific reasons for choosing hybrid retrieval, such as performance metrics, recall/precision tradeoffs, or limitations of dense/BM25 alone.\"\n}","role":"assistant"}}],"created":1788092932,"id":"chatcmpl-e5ebae86-c6f5-9cb4-8ab3-803cac3e5d91","model":"qwen3.8-flash","object":"chat.completion","usage":{"completion_tokens":189,"prompt_tokens":1035,"prompt_tokens_details":{"cached_tokens":1024,"text_tokens":1035},"total_tokens":1224}}
+{"choices":[{"finish_reason":"stop","index":0,"message":{"content":"{\n  \"questionId\": \"technical-choice\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"ISSUE_DETECTED\",\n  \"issueType\": \"VAGUE_WITHOUT_EVIDENCE\",\n  \"triggeringCriterion\": {\n   \"kind\": \"REQUIRED_EVIDENCE\",\n   \"id\": \"decision-rationale\"\n  },\n  \"issueExplanation\": \"The candidate states the choice (hybrid retrieval) but provides no reasoning or tradeoffs for why this specific technical solution was selected over alternatives.\",\n  \"repairCue\": \"Explain the rationale behind choosing hybrid retrieval. What problems did it solve? Why was it better than pure vector search or keyword search in your context?\"\n}","role":"assistant"}}],"created":1788092890,"id":"chatcmpl-eb28a2cd-91f9-9c3d-ad4b-e4af8ec5a1f2","model":"qwen3.8-flash","object":"chat.completion","usage":{"completion_tokens":187,"prompt_tokens":1032,"prompt_tokens_details":{"cached_tokens":1024,"text_tokens":1032},"total_tokens":1219}}
 ````
 
 Full raw outputs for all first-pass and stability runs are retained in the JSON report.

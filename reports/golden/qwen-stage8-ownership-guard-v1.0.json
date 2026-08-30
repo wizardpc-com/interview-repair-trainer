@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-30T11:52:33.385Z",
+  "generatedAt": "2026-08-30T12:22:37.712Z",
   "status": "COMPLETE",
   "mode": "ownership-guard-focused",
   "reportFile": "qwen-stage8-ownership-guard-v1.0.json",
@@ -148,231 +148,6 @@
             "kind": "PRIMARY_TARGET",
             "id": "personal-ownership"
           },
-          "issueExplanation": "The candidate states a general role ('responsible for backend') but does not specify any concrete design, implementation, analysis, or decision they personally performed, failing to separate personal contribution from team activity as requested.",
-          "repairCue": "List specific tasks you completed (e.g., 'I designed the API schema', 'I implemented the database connection pool') rather than just stating your job title."
-        }
-      },
-      "productReplay": {
-        "checkpointKind": "FINAL",
-        "checkpointEligibility": {
-          "eligible": true,
-          "reason": "ELIGIBLE"
-        },
-        "transcriptCharacters": 8,
-        "answerDurationMs": 15000,
-        "hasSufficientAnswerContext": true,
-        "persistenceSatisfied": true,
-        "persistenceBasis": "FINAL_COMPLETION",
-        "evaluatorCheckpoints": [
-          {
-            "kind": "FINAL",
-            "checkpointVersion": 1
-          }
-        ],
-        "arbiterDecision": "CONTINUE",
-        "arbiterDecisionWithOracleContext": "CONTINUE",
-        "finalProductDecision": "CONTINUE",
-        "finalRuntimeState": "QUESTION_DONE"
-      },
-      "structuredOutputValidity": {
-        "attemptCount": 1,
-        "firstAttemptOutputCaptured": true,
-        "firstAttemptJsonValid": true,
-        "firstAttemptSchemaValid": true,
-        "acceptedOnFirstAttempt": true,
-        "validatedEventually": true
-      },
-      "rawStructuredModelOutputs": [
-        {
-          "attempt": 1,
-          "httpStatus": 200,
-          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"personal-contribution\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"ISSUE_DETECTED\\\",\\n  \\\"issueType\\\": \\\"OWNERSHIP_AMBIGUOUS\\\",\\n  \\\"triggeringCriterion\\\": {\\n   \\\"kind\\\": \\\"PRIMARY_TARGET\\\",\\n   \\\"id\\\": \\\"personal-ownership\\\"\\n  },\\n  \\\"issueExplanation\\\": \\\"The candidate states a general role ('responsible for backend') but does not specify any concrete design, implementation, analysis, or decision they personally performed, failing to separate personal contribution from team activity as requested.\\\",\\n  \\\"repairCue\\\": \\\"List specific tasks you completed (e.g., 'I designed the API schema', 'I implemented the database connection pool') rather than just stating your job title.\\\"\\n}\",\"role\":\"assistant\"}}],\"created\":1788090728,\"id\":\"chatcmpl-30edca66-bd69-99b8-9db0-d757e5555c28\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":199,\"prompt_tokens\":1031,\"prompt_tokens_details\":{\"cached_tokens\":0,\"text_tokens\":1031},\"total_tokens\":1230}}",
-          "structuredOutput": "{\n  \"questionId\": \"personal-contribution\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"ISSUE_DETECTED\",\n  \"issueType\": \"OWNERSHIP_AMBIGUOUS\",\n  \"triggeringCriterion\": {\n   \"kind\": \"PRIMARY_TARGET\",\n   \"id\": \"personal-ownership\"\n  },\n  \"issueExplanation\": \"The candidate states a general role ('responsible for backend') but does not specify any concrete design, implementation, analysis, or decision they personally performed, failing to separate personal contribution from team activity as requested.\",\n  \"repairCue\": \"List specific tasks you completed (e.g., 'I designed the API schema', 'I implemented the database connection pool') rather than just stating your job title.\"\n}",
-          "transportErrorName": null
-        }
-      ]
-    },
-    {
-      "model": "qwen3.8-flash",
-      "caseId": "G07",
-      "title": "很粗糙，但 ownership 已经明确",
-      "phase": "P0_STABILITY",
-      "run": 2,
-      "questionPlanId": "QP2",
-      "transcript": "我主要负责后端。",
-      "expectedSemantic": "CONTINUE",
-      "actualSemantic": "ISSUE_DETECTED",
-      "expectedIssueType": null,
-      "actualIssueType": "OWNERSHIP_AMBIGUOUS",
-      "expectedGate": "CONTINUE",
-      "actualGate": "CONTINUE",
-      "evaluatorExactCorrect": false,
-      "finalGateCorrect": true,
-      "productResult": "Evaluator error / Product safe",
-      "validatedEvaluatorResult": {
-        "ok": true,
-        "value": {
-          "questionId": "personal-contribution",
-          "checkpointVersion": 1,
-          "confidence": 0.95,
-          "gateability": "GATE_ELIGIBLE",
-          "answerBoundary": "NONE",
-          "decision": "ISSUE_DETECTED",
-          "issueType": "OWNERSHIP_AMBIGUOUS",
-          "triggeringCriterion": {
-            "kind": "PRIMARY_TARGET",
-            "id": "personal-ownership"
-          },
-          "issueExplanation": "The candidate states a general role ('backend') but does not specify which particular designs, implementations, analyses, or decisions were personally completed, failing to separate individual contribution from team activity.",
-          "repairCue": "List specific tasks you performed (e.g., 'I designed the API schema', 'I implemented the database connection pool') rather than just stating your job title."
-        }
-      },
-      "productReplay": {
-        "checkpointKind": "FINAL",
-        "checkpointEligibility": {
-          "eligible": true,
-          "reason": "ELIGIBLE"
-        },
-        "transcriptCharacters": 8,
-        "answerDurationMs": 15000,
-        "hasSufficientAnswerContext": true,
-        "persistenceSatisfied": true,
-        "persistenceBasis": "FINAL_COMPLETION",
-        "evaluatorCheckpoints": [
-          {
-            "kind": "FINAL",
-            "checkpointVersion": 1
-          }
-        ],
-        "arbiterDecision": "CONTINUE",
-        "arbiterDecisionWithOracleContext": "CONTINUE",
-        "finalProductDecision": "CONTINUE",
-        "finalRuntimeState": "QUESTION_DONE"
-      },
-      "structuredOutputValidity": {
-        "attemptCount": 1,
-        "firstAttemptOutputCaptured": true,
-        "firstAttemptJsonValid": true,
-        "firstAttemptSchemaValid": true,
-        "acceptedOnFirstAttempt": true,
-        "validatedEventually": true
-      },
-      "rawStructuredModelOutputs": [
-        {
-          "attempt": 1,
-          "httpStatus": 200,
-          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"personal-contribution\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"ISSUE_DETECTED\\\",\\n  \\\"issueType\\\": \\\"OWNERSHIP_AMBIGUOUS\\\",\\n  \\\"triggeringCriterion\\\": {\\n   \\\"kind\\\": \\\"PRIMARY_TARGET\\\",\\n   \\\"id\\\": \\\"personal-ownership\\\"\\n  },\\n  \\\"issueExplanation\\\": \\\"The candidate states a general role ('backend') but does not specify which particular designs, implementations, analyses, or decisions were personally completed, failing to separate individual contribution from team activity.\\\",\\n  \\\"repairCue\\\": \\\"List specific tasks you performed (e.g., 'I designed the API schema', 'I implemented the database connection pool') rather than just stating your job title.\\\"\\n}\",\"role\":\"assistant\"}}],\"created\":1788090730,\"id\":\"chatcmpl-bfe0a761-29fd-9aae-8e51-733419a5955e\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":194,\"prompt_tokens\":1031,\"prompt_tokens_details\":{\"cached_tokens\":1024,\"text_tokens\":1031},\"total_tokens\":1225}}",
-          "structuredOutput": "{\n  \"questionId\": \"personal-contribution\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"ISSUE_DETECTED\",\n  \"issueType\": \"OWNERSHIP_AMBIGUOUS\",\n  \"triggeringCriterion\": {\n   \"kind\": \"PRIMARY_TARGET\",\n   \"id\": \"personal-ownership\"\n  },\n  \"issueExplanation\": \"The candidate states a general role ('backend') but does not specify which particular designs, implementations, analyses, or decisions were personally completed, failing to separate individual contribution from team activity.\",\n  \"repairCue\": \"List specific tasks you performed (e.g., 'I designed the API schema', 'I implemented the database connection pool') rather than just stating your job title.\"\n}",
-          "transportErrorName": null
-        }
-      ]
-    },
-    {
-      "model": "qwen3.8-flash",
-      "caseId": "G07",
-      "title": "很粗糙，但 ownership 已经明确",
-      "phase": "P0_STABILITY",
-      "run": 3,
-      "questionPlanId": "QP2",
-      "transcript": "我主要负责后端。",
-      "expectedSemantic": "CONTINUE",
-      "actualSemantic": "ISSUE_DETECTED",
-      "expectedIssueType": null,
-      "actualIssueType": "OWNERSHIP_AMBIGUOUS",
-      "expectedGate": "CONTINUE",
-      "actualGate": "CONTINUE",
-      "evaluatorExactCorrect": false,
-      "finalGateCorrect": true,
-      "productResult": "Evaluator error / Product safe",
-      "validatedEvaluatorResult": {
-        "ok": true,
-        "value": {
-          "questionId": "personal-contribution",
-          "checkpointVersion": 1,
-          "confidence": 0.95,
-          "gateability": "GATE_ELIGIBLE",
-          "answerBoundary": "NONE",
-          "decision": "ISSUE_DETECTED",
-          "issueType": "OWNERSHIP_AMBIGUOUS",
-          "triggeringCriterion": {
-            "kind": "PRIMARY_TARGET",
-            "id": "personal-ownership"
-          },
-          "issueExplanation": "The candidate states a role ('backend') but does not specify which designs, implementations, analyses, or decisions were personally completed, failing to separate individual contribution from general team activity.",
-          "repairCue": "List specific tasks you performed (e.g., 'I designed the API schema', 'I implemented the database layer')."
-        }
-      },
-      "productReplay": {
-        "checkpointKind": "FINAL",
-        "checkpointEligibility": {
-          "eligible": true,
-          "reason": "ELIGIBLE"
-        },
-        "transcriptCharacters": 8,
-        "answerDurationMs": 15000,
-        "hasSufficientAnswerContext": true,
-        "persistenceSatisfied": true,
-        "persistenceBasis": "FINAL_COMPLETION",
-        "evaluatorCheckpoints": [
-          {
-            "kind": "FINAL",
-            "checkpointVersion": 1
-          }
-        ],
-        "arbiterDecision": "CONTINUE",
-        "arbiterDecisionWithOracleContext": "CONTINUE",
-        "finalProductDecision": "CONTINUE",
-        "finalRuntimeState": "QUESTION_DONE"
-      },
-      "structuredOutputValidity": {
-        "attemptCount": 1,
-        "firstAttemptOutputCaptured": true,
-        "firstAttemptJsonValid": true,
-        "firstAttemptSchemaValid": true,
-        "acceptedOnFirstAttempt": true,
-        "validatedEventually": true
-      },
-      "rawStructuredModelOutputs": [
-        {
-          "attempt": 1,
-          "httpStatus": 200,
-          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"personal-contribution\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"ISSUE_DETECTED\\\",\\n  \\\"issueType\\\": \\\"OWNERSHIP_AMBIGUOUS\\\",\\n  \\\"triggeringCriterion\\\": {\\n   \\\"kind\\\": \\\"PRIMARY_TARGET\\\",\\n   \\\"id\\\": \\\"personal-ownership\\\"\\n  },\\n  \\\"issueExplanation\\\": \\\"The candidate states a role ('backend') but does not specify which designs, implementations, analyses, or decisions were personally completed, failing to separate individual contribution from general team activity.\\\",\\n  \\\"repairCue\\\": \\\"List specific tasks you performed (e.g., 'I designed the API schema', 'I implemented the database layer').\\\"\\n}\",\"role\":\"assistant\"}}],\"created\":1788090732,\"id\":\"chatcmpl-85aa43e2-789e-9e95-93b8-6fdf0e89428b\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":184,\"prompt_tokens\":1031,\"prompt_tokens_details\":{\"cached_tokens\":1024,\"text_tokens\":1031},\"total_tokens\":1215}}",
-          "structuredOutput": "{\n  \"questionId\": \"personal-contribution\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"ISSUE_DETECTED\",\n  \"issueType\": \"OWNERSHIP_AMBIGUOUS\",\n  \"triggeringCriterion\": {\n   \"kind\": \"PRIMARY_TARGET\",\n   \"id\": \"personal-ownership\"\n  },\n  \"issueExplanation\": \"The candidate states a role ('backend') but does not specify which designs, implementations, analyses, or decisions were personally completed, failing to separate individual contribution from general team activity.\",\n  \"repairCue\": \"List specific tasks you performed (e.g., 'I designed the API schema', 'I implemented the database layer').\"\n}",
-          "transportErrorName": null
-        }
-      ]
-    },
-    {
-      "model": "qwen3.8-flash",
-      "caseId": "G07",
-      "title": "很粗糙，但 ownership 已经明确",
-      "phase": "P0_STABILITY",
-      "run": 4,
-      "questionPlanId": "QP2",
-      "transcript": "我主要负责后端。",
-      "expectedSemantic": "CONTINUE",
-      "actualSemantic": "ISSUE_DETECTED",
-      "expectedIssueType": null,
-      "actualIssueType": "OWNERSHIP_AMBIGUOUS",
-      "expectedGate": "CONTINUE",
-      "actualGate": "CONTINUE",
-      "evaluatorExactCorrect": false,
-      "finalGateCorrect": true,
-      "productResult": "Evaluator error / Product safe",
-      "validatedEvaluatorResult": {
-        "ok": true,
-        "value": {
-          "questionId": "personal-contribution",
-          "checkpointVersion": 1,
-          "confidence": 0.95,
-          "gateability": "GATE_ELIGIBLE",
-          "answerBoundary": "NONE",
-          "decision": "ISSUE_DETECTED",
-          "issueType": "OWNERSHIP_AMBIGUOUS",
-          "triggeringCriterion": {
-            "kind": "PRIMARY_TARGET",
-            "id": "personal-ownership"
-          },
           "issueExplanation": "The candidate states a role ('backend') but does not specify which designs, implementations, analyses, or decisions were personally completed, failing to separate personal contribution from general team activity.",
           "repairCue": "List specific tasks you performed (e.g., 'I designed the API schema', 'I implemented the database layer')."
         }
@@ -411,7 +186,7 @@
         {
           "attempt": 1,
           "httpStatus": 200,
-          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"personal-contribution\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"ISSUE_DETECTED\\\",\\n  \\\"issueType\\\": \\\"OWNERSHIP_AMBIGUOUS\\\",\\n  \\\"triggeringCriterion\\\": {\\n   \\\"kind\\\": \\\"PRIMARY_TARGET\\\",\\n   \\\"id\\\": \\\"personal-ownership\\\"\\n  },\\n  \\\"issueExplanation\\\": \\\"The candidate states a role ('backend') but does not specify which designs, implementations, analyses, or decisions were personally completed, failing to separate personal contribution from general team activity.\\\",\\n  \\\"repairCue\\\": \\\"List specific tasks you performed (e.g., 'I designed the API schema', 'I implemented the database layer').\\\"\\n}\",\"role\":\"assistant\"}}],\"created\":1788090734,\"id\":\"chatcmpl-81cf4233-f9aa-9325-8d15-f0400b6a337c\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":184,\"prompt_tokens\":1031,\"prompt_tokens_details\":{\"cached_tokens\":1024,\"text_tokens\":1031},\"total_tokens\":1215}}",
+          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"personal-contribution\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"ISSUE_DETECTED\\\",\\n  \\\"issueType\\\": \\\"OWNERSHIP_AMBIGUOUS\\\",\\n  \\\"triggeringCriterion\\\": {\\n   \\\"kind\\\": \\\"PRIMARY_TARGET\\\",\\n   \\\"id\\\": \\\"personal-ownership\\\"\\n  },\\n  \\\"issueExplanation\\\": \\\"The candidate states a role ('backend') but does not specify which designs, implementations, analyses, or decisions were personally completed, failing to separate personal contribution from general team activity.\\\",\\n  \\\"repairCue\\\": \\\"List specific tasks you performed (e.g., 'I designed the API schema', 'I implemented the database layer').\\\"\\n}\",\"role\":\"assistant\"}}],\"created\":1788092502,\"id\":\"chatcmpl-06c8dfe3-cb17-9fe1-affe-c968be2292a9\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":184,\"prompt_tokens\":1031,\"prompt_tokens_details\":{\"cached_tokens\":0,\"text_tokens\":1031},\"total_tokens\":1215}}",
           "structuredOutput": "{\n  \"questionId\": \"personal-contribution\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"ISSUE_DETECTED\",\n  \"issueType\": \"OWNERSHIP_AMBIGUOUS\",\n  \"triggeringCriterion\": {\n   \"kind\": \"PRIMARY_TARGET\",\n   \"id\": \"personal-ownership\"\n  },\n  \"issueExplanation\": \"The candidate states a role ('backend') but does not specify which designs, implementations, analyses, or decisions were personally completed, failing to separate personal contribution from general team activity.\",\n  \"repairCue\": \"List specific tasks you performed (e.g., 'I designed the API schema', 'I implemented the database layer').\"\n}",
           "transportErrorName": null
         }
@@ -422,13 +197,13 @@
       "caseId": "G07",
       "title": "很粗糙，但 ownership 已经明确",
       "phase": "P0_STABILITY",
-      "run": 5,
+      "run": 2,
       "questionPlanId": "QP2",
       "transcript": "我主要负责后端。",
       "expectedSemantic": "CONTINUE",
       "actualSemantic": "ISSUE_DETECTED",
       "expectedIssueType": null,
-      "actualIssueType": "VAGUE_WITHOUT_EVIDENCE",
+      "actualIssueType": "OWNERSHIP_AMBIGUOUS",
       "expectedGate": "CONTINUE",
       "actualGate": "CONTINUE",
       "evaluatorExactCorrect": false,
@@ -443,13 +218,13 @@
           "gateability": "GATE_ELIGIBLE",
           "answerBoundary": "NONE",
           "decision": "ISSUE_DETECTED",
-          "issueType": "VAGUE_WITHOUT_EVIDENCE",
+          "issueType": "OWNERSHIP_AMBIGUOUS",
           "triggeringCriterion": {
-            "kind": "REQUIRED_EVIDENCE",
-            "id": "personal-action"
+            "kind": "PRIMARY_TARGET",
+            "id": "personal-ownership"
           },
-          "issueExplanation": "The candidate states a general role ('responsible for backend') but provides no specific action, decision, implementation detail, or analysis to substantiate the personal contribution.",
-          "repairCue": "Provide concrete examples of what you specifically built, decided, or analyzed within the backend scope."
+          "issueExplanation": "The candidate states a role ('backend') but does not specify which designs, implementations, analyses, or decisions were personally completed.",
+          "repairCue": "List specific tasks you performed (e.g., 'I designed the API schema', 'I implemented the database layer')."
         }
       },
       "productReplay": {
@@ -486,8 +261,233 @@
         {
           "attempt": 1,
           "httpStatus": 200,
-          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"personal-contribution\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"ISSUE_DETECTED\\\",\\n  \\\"issueType\\\": \\\"VAGUE_WITHOUT_EVIDENCE\\\",\\n  \\\"triggeringCriterion\\\": {\\n   \\\"kind\\\": \\\"REQUIRED_EVIDENCE\\\",\\n   \\\"id\\\": \\\"personal-action\\\"\\n  },\\n  \\\"issueExplanation\\\": \\\"The candidate states a general role ('responsible for backend') but provides no specific action, decision, implementation detail, or analysis to substantiate the personal contribution.\\\",\\n  \\\"repairCue\\\": \\\"Provide concrete examples of what you specifically built, decided, or analyzed within the backend scope.\\\"\\n}\",\"role\":\"assistant\"}}],\"created\":1788090735,\"id\":\"chatcmpl-519d1a8e-1e7c-9162-ace4-f5d90f9ad103\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":178,\"prompt_tokens\":1031,\"prompt_tokens_details\":{\"cached_tokens\":1024,\"text_tokens\":1031},\"total_tokens\":1209}}",
-          "structuredOutput": "{\n  \"questionId\": \"personal-contribution\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"ISSUE_DETECTED\",\n  \"issueType\": \"VAGUE_WITHOUT_EVIDENCE\",\n  \"triggeringCriterion\": {\n   \"kind\": \"REQUIRED_EVIDENCE\",\n   \"id\": \"personal-action\"\n  },\n  \"issueExplanation\": \"The candidate states a general role ('responsible for backend') but provides no specific action, decision, implementation detail, or analysis to substantiate the personal contribution.\",\n  \"repairCue\": \"Provide concrete examples of what you specifically built, decided, or analyzed within the backend scope.\"\n}",
+          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"personal-contribution\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"ISSUE_DETECTED\\\",\\n  \\\"issueType\\\": \\\"OWNERSHIP_AMBIGUOUS\\\",\\n  \\\"triggeringCriterion\\\": {\\n   \\\"kind\\\": \\\"PRIMARY_TARGET\\\",\\n   \\\"id\\\": \\\"personal-ownership\\\"\\n  },\\n  \\\"issueExplanation\\\": \\\"The candidate states a role ('backend') but does not specify which designs, implementations, analyses, or decisions were personally completed.\\\",\\n  \\\"repairCue\\\": \\\"List specific tasks you performed (e.g., 'I designed the API schema', 'I implemented the database layer').\\\"\\n}\",\"role\":\"assistant\"}}],\"created\":1788092506,\"id\":\"chatcmpl-857d89f1-c2dd-9ebd-9fbf-6b5ec4905644\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":174,\"prompt_tokens\":1031,\"prompt_tokens_details\":{\"cached_tokens\":1024,\"text_tokens\":1031},\"total_tokens\":1205}}",
+          "structuredOutput": "{\n  \"questionId\": \"personal-contribution\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"ISSUE_DETECTED\",\n  \"issueType\": \"OWNERSHIP_AMBIGUOUS\",\n  \"triggeringCriterion\": {\n   \"kind\": \"PRIMARY_TARGET\",\n   \"id\": \"personal-ownership\"\n  },\n  \"issueExplanation\": \"The candidate states a role ('backend') but does not specify which designs, implementations, analyses, or decisions were personally completed.\",\n  \"repairCue\": \"List specific tasks you performed (e.g., 'I designed the API schema', 'I implemented the database layer').\"\n}",
+          "transportErrorName": null
+        }
+      ]
+    },
+    {
+      "model": "qwen3.8-flash",
+      "caseId": "G07",
+      "title": "很粗糙，但 ownership 已经明确",
+      "phase": "P0_STABILITY",
+      "run": 3,
+      "questionPlanId": "QP2",
+      "transcript": "我主要负责后端。",
+      "expectedSemantic": "CONTINUE",
+      "actualSemantic": "ISSUE_DETECTED",
+      "expectedIssueType": null,
+      "actualIssueType": "OWNERSHIP_AMBIGUOUS",
+      "expectedGate": "CONTINUE",
+      "actualGate": "CONTINUE",
+      "evaluatorExactCorrect": false,
+      "finalGateCorrect": true,
+      "productResult": "Evaluator error / Product safe",
+      "validatedEvaluatorResult": {
+        "ok": true,
+        "value": {
+          "questionId": "personal-contribution",
+          "checkpointVersion": 1,
+          "confidence": 0.95,
+          "gateability": "GATE_ELIGIBLE",
+          "answerBoundary": "NONE",
+          "decision": "ISSUE_DETECTED",
+          "issueType": "OWNERSHIP_AMBIGUOUS",
+          "triggeringCriterion": {
+            "kind": "PRIMARY_TARGET",
+            "id": "personal-ownership"
+          },
+          "issueExplanation": "The candidate states a role ('backend') but does not specify which particular designs, implementations, analyses, or decisions were personally completed by them.",
+          "repairCue": "List specific tasks or components you personally built or decided on within the backend scope."
+        }
+      },
+      "productReplay": {
+        "checkpointKind": "FINAL",
+        "checkpointEligibility": {
+          "eligible": true,
+          "reason": "ELIGIBLE"
+        },
+        "transcriptCharacters": 8,
+        "answerDurationMs": 15000,
+        "hasSufficientAnswerContext": true,
+        "persistenceSatisfied": true,
+        "persistenceBasis": "FINAL_COMPLETION",
+        "evaluatorCheckpoints": [
+          {
+            "kind": "FINAL",
+            "checkpointVersion": 1
+          }
+        ],
+        "arbiterDecision": "CONTINUE",
+        "arbiterDecisionWithOracleContext": "CONTINUE",
+        "finalProductDecision": "CONTINUE",
+        "finalRuntimeState": "QUESTION_DONE"
+      },
+      "structuredOutputValidity": {
+        "attemptCount": 1,
+        "firstAttemptOutputCaptured": true,
+        "firstAttemptJsonValid": true,
+        "firstAttemptSchemaValid": true,
+        "acceptedOnFirstAttempt": true,
+        "validatedEventually": true
+      },
+      "rawStructuredModelOutputs": [
+        {
+          "attempt": 1,
+          "httpStatus": 200,
+          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"personal-contribution\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"ISSUE_DETECTED\\\",\\n  \\\"issueType\\\": \\\"OWNERSHIP_AMBIGUOUS\\\",\\n  \\\"triggeringCriterion\\\": {\\n   \\\"kind\\\": \\\"PRIMARY_TARGET\\\",\\n   \\\"id\\\": \\\"personal-ownership\\\"\\n  },\\n  \\\"issueExplanation\\\": \\\"The candidate states a role ('backend') but does not specify which particular designs, implementations, analyses, or decisions were personally completed by them.\\\",\\n  \\\"repairCue\\\": \\\"List specific tasks or components you personally built or decided on within the backend scope.\\\"\\n}\",\"role\":\"assistant\"}}],\"created\":1788092511,\"id\":\"chatcmpl-b660b4d4-3265-9f2c-b31b-342a17635d83\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":170,\"prompt_tokens\":1031,\"prompt_tokens_details\":{\"cached_tokens\":1024,\"text_tokens\":1031},\"total_tokens\":1201}}",
+          "structuredOutput": "{\n  \"questionId\": \"personal-contribution\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"ISSUE_DETECTED\",\n  \"issueType\": \"OWNERSHIP_AMBIGUOUS\",\n  \"triggeringCriterion\": {\n   \"kind\": \"PRIMARY_TARGET\",\n   \"id\": \"personal-ownership\"\n  },\n  \"issueExplanation\": \"The candidate states a role ('backend') but does not specify which particular designs, implementations, analyses, or decisions were personally completed by them.\",\n  \"repairCue\": \"List specific tasks or components you personally built or decided on within the backend scope.\"\n}",
+          "transportErrorName": null
+        }
+      ]
+    },
+    {
+      "model": "qwen3.8-flash",
+      "caseId": "G07",
+      "title": "很粗糙，但 ownership 已经明确",
+      "phase": "P0_STABILITY",
+      "run": 4,
+      "questionPlanId": "QP2",
+      "transcript": "我主要负责后端。",
+      "expectedSemantic": "CONTINUE",
+      "actualSemantic": "ISSUE_DETECTED",
+      "expectedIssueType": null,
+      "actualIssueType": "OWNERSHIP_AMBIGUOUS",
+      "expectedGate": "CONTINUE",
+      "actualGate": "CONTINUE",
+      "evaluatorExactCorrect": false,
+      "finalGateCorrect": true,
+      "productResult": "Evaluator error / Product safe",
+      "validatedEvaluatorResult": {
+        "ok": true,
+        "value": {
+          "questionId": "personal-contribution",
+          "checkpointVersion": 1,
+          "confidence": 0.95,
+          "gateability": "GATE_ELIGIBLE",
+          "answerBoundary": "NONE",
+          "decision": "ISSUE_DETECTED",
+          "issueType": "OWNERSHIP_AMBIGUOUS",
+          "triggeringCriterion": {
+            "kind": "PRIMARY_TARGET",
+            "id": "personal-ownership"
+          },
+          "issueExplanation": "The candidate states a role ('backend') but does not specify any concrete design, implementation, analysis, or decision personally performed.",
+          "repairCue": "Please describe specific tasks you completed, such as designing an API, implementing a module, or analyzing performance data."
+        }
+      },
+      "productReplay": {
+        "checkpointKind": "FINAL",
+        "checkpointEligibility": {
+          "eligible": true,
+          "reason": "ELIGIBLE"
+        },
+        "transcriptCharacters": 8,
+        "answerDurationMs": 15000,
+        "hasSufficientAnswerContext": true,
+        "persistenceSatisfied": true,
+        "persistenceBasis": "FINAL_COMPLETION",
+        "evaluatorCheckpoints": [
+          {
+            "kind": "FINAL",
+            "checkpointVersion": 1
+          }
+        ],
+        "arbiterDecision": "CONTINUE",
+        "arbiterDecisionWithOracleContext": "CONTINUE",
+        "finalProductDecision": "CONTINUE",
+        "finalRuntimeState": "QUESTION_DONE"
+      },
+      "structuredOutputValidity": {
+        "attemptCount": 1,
+        "firstAttemptOutputCaptured": true,
+        "firstAttemptJsonValid": true,
+        "firstAttemptSchemaValid": true,
+        "acceptedOnFirstAttempt": true,
+        "validatedEventually": true
+      },
+      "rawStructuredModelOutputs": [
+        {
+          "attempt": 1,
+          "httpStatus": 200,
+          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"personal-contribution\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"ISSUE_DETECTED\\\",\\n  \\\"issueType\\\": \\\"OWNERSHIP_AMBIGUOUS\\\",\\n  \\\"triggeringCriterion\\\": {\\n   \\\"kind\\\": \\\"PRIMARY_TARGET\\\",\\n   \\\"id\\\": \\\"personal-ownership\\\"\\n  },\\n  \\\"issueExplanation\\\": \\\"The candidate states a role ('backend') but does not specify any concrete design, implementation, analysis, or decision personally performed.\\\",\\n  \\\"repairCue\\\": \\\"Please describe specific tasks you completed, such as designing an API, implementing a module, or analyzing performance data.\\\"\\n}\",\"role\":\"assistant\"}}],\"created\":1788092515,\"id\":\"chatcmpl-03799258-29e9-9a4d-af9c-a1f96726b88a\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":173,\"prompt_tokens\":1031,\"prompt_tokens_details\":{\"cached_tokens\":1024,\"text_tokens\":1031},\"total_tokens\":1204}}",
+          "structuredOutput": "{\n  \"questionId\": \"personal-contribution\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"ISSUE_DETECTED\",\n  \"issueType\": \"OWNERSHIP_AMBIGUOUS\",\n  \"triggeringCriterion\": {\n   \"kind\": \"PRIMARY_TARGET\",\n   \"id\": \"personal-ownership\"\n  },\n  \"issueExplanation\": \"The candidate states a role ('backend') but does not specify any concrete design, implementation, analysis, or decision personally performed.\",\n  \"repairCue\": \"Please describe specific tasks you completed, such as designing an API, implementing a module, or analyzing performance data.\"\n}",
+          "transportErrorName": null
+        }
+      ]
+    },
+    {
+      "model": "qwen3.8-flash",
+      "caseId": "G07",
+      "title": "很粗糙，但 ownership 已经明确",
+      "phase": "P0_STABILITY",
+      "run": 5,
+      "questionPlanId": "QP2",
+      "transcript": "我主要负责后端。",
+      "expectedSemantic": "CONTINUE",
+      "actualSemantic": "ISSUE_DETECTED",
+      "expectedIssueType": null,
+      "actualIssueType": "OWNERSHIP_AMBIGUOUS",
+      "expectedGate": "CONTINUE",
+      "actualGate": "CONTINUE",
+      "evaluatorExactCorrect": false,
+      "finalGateCorrect": true,
+      "productResult": "Evaluator error / Product safe",
+      "validatedEvaluatorResult": {
+        "ok": true,
+        "value": {
+          "questionId": "personal-contribution",
+          "checkpointVersion": 1,
+          "confidence": 0.95,
+          "gateability": "GATE_ELIGIBLE",
+          "answerBoundary": "NONE",
+          "decision": "ISSUE_DETECTED",
+          "issueType": "OWNERSHIP_AMBIGUOUS",
+          "triggeringCriterion": {
+            "kind": "PRIMARY_TARGET",
+            "id": "personal-ownership"
+          },
+          "issueExplanation": "The candidate states a role ('backend') but does not specify any concrete design, implementation, analysis, or decision personally performed.",
+          "repairCue": "Please list specific tasks you completed, such as designing an API, writing code for a module, or analyzing performance data."
+        }
+      },
+      "productReplay": {
+        "checkpointKind": "FINAL",
+        "checkpointEligibility": {
+          "eligible": true,
+          "reason": "ELIGIBLE"
+        },
+        "transcriptCharacters": 8,
+        "answerDurationMs": 15000,
+        "hasSufficientAnswerContext": true,
+        "persistenceSatisfied": true,
+        "persistenceBasis": "FINAL_COMPLETION",
+        "evaluatorCheckpoints": [
+          {
+            "kind": "FINAL",
+            "checkpointVersion": 1
+          }
+        ],
+        "arbiterDecision": "CONTINUE",
+        "arbiterDecisionWithOracleContext": "CONTINUE",
+        "finalProductDecision": "CONTINUE",
+        "finalRuntimeState": "QUESTION_DONE"
+      },
+      "structuredOutputValidity": {
+        "attemptCount": 1,
+        "firstAttemptOutputCaptured": true,
+        "firstAttemptJsonValid": true,
+        "firstAttemptSchemaValid": true,
+        "acceptedOnFirstAttempt": true,
+        "validatedEventually": true
+      },
+      "rawStructuredModelOutputs": [
+        {
+          "attempt": 1,
+          "httpStatus": 200,
+          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"personal-contribution\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"ISSUE_DETECTED\\\",\\n  \\\"issueType\\\": \\\"OWNERSHIP_AMBIGUOUS\\\",\\n  \\\"triggeringCriterion\\\": {\\n   \\\"kind\\\": \\\"PRIMARY_TARGET\\\",\\n   \\\"id\\\": \\\"personal-ownership\\\"\\n  },\\n  \\\"issueExplanation\\\": \\\"The candidate states a role ('backend') but does not specify any concrete design, implementation, analysis, or decision personally performed.\\\",\\n  \\\"repairCue\\\": \\\"Please list specific tasks you completed, such as designing an API, writing code for a module, or analyzing performance data.\\\"\\n}\",\"role\":\"assistant\"}}],\"created\":1788092518,\"id\":\"chatcmpl-509a70f6-3a93-976a-879d-a037d7c271b3\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":175,\"prompt_tokens\":1031,\"prompt_tokens_details\":{\"cached_tokens\":1024,\"text_tokens\":1031},\"total_tokens\":1206}}",
+          "structuredOutput": "{\n  \"questionId\": \"personal-contribution\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"ISSUE_DETECTED\",\n  \"issueType\": \"OWNERSHIP_AMBIGUOUS\",\n  \"triggeringCriterion\": {\n   \"kind\": \"PRIMARY_TARGET\",\n   \"id\": \"personal-ownership\"\n  },\n  \"issueExplanation\": \"The candidate states a role ('backend') but does not specify any concrete design, implementation, analysis, or decision personally performed.\",\n  \"repairCue\": \"Please list specific tasks you completed, such as designing an API, writing code for a module, or analyzing performance data.\"\n}",
           "transportErrorName": null
         }
       ]
@@ -558,7 +558,7 @@
         {
           "attempt": 1,
           "httpStatus": 200,
-          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"personal-contribution\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"CONTINUE\\\",\\n  \\\"issueType\\\": null,\\n  \\\"triggeringCriterion\\\": null,\\n  \\\"issueExplanation\\\": null,\\n  \\\"repairCue\\\": null\\n}\",\"role\":\"assistant\"}}],\"created\":1788090737,\"id\":\"chatcmpl-a8e69ba1-f5ee-965d-8cc7-d714bc970fea\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":98,\"prompt_tokens\":1064,\"prompt_tokens_details\":{\"cached_tokens\":0,\"text_tokens\":1064},\"total_tokens\":1162}}",
+          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"personal-contribution\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"CONTINUE\\\",\\n  \\\"issueType\\\": null,\\n  \\\"triggeringCriterion\\\": null,\\n  \\\"issueExplanation\\\": null,\\n  \\\"repairCue\\\": null\\n}\",\"role\":\"assistant\"}}],\"created\":1788092523,\"id\":\"chatcmpl-747329b8-b23a-992b-a3cc-d58f5c2e5042\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":98,\"prompt_tokens\":1064,\"prompt_tokens_details\":{\"cached_tokens\":0,\"text_tokens\":1064},\"total_tokens\":1162}}",
           "structuredOutput": "{\n  \"questionId\": \"personal-contribution\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"CONTINUE\",\n  \"issueType\": null,\n  \"triggeringCriterion\": null,\n  \"issueExplanation\": null,\n  \"repairCue\": null\n}",
           "transportErrorName": null
         }
@@ -630,7 +630,7 @@
         {
           "attempt": 1,
           "httpStatus": 200,
-          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"personal-contribution\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"CONTINUE\\\",\\n  \\\"issueType\\\": null,\\n  \\\"triggeringCriterion\\\": null,\\n  \\\"issueExplanation\\\": null,\\n  \\\"repairCue\\\": null\\n}\",\"role\":\"assistant\"}}],\"created\":1788090739,\"id\":\"chatcmpl-bd7bdd3f-e850-9b78-b7e1-5c70d7fb25ac\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":98,\"prompt_tokens\":1064,\"prompt_tokens_details\":{\"cached_tokens\":1024,\"text_tokens\":1064},\"total_tokens\":1162}}",
+          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"personal-contribution\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"CONTINUE\\\",\\n  \\\"issueType\\\": null,\\n  \\\"triggeringCriterion\\\": null,\\n  \\\"issueExplanation\\\": null,\\n  \\\"repairCue\\\": null\\n}\",\"role\":\"assistant\"}}],\"created\":1788092524,\"id\":\"chatcmpl-b8b573a7-4571-9e0b-86d2-9b75255b09f0\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":98,\"prompt_tokens\":1064,\"prompt_tokens_details\":{\"cached_tokens\":1024,\"text_tokens\":1064},\"total_tokens\":1162}}",
           "structuredOutput": "{\n  \"questionId\": \"personal-contribution\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"CONTINUE\",\n  \"issueType\": null,\n  \"triggeringCriterion\": null,\n  \"issueExplanation\": null,\n  \"repairCue\": null\n}",
           "transportErrorName": null
         }
@@ -702,7 +702,7 @@
         {
           "attempt": 1,
           "httpStatus": 200,
-          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"personal-contribution\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"CONTINUE\\\",\\n  \\\"issueType\\\": null,\\n  \\\"triggeringCriterion\\\": null,\\n  \\\"issueExplanation\\\": null,\\n  \\\"repairCue\\\": null\\n}\",\"role\":\"assistant\"}}],\"created\":1788090740,\"id\":\"chatcmpl-fd0c2b3f-b4fe-92de-8c41-b0614ba8576c\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":98,\"prompt_tokens\":1064,\"prompt_tokens_details\":{\"cached_tokens\":1024,\"text_tokens\":1064},\"total_tokens\":1162}}",
+          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"personal-contribution\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"CONTINUE\\\",\\n  \\\"issueType\\\": null,\\n  \\\"triggeringCriterion\\\": null,\\n  \\\"issueExplanation\\\": null,\\n  \\\"repairCue\\\": null\\n}\",\"role\":\"assistant\"}}],\"created\":1788092527,\"id\":\"chatcmpl-6050778f-5bf9-9245-aa83-390380e45565\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":98,\"prompt_tokens\":1064,\"prompt_tokens_details\":{\"cached_tokens\":1024,\"text_tokens\":1064},\"total_tokens\":1162}}",
           "structuredOutput": "{\n  \"questionId\": \"personal-contribution\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"CONTINUE\",\n  \"issueType\": null,\n  \"triggeringCriterion\": null,\n  \"issueExplanation\": null,\n  \"repairCue\": null\n}",
           "transportErrorName": null
         }
@@ -739,8 +739,8 @@
             "kind": "PRIMARY_TARGET",
             "id": "personal-ownership"
           },
-          "issueExplanation": "The candidate attributes all work (model, deployment, testing) to the team ('we', 'everyone') without identifying any specific task or decision owned personally.",
-          "repairCue": "Identify at least one specific component, decision, or analysis that you personally handled."
+          "issueExplanation": "The candidate uses collective pronouns ('we', 'everyone') and general statements about shared responsibility without identifying any specific task, decision, or component personally owned by the candidate.",
+          "repairCue": "Identify at least one specific design choice, implementation module, analysis step, or decision that you personally executed."
         }
       },
       "productReplay": {
@@ -777,8 +777,8 @@
         {
           "attempt": 1,
           "httpStatus": 200,
-          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"personal-contribution\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"ISSUE_DETECTED\\\",\\n  \\\"issueType\\\": \\\"OWNERSHIP_AMBIGUOUS\\\",\\n  \\\"triggeringCriterion\\\": {\\n   \\\"kind\\\": \\\"PRIMARY_TARGET\\\",\\n   \\\"id\\\": \\\"personal-ownership\\\"\\n  },\\n  \\\"issueExplanation\\\": \\\"The candidate attributes all work (model, deployment, testing) to the team ('we', 'everyone') without identifying any specific task or decision owned personally.\\\",\\n  \\\"repairCue\\\": \\\"Identify at least one specific component, decision, or analysis that you personally handled.\\\"\\n}\",\"role\":\"assistant\"}}],\"created\":1788090741,\"id\":\"chatcmpl-55edc1d1-a49f-9ad8-bc70-48ad9381f5bc\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":174,\"prompt_tokens\":1044,\"prompt_tokens_details\":{\"cached_tokens\":0,\"text_tokens\":1044},\"total_tokens\":1218}}",
-          "structuredOutput": "{\n  \"questionId\": \"personal-contribution\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"ISSUE_DETECTED\",\n  \"issueType\": \"OWNERSHIP_AMBIGUOUS\",\n  \"triggeringCriterion\": {\n   \"kind\": \"PRIMARY_TARGET\",\n   \"id\": \"personal-ownership\"\n  },\n  \"issueExplanation\": \"The candidate attributes all work (model, deployment, testing) to the team ('we', 'everyone') without identifying any specific task or decision owned personally.\",\n  \"repairCue\": \"Identify at least one specific component, decision, or analysis that you personally handled.\"\n}",
+          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"personal-contribution\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"ISSUE_DETECTED\\\",\\n  \\\"issueType\\\": \\\"OWNERSHIP_AMBIGUOUS\\\",\\n  \\\"triggeringCriterion\\\": {\\n   \\\"kind\\\": \\\"PRIMARY_TARGET\\\",\\n   \\\"id\\\": \\\"personal-ownership\\\"\\n  },\\n  \\\"issueExplanation\\\": \\\"The candidate uses collective pronouns ('we', 'everyone') and general statements about shared responsibility without identifying any specific task, decision, or component personally owned by the candidate.\\\",\\n  \\\"repairCue\\\": \\\"Identify at least one specific design choice, implementation module, analysis step, or decision that you personally executed.\\\"\\n}\",\"role\":\"assistant\"}}],\"created\":1788092530,\"id\":\"chatcmpl-ecc47790-3c32-9bd2-ade3-8020a8985201\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":182,\"prompt_tokens\":1044,\"prompt_tokens_details\":{\"cached_tokens\":0,\"text_tokens\":1044},\"total_tokens\":1226}}",
+          "structuredOutput": "{\n  \"questionId\": \"personal-contribution\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"ISSUE_DETECTED\",\n  \"issueType\": \"OWNERSHIP_AMBIGUOUS\",\n  \"triggeringCriterion\": {\n   \"kind\": \"PRIMARY_TARGET\",\n   \"id\": \"personal-ownership\"\n  },\n  \"issueExplanation\": \"The candidate uses collective pronouns ('we', 'everyone') and general statements about shared responsibility without identifying any specific task, decision, or component personally owned by the candidate.\",\n  \"repairCue\": \"Identify at least one specific design choice, implementation module, analysis step, or decision that you personally executed.\"\n}",
           "transportErrorName": null
         }
       ]
@@ -814,8 +814,8 @@
             "kind": "PRIMARY_TARGET",
             "id": "personal-ownership"
           },
-          "issueExplanation": "The candidate attributes all work (model, deployment, testing) to the team ('we', 'everyone') without identifying any specific personal action or responsibility.",
-          "repairCue": "Identify at least one specific task, decision, or component that you personally owned or executed."
+          "issueExplanation": "The candidate attributes all work (model, deployment, testing) to the team ('we together', 'everyone participated'), failing to separate personal contribution from team activity.",
+          "repairCue": "Identify specific tasks or decisions you personally handled, distinct from what the rest of the team did."
         }
       },
       "productReplay": {
@@ -852,8 +852,8 @@
         {
           "attempt": 1,
           "httpStatus": 200,
-          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"personal-contribution\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"ISSUE_DETECTED\\\",\\n  \\\"issueType\\\": \\\"OWNERSHIP_AMBIGUOUS\\\",\\n  \\\"triggeringCriterion\\\": {\\n   \\\"kind\\\": \\\"PRIMARY_TARGET\\\",\\n   \\\"id\\\": \\\"personal-ownership\\\"\\n  },\\n  \\\"issueExplanation\\\": \\\"The candidate attributes all work (model, deployment, testing) to the team ('we', 'everyone') without identifying any specific personal action or responsibility.\\\",\\n  \\\"repairCue\\\": \\\"Identify at least one specific task, decision, or component that you personally owned or executed.\\\"\\n}\",\"role\":\"assistant\"}}],\"created\":1788090742,\"id\":\"chatcmpl-a375da2b-847a-9128-80a5-6bf7fd3c1ed7\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":175,\"prompt_tokens\":1044,\"prompt_tokens_details\":{\"cached_tokens\":1024,\"text_tokens\":1044},\"total_tokens\":1219}}",
-          "structuredOutput": "{\n  \"questionId\": \"personal-contribution\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"ISSUE_DETECTED\",\n  \"issueType\": \"OWNERSHIP_AMBIGUOUS\",\n  \"triggeringCriterion\": {\n   \"kind\": \"PRIMARY_TARGET\",\n   \"id\": \"personal-ownership\"\n  },\n  \"issueExplanation\": \"The candidate attributes all work (model, deployment, testing) to the team ('we', 'everyone') without identifying any specific personal action or responsibility.\",\n  \"repairCue\": \"Identify at least one specific task, decision, or component that you personally owned or executed.\"\n}",
+          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"personal-contribution\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"ISSUE_DETECTED\\\",\\n  \\\"issueType\\\": \\\"OWNERSHIP_AMBIGUOUS\\\",\\n  \\\"triggeringCriterion\\\": {\\n   \\\"kind\\\": \\\"PRIMARY_TARGET\\\",\\n   \\\"id\\\": \\\"personal-ownership\\\"\\n  },\\n  \\\"issueExplanation\\\": \\\"The candidate attributes all work (model, deployment, testing) to the team ('we together', 'everyone participated'), failing to separate personal contribution from team activity.\\\",\\n  \\\"repairCue\\\": \\\"Identify specific tasks or decisions you personally handled, distinct from what the rest of the team did.\\\"\\n}\",\"role\":\"assistant\"}}],\"created\":1788092532,\"id\":\"chatcmpl-d8736c0a-70f8-9f04-9567-6d624bb96ccb\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":178,\"prompt_tokens\":1044,\"prompt_tokens_details\":{\"cached_tokens\":1024,\"text_tokens\":1044},\"total_tokens\":1222}}",
+          "structuredOutput": "{\n  \"questionId\": \"personal-contribution\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"ISSUE_DETECTED\",\n  \"issueType\": \"OWNERSHIP_AMBIGUOUS\",\n  \"triggeringCriterion\": {\n   \"kind\": \"PRIMARY_TARGET\",\n   \"id\": \"personal-ownership\"\n  },\n  \"issueExplanation\": \"The candidate attributes all work (model, deployment, testing) to the team ('we together', 'everyone participated'), failing to separate personal contribution from team activity.\",\n  \"repairCue\": \"Identify specific tasks or decisions you personally handled, distinct from what the rest of the team did.\"\n}",
           "transportErrorName": null
         }
       ]
@@ -889,8 +889,8 @@
             "kind": "PRIMARY_TARGET",
             "id": "personal-ownership"
           },
-          "issueExplanation": "The candidate attributes all work (model, deployment, testing) to the team ('we', 'everyone') without identifying any specific task, decision, or component they personally owned or executed.",
-          "repairCue": "Identify at least one specific design choice, implementation module, analysis step, or decision that you personally handled, distinct from general team participation."
+          "issueExplanation": "The candidate attributes all work (model, deployment, testing) to the team ('we', 'everyone') without specifying any personal actions or ownership of a named component.",
+          "repairCue": "Identify specific tasks, modules, or decisions you personally handled, distinct from the general team effort."
         }
       },
       "productReplay": {
@@ -927,8 +927,8 @@
         {
           "attempt": 1,
           "httpStatus": 200,
-          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"personal-contribution\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"ISSUE_DETECTED\\\",\\n  \\\"issueType\\\": \\\"OWNERSHIP_AMBIGUOUS\\\",\\n  \\\"triggeringCriterion\\\": {\\n   \\\"kind\\\": \\\"PRIMARY_TARGET\\\",\\n   \\\"id\\\": \\\"personal-ownership\\\"\\n  },\\n  \\\"issueExplanation\\\": \\\"The candidate attributes all work (model, deployment, testing) to the team ('we', 'everyone') without identifying any specific task, decision, or component they personally owned or executed.\\\",\\n  \\\"repairCue\\\": \\\"Identify at least one specific design choice, implementation module, analysis step, or decision that you personally handled, distinct from general team participation.\\\"\\n}\",\"role\":\"assistant\"}}],\"created\":1788090746,\"id\":\"chatcmpl-04cd80f1-3241-98d1-b33c-0024d3715d23\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":191,\"prompt_tokens\":1044,\"prompt_tokens_details\":{\"cached_tokens\":1024,\"text_tokens\":1044},\"total_tokens\":1235}}",
-          "structuredOutput": "{\n  \"questionId\": \"personal-contribution\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"ISSUE_DETECTED\",\n  \"issueType\": \"OWNERSHIP_AMBIGUOUS\",\n  \"triggeringCriterion\": {\n   \"kind\": \"PRIMARY_TARGET\",\n   \"id\": \"personal-ownership\"\n  },\n  \"issueExplanation\": \"The candidate attributes all work (model, deployment, testing) to the team ('we', 'everyone') without identifying any specific task, decision, or component they personally owned or executed.\",\n  \"repairCue\": \"Identify at least one specific design choice, implementation module, analysis step, or decision that you personally handled, distinct from general team participation.\"\n}",
+          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"personal-contribution\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"ISSUE_DETECTED\\\",\\n  \\\"issueType\\\": \\\"OWNERSHIP_AMBIGUOUS\\\",\\n  \\\"triggeringCriterion\\\": {\\n   \\\"kind\\\": \\\"PRIMARY_TARGET\\\",\\n   \\\"id\\\": \\\"personal-ownership\\\"\\n  },\\n  \\\"issueExplanation\\\": \\\"The candidate attributes all work (model, deployment, testing) to the team ('we', 'everyone') without specifying any personal actions or ownership of a named component.\\\",\\n  \\\"repairCue\\\": \\\"Identify specific tasks, modules, or decisions you personally handled, distinct from the general team effort.\\\"\\n}\",\"role\":\"assistant\"}}],\"created\":1788092543,\"id\":\"chatcmpl-6f3c33a8-2175-95c0-89cc-2c4281a88ae0\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":179,\"prompt_tokens\":1044,\"prompt_tokens_details\":{\"cached_tokens\":1024,\"text_tokens\":1044},\"total_tokens\":1223}}",
+          "structuredOutput": "{\n  \"questionId\": \"personal-contribution\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"ISSUE_DETECTED\",\n  \"issueType\": \"OWNERSHIP_AMBIGUOUS\",\n  \"triggeringCriterion\": {\n   \"kind\": \"PRIMARY_TARGET\",\n   \"id\": \"personal-ownership\"\n  },\n  \"issueExplanation\": \"The candidate attributes all work (model, deployment, testing) to the team ('we', 'everyone') without specifying any personal actions or ownership of a named component.\",\n  \"repairCue\": \"Identify specific tasks, modules, or decisions you personally handled, distinct from the general team effort.\"\n}",
           "transportErrorName": null
         }
       ]
@@ -964,8 +964,8 @@
             "kind": "PRIMARY_TARGET",
             "id": "personal-ownership"
           },
-          "issueExplanation": "The candidate claims overall responsibility ('basically I am responsible for everything') but does not name any specific work area, subsystem, component, or personal action performed.",
-          "repairCue": "List specific tasks, design decisions, or implementations you personally handled."
+          "issueExplanation": "The candidate claims overall responsibility ('project lead', 'basically I am responsible') but does not name any specific work area, subsystem, component, or personal action performed by them.",
+          "repairCue": "List specific tasks you personally executed (e.g., designed module X, implemented algorithm Y, analyzed data Z) rather than claiming general ownership."
         }
       },
       "productReplay": {
@@ -1002,8 +1002,8 @@
         {
           "attempt": 1,
           "httpStatus": 200,
-          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"personal-contribution\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"ISSUE_DETECTED\\\",\\n  \\\"issueType\\\": \\\"OWNERSHIP_AMBIGUOUS\\\",\\n  \\\"triggeringCriterion\\\": {\\n   \\\"kind\\\": \\\"PRIMARY_TARGET\\\",\\n   \\\"id\\\": \\\"personal-ownership\\\"\\n  },\\n  \\\"issueExplanation\\\": \\\"The candidate claims overall responsibility ('basically I am responsible for everything') but does not name any specific work area, subsystem, component, or personal action performed.\\\",\\n  \\\"repairCue\\\": \\\"List specific tasks, design decisions, or implementations you personally handled.\\\"\\n}\",\"role\":\"assistant\"}}],\"created\":1788090748,\"id\":\"chatcmpl-63faa021-2f03-9117-aba8-67adfb6f0c45\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":171,\"prompt_tokens\":1037,\"prompt_tokens_details\":{\"cached_tokens\":0,\"text_tokens\":1037},\"total_tokens\":1208}}",
-          "structuredOutput": "{\n  \"questionId\": \"personal-contribution\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"ISSUE_DETECTED\",\n  \"issueType\": \"OWNERSHIP_AMBIGUOUS\",\n  \"triggeringCriterion\": {\n   \"kind\": \"PRIMARY_TARGET\",\n   \"id\": \"personal-ownership\"\n  },\n  \"issueExplanation\": \"The candidate claims overall responsibility ('basically I am responsible for everything') but does not name any specific work area, subsystem, component, or personal action performed.\",\n  \"repairCue\": \"List specific tasks, design decisions, or implementations you personally handled.\"\n}",
+          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"personal-contribution\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"ISSUE_DETECTED\\\",\\n  \\\"issueType\\\": \\\"OWNERSHIP_AMBIGUOUS\\\",\\n  \\\"triggeringCriterion\\\": {\\n   \\\"kind\\\": \\\"PRIMARY_TARGET\\\",\\n   \\\"id\\\": \\\"personal-ownership\\\"\\n  },\\n  \\\"issueExplanation\\\": \\\"The candidate claims overall responsibility ('project lead', 'basically I am responsible') but does not name any specific work area, subsystem, component, or personal action performed by them.\\\",\\n  \\\"repairCue\\\": \\\"List specific tasks you personally executed (e.g., designed module X, implemented algorithm Y, analyzed data Z) rather than claiming general ownership.\\\"\\n}\",\"role\":\"assistant\"}}],\"created\":1788092547,\"id\":\"chatcmpl-9e26fab9-228f-9395-a815-6793ce3b6f49\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":190,\"prompt_tokens\":1037,\"prompt_tokens_details\":{\"cached_tokens\":0,\"text_tokens\":1037},\"total_tokens\":1227}}",
+          "structuredOutput": "{\n  \"questionId\": \"personal-contribution\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"ISSUE_DETECTED\",\n  \"issueType\": \"OWNERSHIP_AMBIGUOUS\",\n  \"triggeringCriterion\": {\n   \"kind\": \"PRIMARY_TARGET\",\n   \"id\": \"personal-ownership\"\n  },\n  \"issueExplanation\": \"The candidate claims overall responsibility ('project lead', 'basically I am responsible') but does not name any specific work area, subsystem, component, or personal action performed by them.\",\n  \"repairCue\": \"List specific tasks you personally executed (e.g., designed module X, implemented algorithm Y, analyzed data Z) rather than claiming general ownership.\"\n}",
           "transportErrorName": null
         }
       ]
@@ -1039,8 +1039,8 @@
             "kind": "PRIMARY_TARGET",
             "id": "personal-ownership"
           },
-          "issueExplanation": "The candidate claims overall responsibility ('basically I am responsible for everything') and a title ('project lead') but does not name any specific work area, subsystem, component, or personal action performed by them.",
-          "repairCue": "List specific tasks, modules, or decisions you personally handled (e.g., 'I designed the database schema', 'I implemented the login API')."
+          "issueExplanation": "The candidate claims overall responsibility based on their title ('project lead') but does not name any specific work area, subsystem, component, or personal action they performed.",
+          "repairCue": "Identify specific tasks, modules, or decisions you personally handled, rather than just stating your role."
         }
       },
       "productReplay": {
@@ -1077,8 +1077,8 @@
         {
           "attempt": 1,
           "httpStatus": 200,
-          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"personal-contribution\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"ISSUE_DETECTED\\\",\\n  \\\"issueType\\\": \\\"OWNERSHIP_AMBIGUOUS\\\",\\n  \\\"triggeringCriterion\\\": {\\n   \\\"kind\\\": \\\"PRIMARY_TARGET\\\",\\n   \\\"id\\\": \\\"personal-ownership\\\"\\n  },\\n  \\\"issueExplanation\\\": \\\"The candidate claims overall responsibility ('basically I am responsible for everything') and a title ('project lead') but does not name any specific work area, subsystem, component, or personal action performed by them.\\\",\\n  \\\"repairCue\\\": \\\"List specific tasks, modules, or decisions you personally handled (e.g., 'I designed the database schema', 'I implemented the login API').\\\"\\n}\",\"role\":\"assistant\"}}],\"created\":1788090750,\"id\":\"chatcmpl-a03dd5eb-e732-9833-8a6a-97d66272261a\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":196,\"prompt_tokens\":1037,\"prompt_tokens_details\":{\"cached_tokens\":1024,\"text_tokens\":1037},\"total_tokens\":1233}}",
-          "structuredOutput": "{\n  \"questionId\": \"personal-contribution\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"ISSUE_DETECTED\",\n  \"issueType\": \"OWNERSHIP_AMBIGUOUS\",\n  \"triggeringCriterion\": {\n   \"kind\": \"PRIMARY_TARGET\",\n   \"id\": \"personal-ownership\"\n  },\n  \"issueExplanation\": \"The candidate claims overall responsibility ('basically I am responsible for everything') and a title ('project lead') but does not name any specific work area, subsystem, component, or personal action performed by them.\",\n  \"repairCue\": \"List specific tasks, modules, or decisions you personally handled (e.g., 'I designed the database schema', 'I implemented the login API').\"\n}",
+          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"personal-contribution\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"ISSUE_DETECTED\\\",\\n  \\\"issueType\\\": \\\"OWNERSHIP_AMBIGUOUS\\\",\\n  \\\"triggeringCriterion\\\": {\\n   \\\"kind\\\": \\\"PRIMARY_TARGET\\\",\\n   \\\"id\\\": \\\"personal-ownership\\\"\\n  },\\n  \\\"issueExplanation\\\": \\\"The candidate claims overall responsibility based on their title ('project lead') but does not name any specific work area, subsystem, component, or personal action they performed.\\\",\\n  \\\"repairCue\\\": \\\"Identify specific tasks, modules, or decisions you personally handled, rather than just stating your role.\\\"\\n}\",\"role\":\"assistant\"}}],\"created\":1788092551,\"id\":\"chatcmpl-1ce30c7b-9ed6-965b-9126-7a32244a2168\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":178,\"prompt_tokens\":1037,\"prompt_tokens_details\":{\"cached_tokens\":1024,\"text_tokens\":1037},\"total_tokens\":1215}}",
+          "structuredOutput": "{\n  \"questionId\": \"personal-contribution\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"ISSUE_DETECTED\",\n  \"issueType\": \"OWNERSHIP_AMBIGUOUS\",\n  \"triggeringCriterion\": {\n   \"kind\": \"PRIMARY_TARGET\",\n   \"id\": \"personal-ownership\"\n  },\n  \"issueExplanation\": \"The candidate claims overall responsibility based on their title ('project lead') but does not name any specific work area, subsystem, component, or personal action they performed.\",\n  \"repairCue\": \"Identify specific tasks, modules, or decisions you personally handled, rather than just stating your role.\"\n}",
           "transportErrorName": null
         }
       ]
@@ -1114,8 +1114,8 @@
             "kind": "PRIMARY_TARGET",
             "id": "personal-ownership"
           },
-          "issueExplanation": "The candidate claims overall responsibility ('project leader', 'basically I am responsible') but does not name any specific work area, subsystem, component, or task they personally owned or handled.",
-          "repairCue": "List specific design, implementation, analysis, or decision tasks you personally completed."
+          "issueExplanation": "The candidate claims overall responsibility ('basically I am responsible for everything') without naming any specific work area, subsystem, component, or personal action, which fails to establish concrete personal ownership.",
+          "repairCue": "List specific tasks, modules, or decisions you personally handled (e.g., 'I designed the API schema', 'I implemented the data pipeline')."
         }
       },
       "productReplay": {
@@ -1152,8 +1152,8 @@
         {
           "attempt": 1,
           "httpStatus": 200,
-          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"personal-contribution\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"ISSUE_DETECTED\\\",\\n  \\\"issueType\\\": \\\"OWNERSHIP_AMBIGUOUS\\\",\\n  \\\"triggeringCriterion\\\": {\\n   \\\"kind\\\": \\\"PRIMARY_TARGET\\\",\\n   \\\"id\\\": \\\"personal-ownership\\\"\\n  },\\n  \\\"issueExplanation\\\": \\\"The candidate claims overall responsibility ('project leader', 'basically I am responsible') but does not name any specific work area, subsystem, component, or task they personally owned or handled.\\\",\\n  \\\"repairCue\\\": \\\"List specific design, implementation, analysis, or decision tasks you personally completed.\\\"\\n}\",\"role\":\"assistant\"}}],\"created\":1788090752,\"id\":\"chatcmpl-b428ac5e-1980-97ab-8620-24857a25a3a1\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":178,\"prompt_tokens\":1037,\"prompt_tokens_details\":{\"cached_tokens\":1024,\"text_tokens\":1037},\"total_tokens\":1215}}",
-          "structuredOutput": "{\n  \"questionId\": \"personal-contribution\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"ISSUE_DETECTED\",\n  \"issueType\": \"OWNERSHIP_AMBIGUOUS\",\n  \"triggeringCriterion\": {\n   \"kind\": \"PRIMARY_TARGET\",\n   \"id\": \"personal-ownership\"\n  },\n  \"issueExplanation\": \"The candidate claims overall responsibility ('project leader', 'basically I am responsible') but does not name any specific work area, subsystem, component, or task they personally owned or handled.\",\n  \"repairCue\": \"List specific design, implementation, analysis, or decision tasks you personally completed.\"\n}",
+          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"personal-contribution\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"ISSUE_DETECTED\\\",\\n  \\\"issueType\\\": \\\"OWNERSHIP_AMBIGUOUS\\\",\\n  \\\"triggeringCriterion\\\": {\\n   \\\"kind\\\": \\\"PRIMARY_TARGET\\\",\\n   \\\"id\\\": \\\"personal-ownership\\\"\\n  },\\n  \\\"issueExplanation\\\": \\\"The candidate claims overall responsibility ('basically I am responsible for everything') without naming any specific work area, subsystem, component, or personal action, which fails to establish concrete personal ownership.\\\",\\n  \\\"repairCue\\\": \\\"List specific tasks, modules, or decisions you personally handled (e.g., 'I designed the API schema', 'I implemented the data pipeline').\\\"\\n}\",\"role\":\"assistant\"}}],\"created\":1788092556,\"id\":\"chatcmpl-7738884b-f031-9065-8757-6c25fb0a61ed\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":192,\"prompt_tokens\":1037,\"prompt_tokens_details\":{\"cached_tokens\":1024,\"text_tokens\":1037},\"total_tokens\":1229}}",
+          "structuredOutput": "{\n  \"questionId\": \"personal-contribution\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"ISSUE_DETECTED\",\n  \"issueType\": \"OWNERSHIP_AMBIGUOUS\",\n  \"triggeringCriterion\": {\n   \"kind\": \"PRIMARY_TARGET\",\n   \"id\": \"personal-ownership\"\n  },\n  \"issueExplanation\": \"The candidate claims overall responsibility ('basically I am responsible for everything') without naming any specific work area, subsystem, component, or personal action, which fails to establish concrete personal ownership.\",\n  \"repairCue\": \"List specific tasks, modules, or decisions you personally handled (e.g., 'I designed the API schema', 'I implemented the data pipeline').\"\n}",
           "transportErrorName": null
         }
       ]

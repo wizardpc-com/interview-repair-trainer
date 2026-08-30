@@ -1,0 +1,1963 @@
+{
+  "generatedAt": "2026-08-30T12:28:12.333Z",
+  "status": "COMPLETE",
+  "mode": "full-once",
+  "reportFile": "qwen-stage8-full-once-v1.0.json",
+  "oracle": {
+    "version": "1.0",
+    "sha256": "A1678254FF31F2BF05D85D99EBBD7C101C28E23324B795CEFCD7065B983972FC",
+    "requestedFileName": "Interview_Repair_Trainer_Golden_Test_Set_ONLY_v1.0.md",
+    "resolvedFileName": "Interview_Repair_Trainer_Golden_Test_Set_v1.0.md"
+  },
+  "runConfiguration": {
+    "focusedRegressionCaseIds": [
+      "G07",
+      "G08",
+      "G11",
+      "G12",
+      "G19"
+    ],
+    "p0FalseGateCaseIds": [
+      "G05",
+      "G07",
+      "G09",
+      "G13",
+      "G17",
+      "G19"
+    ],
+    "p1ClearGateCaseIds": [
+      "G02",
+      "G04",
+      "G06",
+      "G08",
+      "G10",
+      "G12",
+      "G14",
+      "G16",
+      "G18",
+      "G20"
+    ],
+    "stabilityRunsPerCase": 3,
+    "plannedRuns": [
+      {
+        "caseId": "G01",
+        "phase": "FIRST_PASS",
+        "run": 1
+      },
+      {
+        "caseId": "G02",
+        "phase": "FIRST_PASS",
+        "run": 1
+      },
+      {
+        "caseId": "G03",
+        "phase": "FIRST_PASS",
+        "run": 1
+      },
+      {
+        "caseId": "G04",
+        "phase": "FIRST_PASS",
+        "run": 1
+      },
+      {
+        "caseId": "G05",
+        "phase": "FIRST_PASS",
+        "run": 1
+      },
+      {
+        "caseId": "G06",
+        "phase": "FIRST_PASS",
+        "run": 1
+      },
+      {
+        "caseId": "G07",
+        "phase": "FIRST_PASS",
+        "run": 1
+      },
+      {
+        "caseId": "G08",
+        "phase": "FIRST_PASS",
+        "run": 1
+      },
+      {
+        "caseId": "G09",
+        "phase": "FIRST_PASS",
+        "run": 1
+      },
+      {
+        "caseId": "G10",
+        "phase": "FIRST_PASS",
+        "run": 1
+      },
+      {
+        "caseId": "G11",
+        "phase": "FIRST_PASS",
+        "run": 1
+      },
+      {
+        "caseId": "G12",
+        "phase": "FIRST_PASS",
+        "run": 1
+      },
+      {
+        "caseId": "G13",
+        "phase": "FIRST_PASS",
+        "run": 1
+      },
+      {
+        "caseId": "G14",
+        "phase": "FIRST_PASS",
+        "run": 1
+      },
+      {
+        "caseId": "G15",
+        "phase": "FIRST_PASS",
+        "run": 1
+      },
+      {
+        "caseId": "G16",
+        "phase": "FIRST_PASS",
+        "run": 1
+      },
+      {
+        "caseId": "G17",
+        "phase": "FIRST_PASS",
+        "run": 1
+      },
+      {
+        "caseId": "G18",
+        "phase": "FIRST_PASS",
+        "run": 1
+      },
+      {
+        "caseId": "G19",
+        "phase": "FIRST_PASS",
+        "run": 1
+      },
+      {
+        "caseId": "G20",
+        "phase": "FIRST_PASS",
+        "run": 1
+      }
+    ]
+  },
+  "releaseAssessment": null,
+  "firstPassStructuredOutputValidity": {
+    "observations": 20,
+    "outputCaptured": 20,
+    "jsonValid": 20,
+    "schemaValid": 20,
+    "acceptedWithoutRetry": 20,
+    "validatedEventually": 20
+  },
+  "configuredHeuristics": {
+    "checkpoint": {
+      "minTranscriptCharacters": 80,
+      "minAnswerDurationMs": 5000,
+      "minCheckpointIntervalMs": 8000
+    },
+    "semanticGate": {
+      "minContextCharacters": 80,
+      "minContextDurationMs": 5000,
+      "minConfidence": 0.8
+    }
+  },
+  "checkpointPolicyPreflight": {
+    "finalMinimumCharacters": 4,
+    "interim": {
+      "minTranscriptCharacters": 80,
+      "minAnswerDurationMs": 5000,
+      "minCheckpointIntervalMs": 8000
+    },
+    "persistence": "FINAL completion is immediately gate-eligible after context checks; INTERIM requires the same issue on a newer checkpoint.",
+    "p1": [
+      {
+        "caseId": "G02",
+        "checkpointKind": "FINAL",
+        "transcriptCharacters": 31,
+        "minimumCharacters": 4,
+        "eligibleByLength": true
+      },
+      {
+        "caseId": "G04",
+        "checkpointKind": "FINAL",
+        "transcriptCharacters": 37,
+        "minimumCharacters": 4,
+        "eligibleByLength": true
+      },
+      {
+        "caseId": "G06",
+        "checkpointKind": "FINAL",
+        "transcriptCharacters": 37,
+        "minimumCharacters": 4,
+        "eligibleByLength": true
+      },
+      {
+        "caseId": "G08",
+        "checkpointKind": "FINAL",
+        "transcriptCharacters": 22,
+        "minimumCharacters": 4,
+        "eligibleByLength": true
+      },
+      {
+        "caseId": "G10",
+        "checkpointKind": "FINAL",
+        "transcriptCharacters": 35,
+        "minimumCharacters": 4,
+        "eligibleByLength": true
+      },
+      {
+        "caseId": "G12",
+        "checkpointKind": "FINAL",
+        "transcriptCharacters": 26,
+        "minimumCharacters": 4,
+        "eligibleByLength": true
+      },
+      {
+        "caseId": "G14",
+        "checkpointKind": "FINAL",
+        "transcriptCharacters": 71,
+        "minimumCharacters": 4,
+        "eligibleByLength": true
+      },
+      {
+        "caseId": "G16",
+        "checkpointKind": "FINAL",
+        "transcriptCharacters": 31,
+        "minimumCharacters": 4,
+        "eligibleByLength": true
+      },
+      {
+        "caseId": "G18",
+        "checkpointKind": "FINAL",
+        "transcriptCharacters": 29,
+        "minimumCharacters": 4,
+        "eligibleByLength": true
+      },
+      {
+        "caseId": "G20",
+        "checkpointKind": "FINAL",
+        "transcriptCharacters": 59,
+        "minimumCharacters": 4,
+        "eligibleByLength": true
+      }
+    ]
+  },
+  "stabilityRunsPerCase": 3,
+  "credentialSafety": "The serialized report was redacted and checked against the configured API key before writing.",
+  "model": "qwen3.8-flash",
+  "records": [
+    {
+      "model": "qwen3.8-flash",
+      "caseId": "G01",
+      "title": "明确正确",
+      "phase": "FIRST_PASS",
+      "run": 1,
+      "questionPlan": {
+        "oracleId": "QP3",
+        "oracleSurfaceQuestion": "你选择了什么方案？为什么？",
+        "oracleCaseQuestion": "你选择了什么技术方案？为什么？",
+        "productSurfaceQuestion": "你选择了哪项重要的技术方案？为什么这样选择？",
+        "productPlanId": "technical-choice"
+      },
+      "transcriptKind": "ANSWER",
+      "transcript": "我负责端侧模型选型，最后选择 YOLOv8n。因为 K230 的内存和延迟预算比较紧，我们比较了 v8n 和 v8s，v8s 精度略高但端侧运行明显更慢，所以最终优先保证实时运行。",
+      "expectedSemantic": "CONTINUE",
+      "actualSemantic": "CONTINUE",
+      "expectedIssueType": null,
+      "actualIssueType": null,
+      "expectedGate": "CONTINUE",
+      "actualGate": "CONTINUE",
+      "evaluatorDecisionCorrect": true,
+      "evaluatorExactCorrect": true,
+      "evaluatorGateSignalEligible": null,
+      "arbiterWithOracleContextCorrect": true,
+      "finalGateCorrect": true,
+      "productResult": "Evaluator label correct / Product correct",
+      "failureClassifications": [],
+      "validatedEvaluatorResult": {
+        "ok": true,
+        "value": {
+          "questionId": "technical-choice",
+          "checkpointVersion": 1,
+          "confidence": 0.95,
+          "gateability": "GATE_ELIGIBLE",
+          "answerBoundary": "NONE",
+          "decision": "CONTINUE",
+          "issueType": null,
+          "triggeringCriterion": null,
+          "issueExplanation": null,
+          "repairCue": null
+        }
+      },
+      "productReplay": {
+        "checkpointKind": "FINAL",
+        "checkpointEligibility": {
+          "eligible": true,
+          "reason": "ELIGIBLE"
+        },
+        "transcriptCharacters": 90,
+        "answerDurationMs": 15000,
+        "hasSufficientAnswerContext": true,
+        "persistenceSatisfied": true,
+        "persistenceBasis": "FINAL_COMPLETION",
+        "evaluatorCheckpoints": [
+          {
+            "kind": "FINAL",
+            "checkpointVersion": 2
+          }
+        ],
+        "arbiterDecision": "CONTINUE",
+        "arbiterDecisionWithOracleContext": "CONTINUE",
+        "finalProductDecision": "CONTINUE",
+        "finalRuntimeState": "QUESTION_DONE"
+      },
+      "structuredOutputValidity": {
+        "attemptCount": 1,
+        "firstAttemptOutputCaptured": true,
+        "firstAttemptJsonValid": true,
+        "firstAttemptSchemaValid": true,
+        "acceptedOnFirstAttempt": true,
+        "validatedEventually": true,
+        "recoveredAfterRetry": false
+      },
+      "rawStructuredModelOutputs": [
+        {
+          "attempt": 1,
+          "httpStatus": 200,
+          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"technical-choice\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"CONTINUE\\\",\\n  \\\"issueType\\\": null,\\n  \\\"triggeringCriterion\\\": null,\\n  \\\"issueExplanation\\\": null,\\n  \\\"repairCue\\\": null\\n}\",\"role\":\"assistant\"}}],\"created\":1788092856,\"id\":\"chatcmpl-e5e7d72a-7fb7-98d7-8fcb-015b14d8438f\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":97,\"prompt_tokens\":1067,\"prompt_tokens_details\":{\"cached_tokens\":0,\"text_tokens\":1067},\"total_tokens\":1164}}",
+          "structuredOutput": "{\n  \"questionId\": \"technical-choice\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"CONTINUE\",\n  \"issueType\": null,\n  \"triggeringCriterion\": null,\n  \"issueExplanation\": null,\n  \"repairCue\": null\n}",
+          "transportErrorName": null
+        }
+      ]
+    },
+    {
+      "model": "qwen3.8-flash",
+      "caseId": "G02",
+      "title": "只回答 What，没有 Why",
+      "phase": "FIRST_PASS",
+      "run": 1,
+      "questionPlan": {
+        "oracleId": "QP3",
+        "oracleSurfaceQuestion": "你选择了什么方案？为什么？",
+        "oracleCaseQuestion": null,
+        "productSurfaceQuestion": "你选择了哪项重要的技术方案？为什么这样选择？",
+        "productPlanId": "technical-choice"
+      },
+      "transcriptKind": "ANSWER",
+      "transcript": "我最后选择了 YOLOv8n，并进行了 INT8 量化和部署。",
+      "expectedSemantic": "ISSUE_DETECTED",
+      "actualSemantic": "ISSUE_DETECTED",
+      "expectedIssueType": "NOT_ANSWERING_QUESTION",
+      "actualIssueType": "NOT_ANSWERING_QUESTION",
+      "expectedGate": "GATE",
+      "actualGate": "GATE",
+      "evaluatorDecisionCorrect": true,
+      "evaluatorExactCorrect": true,
+      "evaluatorGateSignalEligible": true,
+      "arbiterWithOracleContextCorrect": true,
+      "finalGateCorrect": true,
+      "productResult": "Evaluator label correct / Product correct",
+      "failureClassifications": [],
+      "validatedEvaluatorResult": {
+        "ok": true,
+        "value": {
+          "questionId": "technical-choice",
+          "checkpointVersion": 1,
+          "confidence": 0.95,
+          "gateability": "GATE_ELIGIBLE",
+          "answerBoundary": "NONE",
+          "decision": "ISSUE_DETECTED",
+          "issueType": "NOT_ANSWERING_QUESTION",
+          "triggeringCriterion": {
+            "kind": "REQUIRED_EVIDENCE",
+            "id": "decision-rationale"
+          },
+          "issueExplanation": "The candidate stated the technical choice (YOLOv8n with INT8 quantization) but completely omitted the reasoning or tradeoffs behind this selection, which was explicitly requested by the surface question ('Why did you choose this?').",
+          "repairCue": "Explain why YOLOv8n and INT8 quantization were chosen over other alternatives (e.g., speed vs. accuracy tradeoffs, hardware constraints)."
+        }
+      },
+      "productReplay": {
+        "checkpointKind": "FINAL",
+        "checkpointEligibility": {
+          "eligible": true,
+          "reason": "ELIGIBLE"
+        },
+        "transcriptCharacters": 31,
+        "answerDurationMs": 15000,
+        "hasSufficientAnswerContext": true,
+        "persistenceSatisfied": true,
+        "persistenceBasis": "FINAL_COMPLETION",
+        "evaluatorCheckpoints": [
+          {
+            "kind": "FINAL",
+            "checkpointVersion": 1
+          }
+        ],
+        "arbiterDecision": "GATE",
+        "arbiterDecisionWithOracleContext": "GATE",
+        "finalProductDecision": "GATE",
+        "finalRuntimeState": "REPAIR"
+      },
+      "structuredOutputValidity": {
+        "attemptCount": 1,
+        "firstAttemptOutputCaptured": true,
+        "firstAttemptJsonValid": true,
+        "firstAttemptSchemaValid": true,
+        "acceptedOnFirstAttempt": true,
+        "validatedEventually": true,
+        "recoveredAfterRetry": false
+      },
+      "rawStructuredModelOutputs": [
+        {
+          "attempt": 1,
+          "httpStatus": 200,
+          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"technical-choice\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"ISSUE_DETECTED\\\",\\n  \\\"issueType\\\": \\\"NOT_ANSWERING_QUESTION\\\",\\n  \\\"triggeringCriterion\\\": {\\n   \\\"kind\\\": \\\"REQUIRED_EVIDENCE\\\",\\n   \\\"id\\\": \\\"decision-rationale\\\"\\n  },\\n  \\\"issueExplanation\\\": \\\"The candidate stated the technical choice (YOLOv8n with INT8 quantization) but completely omitted the reasoning or tradeoffs behind this selection, which was explicitly requested by the surface question ('Why did you choose this?').\\\",\\n  \\\"repairCue\\\": \\\"Explain why YOLOv8n and INT8 quantization were chosen over other alternatives (e.g., speed vs. accuracy tradeoffs, hardware constraints).\\\"\\n}\",\"role\":\"assistant\"}}],\"created\":1788092857,\"id\":\"chatcmpl-878af501-7d7f-96a3-86cb-70e2a2e22b97\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":205,\"prompt_tokens\":1022,\"prompt_tokens_details\":{\"cached_tokens\":0,\"text_tokens\":1022},\"total_tokens\":1227}}",
+          "structuredOutput": "{\n  \"questionId\": \"technical-choice\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"ISSUE_DETECTED\",\n  \"issueType\": \"NOT_ANSWERING_QUESTION\",\n  \"triggeringCriterion\": {\n   \"kind\": \"REQUIRED_EVIDENCE\",\n   \"id\": \"decision-rationale\"\n  },\n  \"issueExplanation\": \"The candidate stated the technical choice (YOLOv8n with INT8 quantization) but completely omitted the reasoning or tradeoffs behind this selection, which was explicitly requested by the surface question ('Why did you choose this?').\",\n  \"repairCue\": \"Explain why YOLOv8n and INT8 quantization were chosen over other alternatives (e.g., speed vs. accuracy tradeoffs, hardware constraints).\"\n}",
+          "transportErrorName": null
+        }
+      ]
+    },
+    {
+      "model": "qwen3.8-flash",
+      "caseId": "G03",
+      "title": "没有数字，但理由充分",
+      "phase": "FIRST_PASS",
+      "run": 1,
+      "questionPlan": {
+        "oracleId": "QP3",
+        "oracleSurfaceQuestion": "你选择了什么方案？为什么？",
+        "oracleCaseQuestion": null,
+        "productSurfaceQuestion": "你选择了哪项重要的技术方案？为什么这样选择？",
+        "productPlanId": "technical-choice"
+      },
+      "transcriptKind": "ANSWER",
+      "transcript": "我选择 FastAPI，因为整个评估逻辑已经是 Python，挑战只有 16 小时，引入第二套后端技术栈只会增加集成风险，所以这里优先开发速度而不是框架性能。",
+      "expectedSemantic": "CONTINUE",
+      "actualSemantic": "CONTINUE",
+      "expectedIssueType": null,
+      "actualIssueType": null,
+      "expectedGate": "CONTINUE",
+      "actualGate": "CONTINUE",
+      "evaluatorDecisionCorrect": true,
+      "evaluatorExactCorrect": true,
+      "evaluatorGateSignalEligible": null,
+      "arbiterWithOracleContextCorrect": true,
+      "finalGateCorrect": true,
+      "productResult": "Evaluator label correct / Product correct",
+      "failureClassifications": [],
+      "validatedEvaluatorResult": {
+        "ok": true,
+        "value": {
+          "questionId": "technical-choice",
+          "checkpointVersion": 1,
+          "confidence": 0.95,
+          "gateability": "GATE_ELIGIBLE",
+          "answerBoundary": "NONE",
+          "decision": "CONTINUE",
+          "issueType": null,
+          "triggeringCriterion": null,
+          "issueExplanation": null,
+          "repairCue": null
+        }
+      },
+      "productReplay": {
+        "checkpointKind": "FINAL",
+        "checkpointEligibility": {
+          "eligible": true,
+          "reason": "ELIGIBLE"
+        },
+        "transcriptCharacters": 79,
+        "answerDurationMs": 15000,
+        "hasSufficientAnswerContext": true,
+        "persistenceSatisfied": true,
+        "persistenceBasis": "FINAL_COMPLETION",
+        "evaluatorCheckpoints": [
+          {
+            "kind": "FINAL",
+            "checkpointVersion": 1
+          }
+        ],
+        "arbiterDecision": "CONTINUE",
+        "arbiterDecisionWithOracleContext": "CONTINUE",
+        "finalProductDecision": "CONTINUE",
+        "finalRuntimeState": "QUESTION_DONE"
+      },
+      "structuredOutputValidity": {
+        "attemptCount": 1,
+        "firstAttemptOutputCaptured": true,
+        "firstAttemptJsonValid": true,
+        "firstAttemptSchemaValid": true,
+        "acceptedOnFirstAttempt": true,
+        "validatedEventually": true,
+        "recoveredAfterRetry": false
+      },
+      "rawStructuredModelOutputs": [
+        {
+          "attempt": 1,
+          "httpStatus": 200,
+          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"technical-choice\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"CONTINUE\\\",\\n  \\\"issueType\\\": null,\\n  \\\"triggeringCriterion\\\": null,\\n  \\\"issueExplanation\\\": null,\\n  \\\"repairCue\\\": null\\n}\",\"role\":\"assistant\"}}],\"created\":1788092860,\"id\":\"chatcmpl-4a8cc75d-0cf0-9201-9100-6dd38d07d9a5\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":97,\"prompt_tokens\":1044,\"prompt_tokens_details\":{\"cached_tokens\":0,\"text_tokens\":1044},\"total_tokens\":1141}}",
+          "structuredOutput": "{\n  \"questionId\": \"technical-choice\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"CONTINUE\",\n  \"issueType\": null,\n  \"triggeringCriterion\": null,\n  \"issueExplanation\": null,\n  \"repairCue\": null\n}",
+          "transportErrorName": null
+        }
+      ]
+    },
+    {
+      "model": "qwen3.8-flash",
+      "caseId": "G04",
+      "title": "名义上回答 Why，但完全空泛",
+      "phase": "FIRST_PASS",
+      "run": 1,
+      "questionPlan": {
+        "oracleId": "QP3",
+        "oracleSurfaceQuestion": "你选择了什么方案？为什么？",
+        "oracleCaseQuestion": null,
+        "productSurfaceQuestion": "你选择了哪项重要的技术方案？为什么这样选择？",
+        "productPlanId": "technical-choice"
+      },
+      "transcriptKind": "ANSWER",
+      "transcript": "我选择 FastAPI，因为它性能比较好，也比较先进，而且很适合这个项目。",
+      "expectedSemantic": "ISSUE_DETECTED",
+      "actualSemantic": "ISSUE_DETECTED",
+      "expectedIssueType": "VAGUE_WITHOUT_EVIDENCE",
+      "actualIssueType": "VAGUE_WITHOUT_EVIDENCE",
+      "expectedGate": "GATE",
+      "actualGate": "GATE",
+      "evaluatorDecisionCorrect": true,
+      "evaluatorExactCorrect": true,
+      "evaluatorGateSignalEligible": true,
+      "arbiterWithOracleContextCorrect": true,
+      "finalGateCorrect": true,
+      "productResult": "Evaluator label correct / Product correct",
+      "failureClassifications": [],
+      "validatedEvaluatorResult": {
+        "ok": true,
+        "value": {
+          "questionId": "technical-choice",
+          "checkpointVersion": 1,
+          "confidence": 0.95,
+          "gateability": "GATE_ELIGIBLE",
+          "answerBoundary": "NONE",
+          "decision": "ISSUE_DETECTED",
+          "issueType": "VAGUE_WITHOUT_EVIDENCE",
+          "triggeringCriterion": {
+            "kind": "REQUIRED_EVIDENCE",
+            "id": "decision-rationale"
+          },
+          "issueExplanation": "The candidate states the choice (FastAPI) and gives generic reasons ('good performance', 'advanced', 'suitable') but lacks concrete evidence or specific tradeoff analysis to support why these attributes mattered for this project.",
+          "repairCue": "Provide specific technical details or metrics that justify the claim of 'good performance' or explain what made it 'suitable' compared to alternatives."
+        }
+      },
+      "productReplay": {
+        "checkpointKind": "FINAL",
+        "checkpointEligibility": {
+          "eligible": true,
+          "reason": "ELIGIBLE"
+        },
+        "transcriptCharacters": 37,
+        "answerDurationMs": 15000,
+        "hasSufficientAnswerContext": true,
+        "persistenceSatisfied": true,
+        "persistenceBasis": "FINAL_COMPLETION",
+        "evaluatorCheckpoints": [
+          {
+            "kind": "FINAL",
+            "checkpointVersion": 1
+          }
+        ],
+        "arbiterDecision": "GATE",
+        "arbiterDecisionWithOracleContext": "GATE",
+        "finalProductDecision": "GATE",
+        "finalRuntimeState": "REPAIR"
+      },
+      "structuredOutputValidity": {
+        "attemptCount": 1,
+        "firstAttemptOutputCaptured": true,
+        "firstAttemptJsonValid": true,
+        "firstAttemptSchemaValid": true,
+        "acceptedOnFirstAttempt": true,
+        "validatedEventually": true,
+        "recoveredAfterRetry": false
+      },
+      "rawStructuredModelOutputs": [
+        {
+          "attempt": 1,
+          "httpStatus": 200,
+          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"technical-choice\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"ISSUE_DETECTED\\\",\\n  \\\"issueType\\\": \\\"VAGUE_WITHOUT_EVIDENCE\\\",\\n  \\\"triggeringCriterion\\\": {\\n   \\\"kind\\\": \\\"REQUIRED_EVIDENCE\\\",\\n   \\\"id\\\": \\\"decision-rationale\\\"\\n  },\\n  \\\"issueExplanation\\\": \\\"The candidate states the choice (FastAPI) and gives generic reasons ('good performance', 'advanced', 'suitable') but lacks concrete evidence or specific tradeoff analysis to support why these attributes mattered for this project.\\\",\\n  \\\"repairCue\\\": \\\"Provide specific technical details or metrics that justify the claim of 'good performance' or explain what made it 'suitable' compared to alternatives.\\\"\\n}\",\"role\":\"assistant\"}}],\"created\":1788092861,\"id\":\"chatcmpl-452b337e-9af0-9ba6-b8b8-c55187a9aef0\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":200,\"prompt_tokens\":1020,\"prompt_tokens_details\":{\"cached_tokens\":0,\"text_tokens\":1020},\"total_tokens\":1220}}",
+          "structuredOutput": "{\n  \"questionId\": \"technical-choice\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"ISSUE_DETECTED\",\n  \"issueType\": \"VAGUE_WITHOUT_EVIDENCE\",\n  \"triggeringCriterion\": {\n   \"kind\": \"REQUIRED_EVIDENCE\",\n   \"id\": \"decision-rationale\"\n  },\n  \"issueExplanation\": \"The candidate states the choice (FastAPI) and gives generic reasons ('good performance', 'advanced', 'suitable') but lacks concrete evidence or specific tradeoff analysis to support why these attributes mattered for this project.\",\n  \"repairCue\": \"Provide specific technical details or metrics that justify the claim of 'good performance' or explain what made it 'suitable' compared to alternatives.\"\n}",
+          "transportErrorName": null
+        }
+      ]
+    },
+    {
+      "model": "qwen3.8-flash",
+      "caseId": "G05",
+      "title": "先“我们”，后明确“我”",
+      "phase": "FIRST_PASS",
+      "run": 1,
+      "questionPlan": {
+        "oracleId": "QP2",
+        "oracleSurfaceQuestion": "你本人具体做了什么？",
+        "oracleCaseQuestion": null,
+        "productSurfaceQuestion": "在这个项目中，哪些设计、实现、分析或决策是由你本人完成的？",
+        "productPlanId": "personal-contribution"
+      },
+      "transcriptKind": "ANSWER",
+      "transcript": "这个项目是四个人一起做的。我们共同确定了总体方案，但我个人负责模型选型、INT8 量化和端侧推理接口；数据采集和硬件部分是另外两位同学完成的。",
+      "expectedSemantic": "CONTINUE",
+      "actualSemantic": "CONTINUE",
+      "expectedIssueType": null,
+      "actualIssueType": null,
+      "expectedGate": "CONTINUE",
+      "actualGate": "CONTINUE",
+      "evaluatorDecisionCorrect": true,
+      "evaluatorExactCorrect": true,
+      "evaluatorGateSignalEligible": null,
+      "arbiterWithOracleContextCorrect": true,
+      "finalGateCorrect": true,
+      "productResult": "Evaluator label correct / Product correct",
+      "failureClassifications": [],
+      "validatedEvaluatorResult": {
+        "ok": true,
+        "value": {
+          "questionId": "personal-contribution",
+          "checkpointVersion": 1,
+          "confidence": 0.95,
+          "gateability": "GATE_ELIGIBLE",
+          "answerBoundary": "NONE",
+          "decision": "CONTINUE",
+          "issueType": null,
+          "triggeringCriterion": null,
+          "issueExplanation": null,
+          "repairCue": null
+        }
+      },
+      "productReplay": {
+        "checkpointKind": "FINAL",
+        "checkpointEligibility": {
+          "eligible": true,
+          "reason": "ELIGIBLE"
+        },
+        "transcriptCharacters": 71,
+        "answerDurationMs": 15000,
+        "hasSufficientAnswerContext": true,
+        "persistenceSatisfied": true,
+        "persistenceBasis": "FINAL_COMPLETION",
+        "evaluatorCheckpoints": [
+          {
+            "kind": "FINAL",
+            "checkpointVersion": 1
+          }
+        ],
+        "arbiterDecision": "CONTINUE",
+        "arbiterDecisionWithOracleContext": "CONTINUE",
+        "finalProductDecision": "CONTINUE",
+        "finalRuntimeState": "QUESTION_DONE"
+      },
+      "structuredOutputValidity": {
+        "attemptCount": 1,
+        "firstAttemptOutputCaptured": true,
+        "firstAttemptJsonValid": true,
+        "firstAttemptSchemaValid": true,
+        "acceptedOnFirstAttempt": true,
+        "validatedEventually": true,
+        "recoveredAfterRetry": false
+      },
+      "rawStructuredModelOutputs": [
+        {
+          "attempt": 1,
+          "httpStatus": 200,
+          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"personal-contribution\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"CONTINUE\\\",\\n  \\\"issueType\\\": null,\\n  \\\"triggeringCriterion\\\": null,\\n  \\\"issueExplanation\\\": null,\\n  \\\"repairCue\\\": null\\n}\",\"role\":\"assistant\"}}],\"created\":1788092863,\"id\":\"chatcmpl-8eae5ff7-febd-90c7-9cd1-de550e696052\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":98,\"prompt_tokens\":1064,\"prompt_tokens_details\":{\"cached_tokens\":1024,\"text_tokens\":1064},\"total_tokens\":1162}}",
+          "structuredOutput": "{\n  \"questionId\": \"personal-contribution\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"CONTINUE\",\n  \"issueType\": null,\n  \"triggeringCriterion\": null,\n  \"issueExplanation\": null,\n  \"repairCue\": null\n}",
+          "transportErrorName": null
+        }
+      ]
+    },
+    {
+      "model": "qwen3.8-flash",
+      "caseId": "G06",
+      "title": "全程只有团队活动",
+      "phase": "FIRST_PASS",
+      "run": 1,
+      "questionPlan": {
+        "oracleId": "QP2",
+        "oracleSurfaceQuestion": "你本人具体做了什么？",
+        "oracleCaseQuestion": null,
+        "productSurfaceQuestion": "在这个项目中，哪些设计、实现、分析或决策是由你本人完成的？",
+        "productPlanId": "personal-contribution"
+      },
+      "transcriptKind": "ANSWER",
+      "transcript": "我们一起负责模型、部署和测试，基本每个人都有参与，最后也是大家一起完成的。",
+      "expectedSemantic": "ISSUE_DETECTED",
+      "actualSemantic": "ISSUE_DETECTED",
+      "expectedIssueType": "OWNERSHIP_AMBIGUOUS",
+      "actualIssueType": "OWNERSHIP_AMBIGUOUS",
+      "expectedGate": "GATE",
+      "actualGate": "GATE",
+      "evaluatorDecisionCorrect": true,
+      "evaluatorExactCorrect": true,
+      "evaluatorGateSignalEligible": true,
+      "arbiterWithOracleContextCorrect": true,
+      "finalGateCorrect": true,
+      "productResult": "Evaluator label correct / Product correct",
+      "failureClassifications": [],
+      "validatedEvaluatorResult": {
+        "ok": true,
+        "value": {
+          "questionId": "personal-contribution",
+          "checkpointVersion": 1,
+          "confidence": 0.95,
+          "gateability": "GATE_ELIGIBLE",
+          "answerBoundary": "NONE",
+          "decision": "ISSUE_DETECTED",
+          "issueType": "OWNERSHIP_AMBIGUOUS",
+          "triggeringCriterion": {
+            "kind": "PRIMARY_TARGET",
+            "id": "personal-ownership"
+          },
+          "issueExplanation": "The candidate attributes all work (model, deployment, testing) to the team ('we', 'everyone') without identifying any specific task or decision owned personally.",
+          "repairCue": "Identify at least one specific component, decision, or analysis that you personally handled."
+        }
+      },
+      "productReplay": {
+        "checkpointKind": "FINAL",
+        "checkpointEligibility": {
+          "eligible": true,
+          "reason": "ELIGIBLE"
+        },
+        "transcriptCharacters": 37,
+        "answerDurationMs": 15000,
+        "hasSufficientAnswerContext": true,
+        "persistenceSatisfied": true,
+        "persistenceBasis": "FINAL_COMPLETION",
+        "evaluatorCheckpoints": [
+          {
+            "kind": "FINAL",
+            "checkpointVersion": 1
+          }
+        ],
+        "arbiterDecision": "GATE",
+        "arbiterDecisionWithOracleContext": "GATE",
+        "finalProductDecision": "GATE",
+        "finalRuntimeState": "REPAIR"
+      },
+      "structuredOutputValidity": {
+        "attemptCount": 1,
+        "firstAttemptOutputCaptured": true,
+        "firstAttemptJsonValid": true,
+        "firstAttemptSchemaValid": true,
+        "acceptedOnFirstAttempt": true,
+        "validatedEventually": true,
+        "recoveredAfterRetry": false
+      },
+      "rawStructuredModelOutputs": [
+        {
+          "attempt": 1,
+          "httpStatus": 200,
+          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"personal-contribution\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"ISSUE_DETECTED\\\",\\n  \\\"issueType\\\": \\\"OWNERSHIP_AMBIGUOUS\\\",\\n  \\\"triggeringCriterion\\\": {\\n   \\\"kind\\\": \\\"PRIMARY_TARGET\\\",\\n   \\\"id\\\": \\\"personal-ownership\\\"\\n  },\\n  \\\"issueExplanation\\\": \\\"The candidate attributes all work (model, deployment, testing) to the team ('we', 'everyone') without identifying any specific task or decision owned personally.\\\",\\n  \\\"repairCue\\\": \\\"Identify at least one specific component, decision, or analysis that you personally handled.\\\"\\n}\",\"role\":\"assistant\"}}],\"created\":1788092864,\"id\":\"chatcmpl-ef3f049d-ee0f-9329-b5b1-b9b965875512\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":174,\"prompt_tokens\":1044,\"prompt_tokens_details\":{\"cached_tokens\":1024,\"text_tokens\":1044},\"total_tokens\":1218}}",
+          "structuredOutput": "{\n  \"questionId\": \"personal-contribution\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"ISSUE_DETECTED\",\n  \"issueType\": \"OWNERSHIP_AMBIGUOUS\",\n  \"triggeringCriterion\": {\n   \"kind\": \"PRIMARY_TARGET\",\n   \"id\": \"personal-ownership\"\n  },\n  \"issueExplanation\": \"The candidate attributes all work (model, deployment, testing) to the team ('we', 'everyone') without identifying any specific task or decision owned personally.\",\n  \"repairCue\": \"Identify at least one specific component, decision, or analysis that you personally handled.\"\n}",
+          "transportErrorName": null
+        }
+      ]
+    },
+    {
+      "model": "qwen3.8-flash",
+      "caseId": "G07",
+      "title": "很粗糙，但 ownership 已经明确",
+      "phase": "FIRST_PASS",
+      "run": 1,
+      "questionPlan": {
+        "oracleId": "QP2",
+        "oracleSurfaceQuestion": "你本人具体做了什么？",
+        "oracleCaseQuestion": null,
+        "productSurfaceQuestion": "在这个项目中，哪些设计、实现、分析或决策是由你本人完成的？",
+        "productPlanId": "personal-contribution"
+      },
+      "transcriptKind": "ANSWER",
+      "transcript": "我主要负责后端。",
+      "expectedSemantic": "CONTINUE",
+      "actualSemantic": "ISSUE_DETECTED",
+      "expectedIssueType": null,
+      "actualIssueType": "OWNERSHIP_AMBIGUOUS",
+      "expectedGate": "CONTINUE",
+      "actualGate": "CONTINUE",
+      "evaluatorDecisionCorrect": false,
+      "evaluatorExactCorrect": false,
+      "evaluatorGateSignalEligible": true,
+      "arbiterWithOracleContextCorrect": true,
+      "finalGateCorrect": true,
+      "productResult": "Evaluator error / Product safe",
+      "failureClassifications": [
+        "evaluator semantic error"
+      ],
+      "validatedEvaluatorResult": {
+        "ok": true,
+        "value": {
+          "questionId": "personal-contribution",
+          "checkpointVersion": 1,
+          "confidence": 0.95,
+          "gateability": "GATE_ELIGIBLE",
+          "answerBoundary": "NONE",
+          "decision": "ISSUE_DETECTED",
+          "issueType": "OWNERSHIP_AMBIGUOUS",
+          "triggeringCriterion": {
+            "kind": "PRIMARY_TARGET",
+            "id": "personal-ownership"
+          },
+          "issueExplanation": "The candidate states a general role ('responsible for backend') but does not specify any concrete design, implementation, analysis, or decision personally performed, failing to separate personal contribution from team activity.",
+          "repairCue": "List specific tasks you completed, such as designing an API, writing code for a module, or analyzing performance data."
+        }
+      },
+      "productReplay": {
+        "checkpointKind": "FINAL",
+        "checkpointEligibility": {
+          "eligible": true,
+          "reason": "ELIGIBLE"
+        },
+        "transcriptCharacters": 8,
+        "answerDurationMs": 15000,
+        "hasSufficientAnswerContext": true,
+        "persistenceSatisfied": true,
+        "persistenceBasis": "FINAL_COMPLETION",
+        "evaluatorCheckpoints": [
+          {
+            "kind": "FINAL",
+            "checkpointVersion": 1
+          }
+        ],
+        "arbiterDecision": "CONTINUE",
+        "arbiterDecisionWithOracleContext": "CONTINUE",
+        "finalProductDecision": "CONTINUE",
+        "finalRuntimeState": "QUESTION_DONE"
+      },
+      "structuredOutputValidity": {
+        "attemptCount": 1,
+        "firstAttemptOutputCaptured": true,
+        "firstAttemptJsonValid": true,
+        "firstAttemptSchemaValid": true,
+        "acceptedOnFirstAttempt": true,
+        "validatedEventually": true,
+        "recoveredAfterRetry": false
+      },
+      "rawStructuredModelOutputs": [
+        {
+          "attempt": 1,
+          "httpStatus": 200,
+          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"personal-contribution\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"ISSUE_DETECTED\\\",\\n  \\\"issueType\\\": \\\"OWNERSHIP_AMBIGUOUS\\\",\\n  \\\"triggeringCriterion\\\": {\\n   \\\"kind\\\": \\\"PRIMARY_TARGET\\\",\\n   \\\"id\\\": \\\"personal-ownership\\\"\\n  },\\n  \\\"issueExplanation\\\": \\\"The candidate states a general role ('responsible for backend') but does not specify any concrete design, implementation, analysis, or decision personally performed, failing to separate personal contribution from team activity.\\\",\\n  \\\"repairCue\\\": \\\"List specific tasks you completed, such as designing an API, writing code for a module, or analyzing performance data.\\\"\\n}\",\"role\":\"assistant\"}}],\"created\":1788092867,\"id\":\"chatcmpl-203e5816-b8f5-93c5-ac88-65c7f6c4ef8b\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":187,\"prompt_tokens\":1031,\"prompt_tokens_details\":{\"cached_tokens\":1024,\"text_tokens\":1031},\"total_tokens\":1218}}",
+          "structuredOutput": "{\n  \"questionId\": \"personal-contribution\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"ISSUE_DETECTED\",\n  \"issueType\": \"OWNERSHIP_AMBIGUOUS\",\n  \"triggeringCriterion\": {\n   \"kind\": \"PRIMARY_TARGET\",\n   \"id\": \"personal-ownership\"\n  },\n  \"issueExplanation\": \"The candidate states a general role ('responsible for backend') but does not specify any concrete design, implementation, analysis, or decision personally performed, failing to separate personal contribution from team activity.\",\n  \"repairCue\": \"List specific tasks you completed, such as designing an API, writing code for a module, or analyzing performance data.\"\n}",
+          "transportErrorName": null
+        }
+      ]
+    },
+    {
+      "model": "qwen3.8-flash",
+      "caseId": "G08",
+      "title": "职位不等于个人行动",
+      "phase": "FIRST_PASS",
+      "run": 1,
+      "questionPlan": {
+        "oracleId": "QP2",
+        "oracleSurfaceQuestion": "你本人具体做了什么？",
+        "oracleCaseQuestion": null,
+        "productSurfaceQuestion": "在这个项目中，哪些设计、实现、分析或决策是由你本人完成的？",
+        "productPlanId": "personal-contribution"
+      },
+      "transcriptKind": "ANSWER",
+      "transcript": "我是项目负责人，整体上的事情基本都是我负责。",
+      "expectedSemantic": "ISSUE_DETECTED",
+      "actualSemantic": "ISSUE_DETECTED",
+      "expectedIssueType": "OWNERSHIP_AMBIGUOUS",
+      "actualIssueType": "OWNERSHIP_AMBIGUOUS",
+      "expectedGate": "GATE",
+      "actualGate": "GATE",
+      "evaluatorDecisionCorrect": true,
+      "evaluatorExactCorrect": true,
+      "evaluatorGateSignalEligible": true,
+      "arbiterWithOracleContextCorrect": true,
+      "finalGateCorrect": true,
+      "productResult": "Evaluator label correct / Product correct",
+      "failureClassifications": [],
+      "validatedEvaluatorResult": {
+        "ok": true,
+        "value": {
+          "questionId": "personal-contribution",
+          "checkpointVersion": 1,
+          "confidence": 0.95,
+          "gateability": "GATE_ELIGIBLE",
+          "answerBoundary": "NONE",
+          "decision": "ISSUE_DETECTED",
+          "issueType": "OWNERSHIP_AMBIGUOUS",
+          "triggeringCriterion": {
+            "kind": "PRIMARY_TARGET",
+            "id": "personal-ownership"
+          },
+          "issueExplanation": "The candidate claims overall responsibility ('project lead', 'basically I am responsible') but does not name any specific work area, subsystem, component, or personal action/decision as required by the ownership threshold.",
+          "repairCue": "List specific design decisions, implementations, or analyses you personally performed, rather than just stating your title or general responsibility."
+        }
+      },
+      "productReplay": {
+        "checkpointKind": "FINAL",
+        "checkpointEligibility": {
+          "eligible": true,
+          "reason": "ELIGIBLE"
+        },
+        "transcriptCharacters": 22,
+        "answerDurationMs": 15000,
+        "hasSufficientAnswerContext": true,
+        "persistenceSatisfied": true,
+        "persistenceBasis": "FINAL_COMPLETION",
+        "evaluatorCheckpoints": [
+          {
+            "kind": "FINAL",
+            "checkpointVersion": 1
+          }
+        ],
+        "arbiterDecision": "GATE",
+        "arbiterDecisionWithOracleContext": "GATE",
+        "finalProductDecision": "GATE",
+        "finalRuntimeState": "REPAIR"
+      },
+      "structuredOutputValidity": {
+        "attemptCount": 1,
+        "firstAttemptOutputCaptured": true,
+        "firstAttemptJsonValid": true,
+        "firstAttemptSchemaValid": true,
+        "acceptedOnFirstAttempt": true,
+        "validatedEventually": true,
+        "recoveredAfterRetry": false
+      },
+      "rawStructuredModelOutputs": [
+        {
+          "attempt": 1,
+          "httpStatus": 200,
+          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"personal-contribution\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"ISSUE_DETECTED\\\",\\n  \\\"issueType\\\": \\\"OWNERSHIP_AMBIGUOUS\\\",\\n  \\\"triggeringCriterion\\\": {\\n   \\\"kind\\\": \\\"PRIMARY_TARGET\\\",\\n   \\\"id\\\": \\\"personal-ownership\\\"\\n  },\\n  \\\"issueExplanation\\\": \\\"The candidate claims overall responsibility ('project lead', 'basically I am responsible') but does not name any specific work area, subsystem, component, or personal action/decision as required by the ownership threshold.\\\",\\n  \\\"repairCue\\\": \\\"List specific design decisions, implementations, or analyses you personally performed, rather than just stating your title or general responsibility.\\\"\\n}\",\"role\":\"assistant\"}}],\"created\":1788092869,\"id\":\"chatcmpl-dbea82ce-dd25-9014-ac88-3aa337857443\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":190,\"prompt_tokens\":1037,\"prompt_tokens_details\":{\"cached_tokens\":1024,\"text_tokens\":1037},\"total_tokens\":1227}}",
+          "structuredOutput": "{\n  \"questionId\": \"personal-contribution\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"ISSUE_DETECTED\",\n  \"issueType\": \"OWNERSHIP_AMBIGUOUS\",\n  \"triggeringCriterion\": {\n   \"kind\": \"PRIMARY_TARGET\",\n   \"id\": \"personal-ownership\"\n  },\n  \"issueExplanation\": \"The candidate claims overall responsibility ('project lead', 'basically I am responsible') but does not name any specific work area, subsystem, component, or personal action/decision as required by the ownership threshold.\",\n  \"repairCue\": \"List specific design decisions, implementations, or analyses you personally performed, rather than just stating your title or general responsibility.\"\n}",
+          "transportErrorName": null
+        }
+      ]
+    },
+    {
+      "model": "qwen3.8-flash",
+      "caseId": "G09",
+      "title": "无量化数据，但诚实说明测量边界",
+      "phase": "FIRST_PASS",
+      "run": 1,
+      "questionPlan": {
+        "oracleId": "QP4",
+        "oracleSurfaceQuestion": "得到了什么结果？如何验证？",
+        "oracleCaseQuestion": null,
+        "productSurfaceQuestion": "你实际观察到了什么结果？你是如何验证这个结果的？",
+        "productPlanId": "results-and-validation"
+      },
+      "transcriptKind": "ANSWER",
+      "transcript": "我们没有得到可靠的量化提升。只跑了 3 次室内测试，而且两套设备的时间戳不一致，所以我不能声称延迟降低了多少。我们能确认的只有三次流程都能完整运行，没有出现同步崩溃。",
+      "expectedSemantic": "CONTINUE",
+      "actualSemantic": "CONTINUE",
+      "expectedIssueType": null,
+      "actualIssueType": null,
+      "expectedGate": "CONTINUE",
+      "actualGate": "CONTINUE",
+      "evaluatorDecisionCorrect": true,
+      "evaluatorExactCorrect": true,
+      "evaluatorGateSignalEligible": null,
+      "arbiterWithOracleContextCorrect": true,
+      "finalGateCorrect": true,
+      "productResult": "Evaluator label correct / Product correct",
+      "failureClassifications": [],
+      "validatedEvaluatorResult": {
+        "ok": true,
+        "value": {
+          "questionId": "results-and-validation",
+          "checkpointVersion": 1,
+          "confidence": 0.95,
+          "gateability": "GATE_ELIGIBLE",
+          "answerBoundary": "HONEST_NO_MEASUREMENT",
+          "decision": "CONTINUE",
+          "issueType": null,
+          "triggeringCriterion": null,
+          "issueExplanation": null,
+          "repairCue": null
+        }
+      },
+      "productReplay": {
+        "checkpointKind": "FINAL",
+        "checkpointEligibility": {
+          "eligible": true,
+          "reason": "ELIGIBLE"
+        },
+        "transcriptCharacters": 83,
+        "answerDurationMs": 15000,
+        "hasSufficientAnswerContext": true,
+        "persistenceSatisfied": true,
+        "persistenceBasis": "FINAL_COMPLETION",
+        "evaluatorCheckpoints": [
+          {
+            "kind": "FINAL",
+            "checkpointVersion": 2
+          }
+        ],
+        "arbiterDecision": "CONTINUE",
+        "arbiterDecisionWithOracleContext": "CONTINUE",
+        "finalProductDecision": "CONTINUE",
+        "finalRuntimeState": "QUESTION_DONE"
+      },
+      "structuredOutputValidity": {
+        "attemptCount": 1,
+        "firstAttemptOutputCaptured": true,
+        "firstAttemptJsonValid": true,
+        "firstAttemptSchemaValid": true,
+        "acceptedOnFirstAttempt": true,
+        "validatedEventually": true,
+        "recoveredAfterRetry": false
+      },
+      "rawStructuredModelOutputs": [
+        {
+          "attempt": 1,
+          "httpStatus": 200,
+          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"results-and-validation\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"HONEST_NO_MEASUREMENT\\\",\\n  \\\"decision\\\": \\\"CONTINUE\\\",\\n  \\\"issueType\\\": null,\\n  \\\"triggeringCriterion\\\": null,\\n  \\\"issueExplanation\\\": null,\\n  \\\"repairCue\\\": null\\n}\",\"role\":\"assistant\"}}],\"created\":1788092871,\"id\":\"chatcmpl-3b784b6d-a30f-9813-aed5-e222dcffa6f1\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":104,\"prompt_tokens\":1082,\"prompt_tokens_details\":{\"cached_tokens\":1024,\"text_tokens\":1082},\"total_tokens\":1186}}",
+          "structuredOutput": "{\n  \"questionId\": \"results-and-validation\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"HONEST_NO_MEASUREMENT\",\n  \"decision\": \"CONTINUE\",\n  \"issueType\": null,\n  \"triggeringCriterion\": null,\n  \"issueExplanation\": null,\n  \"repairCue\": null\n}",
+          "transportErrorName": null
+        }
+      ]
+    },
+    {
+      "model": "qwen3.8-flash",
+      "caseId": "G10",
+      "title": "模糊指标",
+      "phase": "FIRST_PASS",
+      "run": 1,
+      "questionPlan": {
+        "oracleId": "QP4",
+        "oracleSurfaceQuestion": "得到了什么结果？如何验证？",
+        "oracleCaseQuestion": null,
+        "productSurfaceQuestion": "你实际观察到了什么结果？你是如何验证这个结果的？",
+        "productPlanId": "results-and-validation"
+      },
+      "transcriptKind": "ANSWER",
+      "transcript": "效果提升得挺明显的，准确率大概高了不少，延迟也低了很多，我们测过几次。",
+      "expectedSemantic": "ISSUE_DETECTED",
+      "actualSemantic": "ISSUE_DETECTED",
+      "expectedIssueType": "VAGUE_WITHOUT_EVIDENCE",
+      "actualIssueType": "VAGUE_WITHOUT_EVIDENCE",
+      "expectedGate": "GATE",
+      "actualGate": "GATE",
+      "evaluatorDecisionCorrect": true,
+      "evaluatorExactCorrect": true,
+      "evaluatorGateSignalEligible": true,
+      "arbiterWithOracleContextCorrect": true,
+      "finalGateCorrect": true,
+      "productResult": "Evaluator label correct / Product correct",
+      "failureClassifications": [],
+      "validatedEvaluatorResult": {
+        "ok": true,
+        "value": {
+          "questionId": "results-and-validation",
+          "checkpointVersion": 1,
+          "confidence": 0.95,
+          "gateability": "GATE_ELIGIBLE",
+          "answerBoundary": "NONE",
+          "decision": "ISSUE_DETECTED",
+          "issueType": "VAGUE_WITHOUT_EVIDENCE",
+          "triggeringCriterion": {
+            "kind": "REQUIRED_EVIDENCE",
+            "id": "observed-result"
+          },
+          "issueExplanation": "The candidate claims accuracy improved and latency decreased but provides no specific metrics or concrete data points to substantiate the 'significant' improvement.",
+          "repairCue": "Provide specific before/after numbers for accuracy and latency (e.g., 'Accuracy went from 85% to 92%, and latency dropped from 200ms to 150ms')."
+        }
+      },
+      "productReplay": {
+        "checkpointKind": "FINAL",
+        "checkpointEligibility": {
+          "eligible": true,
+          "reason": "ELIGIBLE"
+        },
+        "transcriptCharacters": 35,
+        "answerDurationMs": 15000,
+        "hasSufficientAnswerContext": true,
+        "persistenceSatisfied": true,
+        "persistenceBasis": "FINAL_COMPLETION",
+        "evaluatorCheckpoints": [
+          {
+            "kind": "FINAL",
+            "checkpointVersion": 1
+          }
+        ],
+        "arbiterDecision": "GATE",
+        "arbiterDecisionWithOracleContext": "GATE",
+        "finalProductDecision": "GATE",
+        "finalRuntimeState": "REPAIR"
+      },
+      "structuredOutputValidity": {
+        "attemptCount": 1,
+        "firstAttemptOutputCaptured": true,
+        "firstAttemptJsonValid": true,
+        "firstAttemptSchemaValid": true,
+        "acceptedOnFirstAttempt": true,
+        "validatedEventually": true,
+        "recoveredAfterRetry": false
+      },
+      "rawStructuredModelOutputs": [
+        {
+          "attempt": 1,
+          "httpStatus": 200,
+          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"results-and-validation\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"ISSUE_DETECTED\\\",\\n  \\\"issueType\\\": \\\"VAGUE_WITHOUT_EVIDENCE\\\",\\n  \\\"triggeringCriterion\\\": {\\n   \\\"kind\\\": \\\"REQUIRED_EVIDENCE\\\",\\n   \\\"id\\\": \\\"observed-result\\\"\\n  },\\n  \\\"issueExplanation\\\": \\\"The candidate claims accuracy improved and latency decreased but provides no specific metrics or concrete data points to substantiate the 'significant' improvement.\\\",\\n  \\\"repairCue\\\": \\\"Provide specific before/after numbers for accuracy and latency (e.g., 'Accuracy went from 85% to 92%, and latency dropped from 200ms to 150ms').\\\"\\n}\",\"role\":\"assistant\"}}],\"created\":1788092873,\"id\":\"chatcmpl-5217f6b2-2355-9cbf-8168-108e74709a8a\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":198,\"prompt_tokens\":1060,\"prompt_tokens_details\":{\"cached_tokens\":1024,\"text_tokens\":1060},\"total_tokens\":1258}}",
+          "structuredOutput": "{\n  \"questionId\": \"results-and-validation\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"ISSUE_DETECTED\",\n  \"issueType\": \"VAGUE_WITHOUT_EVIDENCE\",\n  \"triggeringCriterion\": {\n   \"kind\": \"REQUIRED_EVIDENCE\",\n   \"id\": \"observed-result\"\n  },\n  \"issueExplanation\": \"The candidate claims accuracy improved and latency decreased but provides no specific metrics or concrete data points to substantiate the 'significant' improvement.\",\n  \"repairCue\": \"Provide specific before/after numbers for accuracy and latency (e.g., 'Accuracy went from 85% to 92%, and latency dropped from 200ms to 150ms').\"\n}",
+          "transportErrorName": null
+        }
+      ]
+    },
+    {
+      "model": "qwen3.8-flash",
+      "caseId": "G11",
+      "title": "结果与验证均明确",
+      "phase": "FIRST_PASS",
+      "run": 1,
+      "questionPlan": {
+        "oracleId": "QP4",
+        "oracleSurfaceQuestion": "得到了什么结果？如何验证？",
+        "oracleCaseQuestion": null,
+        "productSurfaceQuestion": "你实际观察到了什么结果？你是如何验证这个结果的？",
+        "productPlanId": "results-and-validation"
+      },
+      "transcriptKind": "ANSWER",
+      "transcript": "在固定的 200 张 held-out 图片上，mAP50 是 0.84；我们用固定脚本跑同一个 checkpoint。延迟是在同一台 K230 上连续推理 100 次后取中位数，大约 42ms。",
+      "expectedSemantic": "CONTINUE",
+      "actualSemantic": "CONTINUE",
+      "expectedIssueType": null,
+      "actualIssueType": null,
+      "expectedGate": "CONTINUE",
+      "actualGate": "CONTINUE",
+      "evaluatorDecisionCorrect": true,
+      "evaluatorExactCorrect": true,
+      "evaluatorGateSignalEligible": null,
+      "arbiterWithOracleContextCorrect": true,
+      "finalGateCorrect": true,
+      "productResult": "Evaluator label correct / Product correct",
+      "failureClassifications": [],
+      "validatedEvaluatorResult": {
+        "ok": true,
+        "value": {
+          "questionId": "results-and-validation",
+          "checkpointVersion": 1,
+          "confidence": 0.95,
+          "gateability": "GATE_ELIGIBLE",
+          "answerBoundary": "NONE",
+          "decision": "CONTINUE",
+          "issueType": null,
+          "triggeringCriterion": null,
+          "issueExplanation": null,
+          "repairCue": null
+        }
+      },
+      "productReplay": {
+        "checkpointKind": "FINAL",
+        "checkpointEligibility": {
+          "eligible": true,
+          "reason": "ELIGIBLE"
+        },
+        "transcriptCharacters": 98,
+        "answerDurationMs": 15000,
+        "hasSufficientAnswerContext": true,
+        "persistenceSatisfied": true,
+        "persistenceBasis": "FINAL_COMPLETION",
+        "evaluatorCheckpoints": [
+          {
+            "kind": "FINAL",
+            "checkpointVersion": 2
+          }
+        ],
+        "arbiterDecision": "CONTINUE",
+        "arbiterDecisionWithOracleContext": "CONTINUE",
+        "finalProductDecision": "CONTINUE",
+        "finalRuntimeState": "QUESTION_DONE"
+      },
+      "structuredOutputValidity": {
+        "attemptCount": 1,
+        "firstAttemptOutputCaptured": true,
+        "firstAttemptJsonValid": true,
+        "firstAttemptSchemaValid": true,
+        "acceptedOnFirstAttempt": true,
+        "validatedEventually": true,
+        "recoveredAfterRetry": false
+      },
+      "rawStructuredModelOutputs": [
+        {
+          "attempt": 1,
+          "httpStatus": 200,
+          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"results-and-validation\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"CONTINUE\\\",\\n  \\\"issueType\\\": null,\\n  \\\"triggeringCriterion\\\": null,\\n  \\\"issueExplanation\\\": null,\\n  \\\"repairCue\\\": null\\n}\",\"role\":\"assistant\"}}],\"created\":1788092875,\"id\":\"chatcmpl-dc7403be-e60f-97f0-a89c-1b499fb88c72\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":98,\"prompt_tokens\":1101,\"prompt_tokens_details\":{\"cached_tokens\":1024,\"text_tokens\":1101},\"total_tokens\":1199}}",
+          "structuredOutput": "{\n  \"questionId\": \"results-and-validation\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"CONTINUE\",\n  \"issueType\": null,\n  \"triggeringCriterion\": null,\n  \"issueExplanation\": null,\n  \"repairCue\": null\n}",
+          "transportErrorName": null
+        }
+      ]
+    },
+    {
+      "model": "qwen3.8-flash",
+      "caseId": "G12",
+      "title": "有数字，但没回答如何验证",
+      "phase": "FIRST_PASS",
+      "run": 1,
+      "questionPlan": {
+        "oracleId": "QP4",
+        "oracleSurfaceQuestion": "得到了什么结果？如何验证？",
+        "oracleCaseQuestion": null,
+        "productSurfaceQuestion": "你实际观察到了什么结果？你是如何验证这个结果的？",
+        "productPlanId": "results-and-validation"
+      },
+      "transcriptKind": "ANSWER",
+      "transcript": "最后 mAP50 是 0.84，延迟大约 42ms。",
+      "expectedSemantic": "ISSUE_DETECTED",
+      "actualSemantic": "ISSUE_DETECTED",
+      "expectedIssueType": "NOT_ANSWERING_QUESTION",
+      "actualIssueType": "NOT_ANSWERING_QUESTION",
+      "expectedGate": "GATE",
+      "actualGate": "GATE",
+      "evaluatorDecisionCorrect": true,
+      "evaluatorExactCorrect": true,
+      "evaluatorGateSignalEligible": true,
+      "arbiterWithOracleContextCorrect": true,
+      "finalGateCorrect": true,
+      "productResult": "Evaluator label correct / Product correct",
+      "failureClassifications": [],
+      "validatedEvaluatorResult": {
+        "ok": true,
+        "value": {
+          "questionId": "results-and-validation",
+          "checkpointVersion": 1,
+          "confidence": 0.95,
+          "gateability": "GATE_ELIGIBLE",
+          "answerBoundary": "NONE",
+          "decision": "ISSUE_DETECTED",
+          "issueType": "NOT_ANSWERING_QUESTION",
+          "triggeringCriterion": {
+            "kind": "REQUIRED_EVIDENCE",
+            "id": "validation-method"
+          },
+          "issueExplanation": "The candidate provided observed results (mAP50 and latency) but completely omitted the second explicitly requested dimension: how these results were validated.",
+          "repairCue": "Explain the validation method used to verify the mAP50 and latency figures (e.g., test set details, measurement protocol, or comparison baseline)."
+        }
+      },
+      "productReplay": {
+        "checkpointKind": "FINAL",
+        "checkpointEligibility": {
+          "eligible": true,
+          "reason": "ELIGIBLE"
+        },
+        "transcriptCharacters": 26,
+        "answerDurationMs": 15000,
+        "hasSufficientAnswerContext": true,
+        "persistenceSatisfied": true,
+        "persistenceBasis": "FINAL_COMPLETION",
+        "evaluatorCheckpoints": [
+          {
+            "kind": "FINAL",
+            "checkpointVersion": 1
+          }
+        ],
+        "arbiterDecision": "GATE",
+        "arbiterDecisionWithOracleContext": "GATE",
+        "finalProductDecision": "GATE",
+        "finalRuntimeState": "REPAIR"
+      },
+      "structuredOutputValidity": {
+        "attemptCount": 1,
+        "firstAttemptOutputCaptured": true,
+        "firstAttemptJsonValid": true,
+        "firstAttemptSchemaValid": true,
+        "acceptedOnFirstAttempt": true,
+        "validatedEventually": true,
+        "recoveredAfterRetry": false
+      },
+      "rawStructuredModelOutputs": [
+        {
+          "attempt": 1,
+          "httpStatus": 200,
+          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"results-and-validation\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"ISSUE_DETECTED\\\",\\n  \\\"issueType\\\": \\\"NOT_ANSWERING_QUESTION\\\",\\n  \\\"triggeringCriterion\\\": {\\n   \\\"kind\\\": \\\"REQUIRED_EVIDENCE\\\",\\n   \\\"id\\\": \\\"validation-method\\\"\\n  },\\n  \\\"issueExplanation\\\": \\\"The candidate provided observed results (mAP50 and latency) but completely omitted the second explicitly requested dimension: how these results were validated.\\\",\\n  \\\"repairCue\\\": \\\"Explain the validation method used to verify the mAP50 and latency figures (e.g., test set details, measurement protocol, or comparison baseline).\\\"\\n}\",\"role\":\"assistant\"}}],\"created\":1788092876,\"id\":\"chatcmpl-280de2c4-ed53-92d0-9992-098296c1581b\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":184,\"prompt_tokens\":1059,\"prompt_tokens_details\":{\"cached_tokens\":1024,\"text_tokens\":1059},\"total_tokens\":1243}}",
+          "structuredOutput": "{\n  \"questionId\": \"results-and-validation\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"ISSUE_DETECTED\",\n  \"issueType\": \"NOT_ANSWERING_QUESTION\",\n  \"triggeringCriterion\": {\n   \"kind\": \"REQUIRED_EVIDENCE\",\n   \"id\": \"validation-method\"\n  },\n  \"issueExplanation\": \"The candidate provided observed results (mAP50 and latency) but completely omitted the second explicitly requested dimension: how these results were validated.\",\n  \"repairCue\": \"Explain the validation method used to verify the mAP50 and latency figures (e.g., test set details, measurement protocol, or comparison baseline).\"\n}",
+          "transportErrorName": null
+        }
+      ]
+    },
+    {
+      "model": "qwen3.8-flash",
+      "caseId": "G13",
+      "title": "有短暂背景，但最终明确回答 Why",
+      "phase": "FIRST_PASS",
+      "run": 1,
+      "questionPlan": {
+        "oracleId": "QP3",
+        "oracleSurfaceQuestion": "你选择了什么方案？为什么？",
+        "oracleCaseQuestion": null,
+        "productSurfaceQuestion": "你选择了哪项重要的技术方案？为什么这样选择？",
+        "productPlanId": "technical-choice"
+      },
+      "transcriptKind": "ANSWER",
+      "transcript": "最开始我们只用了 dense retrieval，但测试时发现一些政策名称必须精确匹配。分析了大约二十个失败例子以后，我改成 BM25 加 embedding 的混合检索，因为它既保留语义召回，又能找回这些精确术语。",
+      "expectedSemantic": "CONTINUE",
+      "actualSemantic": "CONTINUE",
+      "expectedIssueType": null,
+      "actualIssueType": null,
+      "expectedGate": "CONTINUE",
+      "actualGate": "CONTINUE",
+      "evaluatorDecisionCorrect": true,
+      "evaluatorExactCorrect": true,
+      "evaluatorGateSignalEligible": null,
+      "arbiterWithOracleContextCorrect": true,
+      "finalGateCorrect": true,
+      "productResult": "Evaluator label correct / Product correct",
+      "failureClassifications": [],
+      "validatedEvaluatorResult": {
+        "ok": true,
+        "value": {
+          "questionId": "technical-choice",
+          "checkpointVersion": 1,
+          "confidence": 0.95,
+          "gateability": "GATE_ELIGIBLE",
+          "answerBoundary": "NONE",
+          "decision": "CONTINUE",
+          "issueType": null,
+          "triggeringCriterion": null,
+          "issueExplanation": null,
+          "repairCue": null
+        }
+      },
+      "productReplay": {
+        "checkpointKind": "FINAL",
+        "checkpointEligibility": {
+          "eligible": true,
+          "reason": "ELIGIBLE"
+        },
+        "transcriptCharacters": 108,
+        "answerDurationMs": 15000,
+        "hasSufficientAnswerContext": true,
+        "persistenceSatisfied": true,
+        "persistenceBasis": "FINAL_COMPLETION",
+        "evaluatorCheckpoints": [
+          {
+            "kind": "FINAL",
+            "checkpointVersion": 2
+          }
+        ],
+        "arbiterDecision": "CONTINUE",
+        "arbiterDecisionWithOracleContext": "CONTINUE",
+        "finalProductDecision": "CONTINUE",
+        "finalRuntimeState": "QUESTION_DONE"
+      },
+      "structuredOutputValidity": {
+        "attemptCount": 1,
+        "firstAttemptOutputCaptured": true,
+        "firstAttemptJsonValid": true,
+        "firstAttemptSchemaValid": true,
+        "acceptedOnFirstAttempt": true,
+        "validatedEventually": true,
+        "recoveredAfterRetry": false
+      },
+      "rawStructuredModelOutputs": [
+        {
+          "attempt": 1,
+          "httpStatus": 200,
+          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"technical-choice\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"CONTINUE\\\",\\n  \\\"issueType\\\": null,\\n  \\\"triggeringCriterion\\\": null,\\n  \\\"issueExplanation\\\": null,\\n  \\\"repairCue\\\": null\\n}\",\"role\":\"assistant\"}}],\"created\":1788092878,\"id\":\"chatcmpl-7c5e7107-242b-9c36-acbc-1aca87a82971\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":97,\"prompt_tokens\":1054,\"prompt_tokens_details\":{\"cached_tokens\":1024,\"text_tokens\":1054},\"total_tokens\":1151}}",
+          "structuredOutput": "{\n  \"questionId\": \"technical-choice\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"CONTINUE\",\n  \"issueType\": null,\n  \"triggeringCriterion\": null,\n  \"issueExplanation\": null,\n  \"repairCue\": null\n}",
+          "transportErrorName": null
+        }
+      ]
+    },
+    {
+      "model": "qwen3.8-flash",
+      "caseId": "G14",
+      "title": "说了很多 What，但始终没有 Why",
+      "phase": "FIRST_PASS",
+      "run": 1,
+      "questionPlan": {
+        "oracleId": "QP3",
+        "oracleSurfaceQuestion": "你选择了什么方案？为什么？",
+        "oracleCaseQuestion": null,
+        "productSurfaceQuestion": "你选择了哪项重要的技术方案？为什么这样选择？",
+        "productPlanId": "technical-choice"
+      },
+      "transcriptKind": "ANSWER",
+      "transcript": "最开始用了 dense retrieval，后来又试了 BM25，还改过 chunk size，之后写了前端和评测脚本，最后我们用了混合检索。",
+      "expectedSemantic": "ISSUE_DETECTED",
+      "actualSemantic": "ISSUE_DETECTED",
+      "expectedIssueType": "NOT_ANSWERING_QUESTION",
+      "actualIssueType": "NOT_ANSWERING_QUESTION",
+      "expectedGate": "GATE",
+      "actualGate": "GATE",
+      "evaluatorDecisionCorrect": true,
+      "evaluatorExactCorrect": true,
+      "evaluatorGateSignalEligible": true,
+      "arbiterWithOracleContextCorrect": true,
+      "finalGateCorrect": true,
+      "productResult": "Evaluator label correct / Product correct",
+      "failureClassifications": [],
+      "validatedEvaluatorResult": {
+        "ok": true,
+        "value": {
+          "questionId": "technical-choice",
+          "checkpointVersion": 1,
+          "confidence": 0.95,
+          "gateability": "GATE_ELIGIBLE",
+          "answerBoundary": "NONE",
+          "decision": "ISSUE_DETECTED",
+          "issueType": "NOT_ANSWERING_QUESTION",
+          "triggeringCriterion": {
+            "kind": "REQUIRED_EVIDENCE",
+            "id": "decision-rationale"
+          },
+          "issueExplanation": "The candidate lists the technical choices (dense retrieval, BM25, hybrid) but completely omits the reasoning or tradeoffs for why these specific solutions were selected.",
+          "repairCue": "Explain the rationale behind choosing hybrid retrieval over dense or BM25 alone. What problems did you encounter with the initial methods that led to this decision?"
+        }
+      },
+      "productReplay": {
+        "checkpointKind": "FINAL",
+        "checkpointEligibility": {
+          "eligible": true,
+          "reason": "ELIGIBLE"
+        },
+        "transcriptCharacters": 71,
+        "answerDurationMs": 15000,
+        "hasSufficientAnswerContext": true,
+        "persistenceSatisfied": true,
+        "persistenceBasis": "FINAL_COMPLETION",
+        "evaluatorCheckpoints": [
+          {
+            "kind": "FINAL",
+            "checkpointVersion": 1
+          }
+        ],
+        "arbiterDecision": "GATE",
+        "arbiterDecisionWithOracleContext": "GATE",
+        "finalProductDecision": "GATE",
+        "finalRuntimeState": "REPAIR"
+      },
+      "structuredOutputValidity": {
+        "attemptCount": 1,
+        "firstAttemptOutputCaptured": true,
+        "firstAttemptJsonValid": true,
+        "firstAttemptSchemaValid": true,
+        "acceptedOnFirstAttempt": true,
+        "validatedEventually": true,
+        "recoveredAfterRetry": false
+      },
+      "rawStructuredModelOutputs": [
+        {
+          "attempt": 1,
+          "httpStatus": 200,
+          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"technical-choice\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"ISSUE_DETECTED\\\",\\n  \\\"issueType\\\": \\\"NOT_ANSWERING_QUESTION\\\",\\n  \\\"triggeringCriterion\\\": {\\n   \\\"kind\\\": \\\"REQUIRED_EVIDENCE\\\",\\n   \\\"id\\\": \\\"decision-rationale\\\"\\n  },\\n  \\\"issueExplanation\\\": \\\"The candidate lists the technical choices (dense retrieval, BM25, hybrid) but completely omits the reasoning or tradeoffs for why these specific solutions were selected.\\\",\\n  \\\"repairCue\\\": \\\"Explain the rationale behind choosing hybrid retrieval over dense or BM25 alone. What problems did you encounter with the initial methods that led to this decision?\\\"\\n}\",\"role\":\"assistant\"}}],\"created\":1788092879,\"id\":\"chatcmpl-20571387-3276-96e1-8d37-b4a09d309191\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":190,\"prompt_tokens\":1035,\"prompt_tokens_details\":{\"cached_tokens\":1024,\"text_tokens\":1035},\"total_tokens\":1225}}",
+          "structuredOutput": "{\n  \"questionId\": \"technical-choice\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"ISSUE_DETECTED\",\n  \"issueType\": \"NOT_ANSWERING_QUESTION\",\n  \"triggeringCriterion\": {\n   \"kind\": \"REQUIRED_EVIDENCE\",\n   \"id\": \"decision-rationale\"\n  },\n  \"issueExplanation\": \"The candidate lists the technical choices (dense retrieval, BM25, hybrid) but completely omits the reasoning or tradeoffs for why these specific solutions were selected.\",\n  \"repairCue\": \"Explain the rationale behind choosing hybrid retrieval over dense or BM25 alone. What problems did you encounter with the initial methods that led to this decision?\"\n}",
+          "transportErrorName": null
+        }
+      ]
+    },
+    {
+      "model": "qwen3.8-flash",
+      "caseId": "G15",
+      "title": "Problem → Action → Result 完整",
+      "phase": "FIRST_PASS",
+      "run": 1,
+      "questionPlan": {
+        "oracleId": "QP5",
+        "oracleSurfaceQuestion": "遇到什么问题？改了什么？结果如何？",
+        "oracleCaseQuestion": null,
+        "productSurfaceQuestion": "请描述项目中遇到的一个重要问题、你为此做出的调整，以及调整后的结果。",
+        "productPlanId": "challenge-and-iteration"
+      },
+      "transcriptKind": "ANSWER",
+      "transcript": "最大的问题是传感器时间戳会漂移，融合结果偶尔跳变。我把同步逻辑改成 monotonic clock，同时增加日志检测；改完后三次测试没有再出现那个跳变，不过样本太少，我不能说问题已经彻底解决。",
+      "expectedSemantic": "CONTINUE",
+      "actualSemantic": "CONTINUE",
+      "expectedIssueType": null,
+      "actualIssueType": null,
+      "expectedGate": "CONTINUE",
+      "actualGate": "CONTINUE",
+      "evaluatorDecisionCorrect": true,
+      "evaluatorExactCorrect": true,
+      "evaluatorGateSignalEligible": null,
+      "arbiterWithOracleContextCorrect": true,
+      "finalGateCorrect": true,
+      "productResult": "Evaluator label correct / Product correct",
+      "failureClassifications": [],
+      "validatedEvaluatorResult": {
+        "ok": true,
+        "value": {
+          "questionId": "challenge-and-iteration",
+          "checkpointVersion": 1,
+          "confidence": 0.95,
+          "gateability": "GATE_ELIGIBLE",
+          "answerBoundary": "HONEST_NO_MEASUREMENT",
+          "decision": "CONTINUE",
+          "issueType": null,
+          "triggeringCriterion": null,
+          "issueExplanation": null,
+          "repairCue": null
+        }
+      },
+      "productReplay": {
+        "checkpointKind": "FINAL",
+        "checkpointEligibility": {
+          "eligible": true,
+          "reason": "ELIGIBLE"
+        },
+        "transcriptCharacters": 96,
+        "answerDurationMs": 15000,
+        "hasSufficientAnswerContext": true,
+        "persistenceSatisfied": true,
+        "persistenceBasis": "FINAL_COMPLETION",
+        "evaluatorCheckpoints": [
+          {
+            "kind": "FINAL",
+            "checkpointVersion": 2
+          }
+        ],
+        "arbiterDecision": "CONTINUE",
+        "arbiterDecisionWithOracleContext": "CONTINUE",
+        "finalProductDecision": "CONTINUE",
+        "finalRuntimeState": "QUESTION_DONE"
+      },
+      "structuredOutputValidity": {
+        "attemptCount": 1,
+        "firstAttemptOutputCaptured": true,
+        "firstAttemptJsonValid": true,
+        "firstAttemptSchemaValid": true,
+        "acceptedOnFirstAttempt": true,
+        "validatedEventually": true,
+        "recoveredAfterRetry": false
+      },
+      "rawStructuredModelOutputs": [
+        {
+          "attempt": 1,
+          "httpStatus": 200,
+          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"challenge-and-iteration\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"HONEST_NO_MEASUREMENT\\\",\\n  \\\"decision\\\": \\\"CONTINUE\\\",\\n  \\\"issueType\\\": null,\\n  \\\"triggeringCriterion\\\": null,\\n  \\\"issueExplanation\\\": null,\\n  \\\"repairCue\\\": null\\n}\",\"role\":\"assistant\"}}],\"created\":1788092882,\"id\":\"chatcmpl-25a9f8b4-ad47-9eda-b4f1-a681f851e90d\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":105,\"prompt_tokens\":1079,\"prompt_tokens_details\":{\"cached_tokens\":0,\"text_tokens\":1079},\"total_tokens\":1184}}",
+          "structuredOutput": "{\n  \"questionId\": \"challenge-and-iteration\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"HONEST_NO_MEASUREMENT\",\n  \"decision\": \"CONTINUE\",\n  \"issueType\": null,\n  \"triggeringCriterion\": null,\n  \"issueExplanation\": null,\n  \"repairCue\": null\n}",
+          "transportErrorName": null
+        }
+      ]
+    },
+    {
+      "model": "qwen3.8-flash",
+      "caseId": "G16",
+      "title": "每个部分都有名词，但都很空泛",
+      "phase": "FIRST_PASS",
+      "run": 1,
+      "questionPlan": {
+        "oracleId": "QP5",
+        "oracleSurfaceQuestion": "遇到什么问题？改了什么？结果如何？",
+        "oracleCaseQuestion": null,
+        "productSurfaceQuestion": "请描述项目中遇到的一个重要问题、你为此做出的调整，以及调整后的结果。",
+        "productPlanId": "challenge-and-iteration"
+      },
+      "transcriptKind": "ANSWER",
+      "transcript": "中间遇到了一些同步问题，后来我们优化了一下，最终效果就变好了。",
+      "expectedSemantic": "ISSUE_DETECTED",
+      "actualSemantic": "ISSUE_DETECTED",
+      "expectedIssueType": "VAGUE_WITHOUT_EVIDENCE",
+      "actualIssueType": "VAGUE_WITHOUT_EVIDENCE",
+      "expectedGate": "GATE",
+      "actualGate": "GATE",
+      "evaluatorDecisionCorrect": true,
+      "evaluatorExactCorrect": true,
+      "evaluatorGateSignalEligible": true,
+      "arbiterWithOracleContextCorrect": true,
+      "finalGateCorrect": true,
+      "productResult": "Evaluator label correct / Product correct",
+      "failureClassifications": [],
+      "validatedEvaluatorResult": {
+        "ok": true,
+        "value": {
+          "questionId": "challenge-and-iteration",
+          "checkpointVersion": 1,
+          "confidence": 0.95,
+          "gateability": "GATE_ELIGIBLE",
+          "answerBoundary": "NONE",
+          "decision": "ISSUE_DETECTED",
+          "issueType": "VAGUE_WITHOUT_EVIDENCE",
+          "triggeringCriterion": {
+            "kind": "REQUIRED_EVIDENCE",
+            "id": "iteration-evidence"
+          },
+          "issueExplanation": "The answer mentions a problem ('synchronization issues') and a result ('effect became better'), but the response/action is extremely vague ('optimized it a bit') with no concrete evidence of what was changed or how.",
+          "repairCue": "Specify exactly what optimization or adjustment was made to address the synchronization issue."
+        }
+      },
+      "productReplay": {
+        "checkpointKind": "FINAL",
+        "checkpointEligibility": {
+          "eligible": true,
+          "reason": "ELIGIBLE"
+        },
+        "transcriptCharacters": 31,
+        "answerDurationMs": 15000,
+        "hasSufficientAnswerContext": true,
+        "persistenceSatisfied": true,
+        "persistenceBasis": "FINAL_COMPLETION",
+        "evaluatorCheckpoints": [
+          {
+            "kind": "FINAL",
+            "checkpointVersion": 1
+          }
+        ],
+        "arbiterDecision": "GATE",
+        "arbiterDecisionWithOracleContext": "GATE",
+        "finalProductDecision": "GATE",
+        "finalRuntimeState": "REPAIR"
+      },
+      "structuredOutputValidity": {
+        "attemptCount": 1,
+        "firstAttemptOutputCaptured": true,
+        "firstAttemptJsonValid": true,
+        "firstAttemptSchemaValid": true,
+        "acceptedOnFirstAttempt": true,
+        "validatedEventually": true,
+        "recoveredAfterRetry": false
+      },
+      "rawStructuredModelOutputs": [
+        {
+          "attempt": 1,
+          "httpStatus": 200,
+          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"challenge-and-iteration\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"ISSUE_DETECTED\\\",\\n  \\\"issueType\\\": \\\"VAGUE_WITHOUT_EVIDENCE\\\",\\n  \\\"triggeringCriterion\\\": {\\n   \\\"kind\\\": \\\"REQUIRED_EVIDENCE\\\",\\n   \\\"id\\\": \\\"iteration-evidence\\\"\\n  },\\n  \\\"issueExplanation\\\": \\\"The answer mentions a problem ('synchronization issues') and a result ('effect became better'), but the response/action is extremely vague ('optimized it a bit') with no concrete evidence of what was changed or how.\\\",\\n  \\\"repairCue\\\": \\\"Specify exactly what optimization or adjustment was made to address the synchronization issue.\\\"\\n}\",\"role\":\"assistant\"}}],\"created\":1788092883,\"id\":\"chatcmpl-9992d8f5-7a70-9683-8538-98ea8e1b75e9\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":186,\"prompt_tokens\":1047,\"prompt_tokens_details\":{\"cached_tokens\":1024,\"text_tokens\":1047},\"total_tokens\":1233}}",
+          "structuredOutput": "{\n  \"questionId\": \"challenge-and-iteration\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"ISSUE_DETECTED\",\n  \"issueType\": \"VAGUE_WITHOUT_EVIDENCE\",\n  \"triggeringCriterion\": {\n   \"kind\": \"REQUIRED_EVIDENCE\",\n   \"id\": \"iteration-evidence\"\n  },\n  \"issueExplanation\": \"The answer mentions a problem ('synchronization issues') and a result ('effect became better'), but the response/action is extremely vague ('optimized it a bit') with no concrete evidence of what was changed or how.\",\n  \"repairCue\": \"Specify exactly what optimization or adjustment was made to address the synchronization issue.\"\n}",
+          "transportErrorName": null
+        }
+      ]
+    },
+    {
+      "model": "qwen3.8-flash",
+      "caseId": "G17",
+      "title": "明确 limitation",
+      "phase": "FIRST_PASS",
+      "run": 1,
+      "questionPlan": {
+        "oracleId": "QP6",
+        "oracleSurfaceQuestion": "你的工作不能说明什么？还有什么不确定性？",
+        "oracleCaseQuestion": null,
+        "productSurfaceQuestion": "这项工作尚不能证明什么？还存在哪些不确定性？",
+        "productPlanId": "limitations-and-boundaries"
+      },
+      "transcriptKind": "ANSWER",
+      "transcript": "我们只能说明目前三次室内测试可以运行，不能证明户外复杂光照下仍然稳定，因为测试环境和数据覆盖都不够。",
+      "expectedSemantic": "CONTINUE",
+      "actualSemantic": "CONTINUE",
+      "expectedIssueType": null,
+      "actualIssueType": null,
+      "expectedGate": "CONTINUE",
+      "actualGate": "CONTINUE",
+      "evaluatorDecisionCorrect": true,
+      "evaluatorExactCorrect": true,
+      "evaluatorGateSignalEligible": null,
+      "arbiterWithOracleContextCorrect": true,
+      "finalGateCorrect": true,
+      "productResult": "Evaluator label correct / Product correct",
+      "failureClassifications": [],
+      "validatedEvaluatorResult": {
+        "ok": true,
+        "value": {
+          "questionId": "limitations-and-boundaries",
+          "checkpointVersion": 1,
+          "confidence": 0.95,
+          "gateability": "GATE_ELIGIBLE",
+          "answerBoundary": "NONE",
+          "decision": "CONTINUE",
+          "issueType": null,
+          "triggeringCriterion": null,
+          "issueExplanation": null,
+          "repairCue": null
+        }
+      },
+      "productReplay": {
+        "checkpointKind": "FINAL",
+        "checkpointEligibility": {
+          "eligible": true,
+          "reason": "ELIGIBLE"
+        },
+        "transcriptCharacters": 50,
+        "answerDurationMs": 15000,
+        "hasSufficientAnswerContext": true,
+        "persistenceSatisfied": true,
+        "persistenceBasis": "FINAL_COMPLETION",
+        "evaluatorCheckpoints": [
+          {
+            "kind": "FINAL",
+            "checkpointVersion": 1
+          }
+        ],
+        "arbiterDecision": "CONTINUE",
+        "arbiterDecisionWithOracleContext": "CONTINUE",
+        "finalProductDecision": "CONTINUE",
+        "finalRuntimeState": "QUESTION_DONE"
+      },
+      "structuredOutputValidity": {
+        "attemptCount": 1,
+        "firstAttemptOutputCaptured": true,
+        "firstAttemptJsonValid": true,
+        "firstAttemptSchemaValid": true,
+        "acceptedOnFirstAttempt": true,
+        "validatedEventually": true,
+        "recoveredAfterRetry": false
+      },
+      "rawStructuredModelOutputs": [
+        {
+          "attempt": 1,
+          "httpStatus": 200,
+          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"limitations-and-boundaries\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"CONTINUE\\\",\\n  \\\"issueType\\\": null,\\n  \\\"triggeringCriterion\\\": null,\\n  \\\"issueExplanation\\\": null,\\n  \\\"repairCue\\\": null\\n}\",\"role\":\"assistant\"}}],\"created\":1788092886,\"id\":\"chatcmpl-70e5d76b-3d2c-9954-919e-c2a130decb2c\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":99,\"prompt_tokens\":1027,\"prompt_tokens_details\":{\"cached_tokens\":1024,\"text_tokens\":1027},\"total_tokens\":1126}}",
+          "structuredOutput": "{\n  \"questionId\": \"limitations-and-boundaries\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"CONTINUE\",\n  \"issueType\": null,\n  \"triggeringCriterion\": null,\n  \"issueExplanation\": null,\n  \"repairCue\": null\n}",
+          "transportErrorName": null
+        }
+      ]
+    },
+    {
+      "model": "qwen3.8-flash",
+      "caseId": "G18",
+      "title": "问 limitation，却回答 implementation",
+      "phase": "FIRST_PASS",
+      "run": 1,
+      "questionPlan": {
+        "oracleId": "QP6",
+        "oracleSurfaceQuestion": "你的工作不能说明什么？还有什么不确定性？",
+        "oracleCaseQuestion": null,
+        "productSurfaceQuestion": "这项工作尚不能证明什么？还存在哪些不确定性？",
+        "productPlanId": "limitations-and-boundaries"
+      },
+      "transcriptKind": "ANSWER",
+      "transcript": "我们用了 IMU、摄像头和 EKF，然后对系统进行了融合。",
+      "expectedSemantic": "ISSUE_DETECTED",
+      "actualSemantic": "ISSUE_DETECTED",
+      "expectedIssueType": "NOT_ANSWERING_QUESTION",
+      "actualIssueType": "NOT_ANSWERING_QUESTION",
+      "expectedGate": "GATE",
+      "actualGate": "GATE",
+      "evaluatorDecisionCorrect": true,
+      "evaluatorExactCorrect": true,
+      "evaluatorGateSignalEligible": true,
+      "arbiterWithOracleContextCorrect": true,
+      "finalGateCorrect": true,
+      "productResult": "Evaluator label correct / Product correct",
+      "failureClassifications": [],
+      "validatedEvaluatorResult": {
+        "ok": true,
+        "value": {
+          "questionId": "limitations-and-boundaries",
+          "checkpointVersion": 1,
+          "confidence": 0.95,
+          "gateability": "GATE_ELIGIBLE",
+          "answerBoundary": "NONE",
+          "decision": "ISSUE_DETECTED",
+          "issueType": "NOT_ANSWERING_QUESTION",
+          "triggeringCriterion": {
+            "kind": "REQUIRED_EVIDENCE",
+            "id": "limitation"
+          },
+          "issueExplanation": "The answer describes the system components (IMU, camera, EKF) but completely omits any statement about what the work could not prove or what uncertainties remain.",
+          "repairCue": "State specific limitations or uncertainties of the fusion system, such as sensor drift, lighting conditions, or validation gaps."
+        }
+      },
+      "productReplay": {
+        "checkpointKind": "FINAL",
+        "checkpointEligibility": {
+          "eligible": true,
+          "reason": "ELIGIBLE"
+        },
+        "transcriptCharacters": 29,
+        "answerDurationMs": 15000,
+        "hasSufficientAnswerContext": true,
+        "persistenceSatisfied": true,
+        "persistenceBasis": "FINAL_COMPLETION",
+        "evaluatorCheckpoints": [
+          {
+            "kind": "FINAL",
+            "checkpointVersion": 1
+          }
+        ],
+        "arbiterDecision": "GATE",
+        "arbiterDecisionWithOracleContext": "GATE",
+        "finalProductDecision": "GATE",
+        "finalRuntimeState": "REPAIR"
+      },
+      "structuredOutputValidity": {
+        "attemptCount": 1,
+        "firstAttemptOutputCaptured": true,
+        "firstAttemptJsonValid": true,
+        "firstAttemptSchemaValid": true,
+        "acceptedOnFirstAttempt": true,
+        "validatedEventually": true,
+        "recoveredAfterRetry": false
+      },
+      "rawStructuredModelOutputs": [
+        {
+          "attempt": 1,
+          "httpStatus": 200,
+          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"limitations-and-boundaries\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"ISSUE_DETECTED\\\",\\n  \\\"issueType\\\": \\\"NOT_ANSWERING_QUESTION\\\",\\n  \\\"triggeringCriterion\\\": {\\n   \\\"kind\\\": \\\"REQUIRED_EVIDENCE\\\",\\n   \\\"id\\\": \\\"limitation\\\"\\n  },\\n  \\\"issueExplanation\\\": \\\"The answer describes the system components (IMU, camera, EKF) but completely omits any statement about what the work could not prove or what uncertainties remain.\\\",\\n  \\\"repairCue\\\": \\\"State specific limitations or uncertainties of the fusion system, such as sensor drift, lighting conditions, or validation gaps.\\\"\\n}\",\"role\":\"assistant\"}}],\"created\":1788092887,\"id\":\"chatcmpl-d909b92a-eb97-96e4-b713-c37b9a4cd24b\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":181,\"prompt_tokens\":1016,\"prompt_tokens_details\":{\"cached_tokens\":0,\"text_tokens\":1016},\"total_tokens\":1197}}",
+          "structuredOutput": "{\n  \"questionId\": \"limitations-and-boundaries\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"ISSUE_DETECTED\",\n  \"issueType\": \"NOT_ANSWERING_QUESTION\",\n  \"triggeringCriterion\": {\n   \"kind\": \"REQUIRED_EVIDENCE\",\n   \"id\": \"limitation\"\n  },\n  \"issueExplanation\": \"The answer describes the system components (IMU, camera, EKF) but completely omits any statement about what the work could not prove or what uncertainties remain.\",\n  \"repairCue\": \"State specific limitations or uncertainties of the fusion system, such as sensor drift, lighting conditions, or validation gaps.\"\n}",
+          "transportErrorName": null
+        }
+      ]
+    },
+    {
+      "model": "qwen3.8-flash",
+      "caseId": "G19",
+      "title": "用户显然还没说完",
+      "phase": "FIRST_PASS",
+      "run": 1,
+      "questionPlan": {
+        "oracleId": "QP3",
+        "oracleSurfaceQuestion": "你选择了什么方案？为什么？",
+        "oracleCaseQuestion": null,
+        "productSurfaceQuestion": "你选择了哪项重要的技术方案？为什么这样选择？",
+        "productPlanId": "technical-choice"
+      },
+      "transcriptKind": "CHECKPOINT",
+      "transcript": "我最后选择混合检索，主要是因为……",
+      "expectedSemantic": "CONTINUE",
+      "actualSemantic": "CONTINUE",
+      "expectedIssueType": null,
+      "actualIssueType": null,
+      "expectedGate": "CONTINUE",
+      "actualGate": "CONTINUE",
+      "evaluatorDecisionCorrect": true,
+      "evaluatorExactCorrect": true,
+      "evaluatorGateSignalEligible": null,
+      "arbiterWithOracleContextCorrect": true,
+      "finalGateCorrect": true,
+      "productResult": "Evaluator label correct / Product correct",
+      "failureClassifications": [],
+      "validatedEvaluatorResult": {
+        "ok": true,
+        "value": {
+          "questionId": "technical-choice",
+          "checkpointVersion": 1,
+          "confidence": 0.95,
+          "gateability": "UNCERTAIN",
+          "answerBoundary": "NONE",
+          "decision": "CONTINUE",
+          "issueType": null,
+          "triggeringCriterion": null,
+          "issueExplanation": null,
+          "repairCue": null
+        }
+      },
+      "productReplay": {
+        "checkpointKind": "INTERIM",
+        "checkpointEligibility": {
+          "eligible": false,
+          "reason": "TRANSCRIPT_TOO_SHORT"
+        },
+        "transcriptCharacters": 17,
+        "answerDurationMs": 15000,
+        "hasSufficientAnswerContext": false,
+        "persistenceSatisfied": false,
+        "persistenceBasis": "INTERIM_REQUIRES_MATCHING_NEWER_CHECKPOINT",
+        "evaluatorCheckpoints": [],
+        "arbiterDecision": "CONTINUE",
+        "arbiterDecisionWithOracleContext": "CONTINUE",
+        "finalProductDecision": "CONTINUE",
+        "finalRuntimeState": "ANSWERING"
+      },
+      "structuredOutputValidity": {
+        "attemptCount": 1,
+        "firstAttemptOutputCaptured": true,
+        "firstAttemptJsonValid": true,
+        "firstAttemptSchemaValid": true,
+        "acceptedOnFirstAttempt": true,
+        "validatedEventually": true,
+        "recoveredAfterRetry": false
+      },
+      "rawStructuredModelOutputs": [
+        {
+          "attempt": 1,
+          "httpStatus": 200,
+          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"technical-choice\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"UNCERTAIN\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"CONTINUE\\\",\\n  \\\"issueType\\\": null,\\n  \\\"triggeringCriterion\\\": null,\\n  \\\"issueExplanation\\\": null,\\n  \\\"repairCue\\\": null\\n}\",\"role\":\"assistant\"}}],\"created\":1788092889,\"id\":\"chatcmpl-531b7261-5584-9b82-b208-8cb854d55b58\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":95,\"prompt_tokens\":1013,\"prompt_tokens_details\":{\"cached_tokens\":0,\"text_tokens\":1013},\"total_tokens\":1108}}",
+          "structuredOutput": "{\n  \"questionId\": \"technical-choice\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"UNCERTAIN\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"CONTINUE\",\n  \"issueType\": null,\n  \"triggeringCriterion\": null,\n  \"issueExplanation\": null,\n  \"repairCue\": null\n}",
+          "transportErrorName": null
+        }
+      ]
+    },
+    {
+      "model": "qwen3.8-flash",
+      "caseId": "G20",
+      "title": "已经完整结束，但仍没有 Why",
+      "phase": "FIRST_PASS",
+      "run": 1,
+      "questionPlan": {
+        "oracleId": "QP3",
+        "oracleSurfaceQuestion": "你选择了什么方案？为什么？",
+        "oracleCaseQuestion": null,
+        "productSurfaceQuestion": "你选择了哪项重要的技术方案？为什么这样选择？",
+        "productPlanId": "technical-choice"
+      },
+      "transcriptKind": "ANSWER",
+      "transcript": "我最后选择混合检索。我们还调了 chunk size，做了前端，写了评测，也改了 prompt，最后方案就是混合检索。",
+      "expectedSemantic": "ISSUE_DETECTED",
+      "actualSemantic": "ISSUE_DETECTED",
+      "expectedIssueType": "NOT_ANSWERING_QUESTION",
+      "actualIssueType": "VAGUE_WITHOUT_EVIDENCE",
+      "expectedGate": "GATE",
+      "actualGate": "GATE",
+      "evaluatorDecisionCorrect": true,
+      "evaluatorExactCorrect": false,
+      "evaluatorGateSignalEligible": true,
+      "arbiterWithOracleContextCorrect": true,
+      "finalGateCorrect": true,
+      "productResult": "Evaluator error / Product gate matched",
+      "failureClassifications": [
+        "evaluator semantic error"
+      ],
+      "validatedEvaluatorResult": {
+        "ok": true,
+        "value": {
+          "questionId": "technical-choice",
+          "checkpointVersion": 1,
+          "confidence": 0.95,
+          "gateability": "GATE_ELIGIBLE",
+          "answerBoundary": "NONE",
+          "decision": "ISSUE_DETECTED",
+          "issueType": "VAGUE_WITHOUT_EVIDENCE",
+          "triggeringCriterion": {
+            "kind": "REQUIRED_EVIDENCE",
+            "id": "decision-rationale"
+          },
+          "issueExplanation": "The candidate states the choice (hybrid retrieval) but provides no reasoning or tradeoffs for why this specific technical solution was selected over alternatives.",
+          "repairCue": "Explain the rationale behind choosing hybrid retrieval. What problems did it solve? Why was it better than pure vector search or keyword search in your context?"
+        }
+      },
+      "productReplay": {
+        "checkpointKind": "FINAL",
+        "checkpointEligibility": {
+          "eligible": true,
+          "reason": "ELIGIBLE"
+        },
+        "transcriptCharacters": 59,
+        "answerDurationMs": 15000,
+        "hasSufficientAnswerContext": true,
+        "persistenceSatisfied": true,
+        "persistenceBasis": "FINAL_COMPLETION",
+        "evaluatorCheckpoints": [
+          {
+            "kind": "FINAL",
+            "checkpointVersion": 1
+          }
+        ],
+        "arbiterDecision": "GATE",
+        "arbiterDecisionWithOracleContext": "GATE",
+        "finalProductDecision": "GATE",
+        "finalRuntimeState": "REPAIR"
+      },
+      "structuredOutputValidity": {
+        "attemptCount": 1,
+        "firstAttemptOutputCaptured": true,
+        "firstAttemptJsonValid": true,
+        "firstAttemptSchemaValid": true,
+        "acceptedOnFirstAttempt": true,
+        "validatedEventually": true,
+        "recoveredAfterRetry": false
+      },
+      "rawStructuredModelOutputs": [
+        {
+          "attempt": 1,
+          "httpStatus": 200,
+          "rawResponseBody": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"questionId\\\": \\\"technical-choice\\\",\\n  \\\"checkpointVersion\\\": 1,\\n  \\\"confidence\\\": 0.95,\\n  \\\"gateability\\\": \\\"GATE_ELIGIBLE\\\",\\n  \\\"answerBoundary\\\": \\\"NONE\\\",\\n  \\\"decision\\\": \\\"ISSUE_DETECTED\\\",\\n  \\\"issueType\\\": \\\"VAGUE_WITHOUT_EVIDENCE\\\",\\n  \\\"triggeringCriterion\\\": {\\n   \\\"kind\\\": \\\"REQUIRED_EVIDENCE\\\",\\n   \\\"id\\\": \\\"decision-rationale\\\"\\n  },\\n  \\\"issueExplanation\\\": \\\"The candidate states the choice (hybrid retrieval) but provides no reasoning or tradeoffs for why this specific technical solution was selected over alternatives.\\\",\\n  \\\"repairCue\\\": \\\"Explain the rationale behind choosing hybrid retrieval. What problems did it solve? Why was it better than pure vector search or keyword search in your context?\\\"\\n}\",\"role\":\"assistant\"}}],\"created\":1788092890,\"id\":\"chatcmpl-eb28a2cd-91f9-9c3d-ad4b-e4af8ec5a1f2\",\"model\":\"qwen3.8-flash\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":187,\"prompt_tokens\":1032,\"prompt_tokens_details\":{\"cached_tokens\":1024,\"text_tokens\":1032},\"total_tokens\":1219}}",
+          "structuredOutput": "{\n  \"questionId\": \"technical-choice\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"ISSUE_DETECTED\",\n  \"issueType\": \"VAGUE_WITHOUT_EVIDENCE\",\n  \"triggeringCriterion\": {\n   \"kind\": \"REQUIRED_EVIDENCE\",\n   \"id\": \"decision-rationale\"\n  },\n  \"issueExplanation\": \"The candidate states the choice (hybrid retrieval) but provides no reasoning or tradeoffs for why this specific technical solution was selected over alternatives.\",\n  \"repairCue\": \"Explain the rationale behind choosing hybrid retrieval. What problems did it solve? Why was it better than pure vector search or keyword search in your context?\"\n}",
+          "transportErrorName": null
+        }
+      ]
+    }
+  ]
+}
