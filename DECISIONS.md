@@ -58,4 +58,4 @@ Node.js 24 is the reference local and Docker runtime. `package.json` retains the
 
 ## Current scaffold state
 
-The initial scaffold contains no database, external AI or speech connection, semantic evaluator, hard gate, repair loop, or multi-agent implementation.
+The repository contains the scaffold and Stage 1 domain contracts. It contains no database, external AI or speech connection, semantic evaluator, hard gate, repair loop, or multi-agent implementation.

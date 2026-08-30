@@ -2,7 +2,7 @@
 
 Each stage is one verifiable vertical increment. Finish its acceptance criteria, run `npm test` and `npm run build`, and commit it before starting the next stage. The paths below are likely locations, not a requirement to add extra abstractions.
 
-## 1. Domain contracts
+## 1. Domain contracts — complete
 
 - **Goal:** Define `TrainingTarget`, `EvidenceRequirement`, `QuestionPlan`, `GateIssueType`, `SemanticCheckResult`, and interview state types.
 - **Files / modules likely involved:** `src/domain/interview/contracts.ts`, `src/domain/interview/state.ts`, `src/domain/semantic/contracts.ts`, `tests/domain/contracts.test.ts`.
