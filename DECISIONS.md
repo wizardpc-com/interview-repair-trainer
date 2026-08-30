@@ -18,6 +18,8 @@ Phase 1 does not include a model router, automatic model selection, separate pla
 
 LLM and STT adapters belong under `src/services/llm` and `src/services/stt`. Domain code has no LLM or STT dependency. Planner and evaluator orchestration depend on provider-independent service interfaces, not provider SDKs. LLM output is advisory data: application code validates it and owns UI behavior and state transitions.
 
+The Stage 4 adapter calls Qwen's OpenAI-compatible Chat Completions endpoint with native `fetch`, so no provider SDK is required. One `QWEN_MODEL` configuration is reused for QuestionPlan generation and semantic checkpoint evaluation.
+
 Browser STT is deferred until the text-first runtime is stable. It remains an input adapter and cannot become a domain dependency.
 
 ## Hidden server QuestionPlan
@@ -50,7 +52,7 @@ Phase 1 runs as one application instance with an in-memory server session store 
 
 ## Structured validation
 
-When LLM and API integration begins, API request bodies, generated QuestionPlans, and SemanticCheckResults must cross a runtime schema boundary, preferably Zod. Unvalidated parsed JSON must not be cast directly to a domain type.
+Generated QuestionPlans and SemanticCheckResults cross a Zod validation boundary before entering application logic. Future API request bodies must use the same rule. Unvalidated parsed JSON must not be cast directly to a domain type.
 
 ## Runtime version
 
@@ -58,4 +60,4 @@ Node.js 24 is the reference local and Docker runtime. `package.json` retains the
 
 ## Current implementation state
 
-The repository contains the scaffold, Stage 1 domain contracts, the Stage 2 deterministic Gate Arbiter policy, and the Stage 3 core protocol plus one project/research deep-dive scenario. It contains no database, external AI or speech connection, semantic evaluator, hard gate runtime, repair loop, or multi-agent implementation.
+The repository contains the scaffold, Stage 1 domain contracts, the Stage 2 deterministic Gate Arbiter policy, the Stage 3 core protocol plus one scenario, and the Stage 4 single-model Qwen integration. It contains no committed credentials, database, speech connection, Hidden Session, hard gate runtime, repair loop, or multi-agent implementation.

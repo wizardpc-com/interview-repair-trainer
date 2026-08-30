@@ -26,10 +26,10 @@ Each stage is one verifiable vertical increment. Finish its acceptance criteria,
 - **Tests:** Validate required scenario fields, allowed gate types, and the required-versus-optional evidence split.
 - **Explicit non-goals:** Additional personas, additional scenarios, protocol export, broad question bank.
 
-## 4. Single-model LLM adapter
+## 4. Single-model LLM adapter — complete
 
 - **Goal:** Add one provider-independent LLM service with one actual provider/model configuration reused by planning and evaluation.
-- **Files / modules likely involved:** `src/services/llm/llm-service.ts`, one provider adapter, `src/server/config.ts`, runtime schemas, adapter tests.
+- **Files / modules involved:** `src/services/llm/llm-service.ts`, `src/services/llm/qwen-llm-service.ts`, `src/services/llm/schemas.ts`, `src/server/llm-config.ts`, `tests/services/llm/llm-service.test.ts`.
 - **Acceptance criteria:** Planner and evaluator depend only on the service interface; generated QuestionPlans and SemanticCheckResults pass schema validation, preferably Zod.
 - **Tests:** Use a fake service for valid output, invalid output, and provider error cases; verify both roles resolve to the same configured model.
 - **Explicit non-goals:** Model router, fallback provider, automatic selection, second model or API key, multi-agent behavior.

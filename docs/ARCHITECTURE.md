@@ -1,6 +1,6 @@
 # Architecture
 
-The repository keeps portable interview assets separate from product execution. The current code contains the scaffold, Stage 1 domain contracts, the Stage 2 deterministic Gate Arbiter policy, and the Stage 3 core protocol plus one project/research deep-dive scenario; this document freezes the remaining text-first MVP boundaries rather than claiming those runtime features are implemented.
+The repository keeps portable interview assets separate from product execution. The current code has completed Stages 1–4: domain contracts, deterministic Gate Arbiter policy, the core protocol and first scenario, and a provider-independent single-model Qwen integration. The remaining text-first runtime is still unimplemented.
 
 | Layer | Responsibility | Location |
 | --- | --- | --- |
@@ -38,6 +38,8 @@ Phase 1 configures one real LLM. The same model performs two roles through one p
 - during answering, it evaluates semantic checkpoints for `NOT_ANSWERING_QUESTION`, `VAGUE_WITHOUT_EVIDENCE`, and `OWNERSHIP_AMBIGUOUS` and returns structured data to the Gate Arbiter.
 
 Planner and Semantic Evaluator orchestration depend only on the provider-independent service interface. Domain code has no LLM service dependency, and provider-specific code stays inside `src/services/llm`. LLM output never directly controls the UI or state machine.
+
+Stage 4 uses one Qwen model configuration for both operations through Qwen's OpenAI-compatible Chat Completions endpoint. The adapter uses native `fetch` rather than a provider SDK. `QWEN_API_KEY`, `QWEN_MODEL`, and `QWEN_BASE_URL` are server environment configuration; the default model is `qwen-plus`.
 
 A future extension may use a stronger model for planning and final review and a faster model for real-time monitoring. Phase 1 does not implement the router, selection logic, or second provider configuration required for that split.
 
@@ -95,11 +97,10 @@ The Runtime does not claim to verify all science or engineering knowledge. A can
 
 Phase 1 runs as a single application instance with an in-memory server session store and TTL. Redis, PostgreSQL, queues, accounts, and durable persistence are out of scope.
 
-When API and LLM work begins, runtime schemas, preferably Zod, validate:
+Zod now validates generated QuestionPlans and SemanticCheckResults. When API routes are added, runtime schemas must also validate:
 
 - API request bodies;
-- generated QuestionPlans;
-- SemanticCheckResults.
+- any additional untrusted boundary payloads.
 
 Parsed JSON cannot enter the domain through an unchecked type cast.
 
