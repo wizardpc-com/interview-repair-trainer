@@ -80,6 +80,7 @@ function optionalEvidenceCannotGate(
         answerVersion: 1,
         checkpointVersion: 1,
       },
+      transcriptSnapshot: "",
       semanticResult: invalidOptionalIssue as SemanticCheckResult,
       meetsConfidenceThreshold: true,
       surfaceQuestionSupport: "SUPPORTED",

@@ -344,6 +344,7 @@ export class InterviewRuntimeService {
       questionPlan,
       interviewState: latestSession.runtime.interviewState,
       questionState: question,
+      transcriptSnapshot: checkpoint.transcriptSnapshot,
       semanticResult: result,
       meetsConfidenceThreshold:
         result.confidence >= this.#semanticGateHeuristic.minConfidence,

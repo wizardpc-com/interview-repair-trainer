@@ -67,6 +67,7 @@ function gateInput(overrides: Partial<GateArbiterInput> = {}): GateArbiterInput 
     semanticResult,
     interviewState,
     questionState,
+    transcriptSnapshot: "We worked on the project together.",
     meetsConfidenceThreshold: true,
     surfaceQuestionSupport: "SUPPORTED",
     hasSufficientAnswerContext: true,
@@ -143,6 +144,99 @@ describe("Gate Arbiter", () => {
         }),
       ),
     ).toBe("CONTINUE");
+  });
+
+  it.each([
+    "我主要负责后端。",
+    "这个项目是四个人一起做的，但我个人负责模型选型、量化和端侧推理接口。",
+    "I was personally responsible for the backend API.",
+  ])(
+    "continues for an ownership issue after explicit personal responsibility: %s",
+    (transcriptSnapshot) => {
+      expect(arbitrateGate(gateInput({ transcriptSnapshot }))).toBe(
+        "CONTINUE",
+      );
+    },
+  );
+
+  it.each([
+    "我们一起负责模型、部署和测试。",
+    "我是项目负责人，整体上的事情基本都是我负责。",
+    "我负责。",
+    "后端不是我负责的。",
+    "我不负责后端。",
+    "I was not responsible for the backend API.",
+    "I was responsible for everything.",
+  ])(
+    "does not suppress an ownership gate without a named personal responsibility: %s",
+    (transcriptSnapshot) => {
+      expect(arbitrateGate(gateInput({ transcriptSnapshot }))).toBe("GATE");
+    },
+  );
+
+  it.each([
+    "NOT_ANSWERING_QUESTION",
+    "VAGUE_WITHOUT_EVIDENCE",
+  ] as const)(
+    "does not suppress %s when personal responsibility is explicit",
+    (issueType) => {
+      expect(
+        arbitrateGate(
+          gateInput({
+            questionPlan: {
+              ...questionPlan,
+              allowedGateIssueTypes: [
+                "NOT_ANSWERING_QUESTION",
+                "VAGUE_WITHOUT_EVIDENCE",
+                "OWNERSHIP_AMBIGUOUS",
+              ],
+            },
+            transcriptSnapshot: "我主要负责后端。",
+            semanticResult: { ...semanticResult, issueType },
+          }),
+        ),
+      ).toBe("GATE");
+    },
+  );
+
+  it("does not apply the ownership guard outside a personal-contribution plan", () => {
+    expect(
+      arbitrateGate(
+        gateInput({
+          questionPlan: {
+            ...questionPlan,
+            surfaceQuestion: "Why did this architecture fit the constraints?",
+            primaryTarget: {
+              ...questionPlan.primaryTarget,
+              description: "Explain the architecture choice and its tradeoffs.",
+            },
+            requiredEvidence: [
+              {
+                id: "personal-action",
+                description: "A constraint supporting the architecture choice.",
+              },
+            ],
+          },
+          transcriptSnapshot: "我主要负责后端。",
+        }),
+      ),
+    ).toBe("GATE");
+  });
+
+  it("uses the frozen checkpoint transcript rather than newer question text", () => {
+    const questionWithNewerTranscript = {
+      ...questionState,
+      transcript: "我主要负责后端。",
+    };
+
+    expect(
+      arbitrateGate(
+        gateInput({
+          questionState: questionWithNewerTranscript,
+          transcriptSnapshot: "我们一起负责模型、部署和测试。",
+        }),
+      ),
+    ).toBe("GATE");
   });
 
   it("continues when the issue type is not allowed for the question", () => {

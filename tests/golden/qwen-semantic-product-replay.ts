@@ -165,6 +165,7 @@ function directArbiterDecision(
     questionPlan: plan,
     interviewState: runtime.interviewState,
     questionState: question,
+    transcriptSnapshot: transcript,
     semanticResult,
     meetsConfidenceThreshold:
       semanticResult !== null &&
