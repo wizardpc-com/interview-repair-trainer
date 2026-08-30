@@ -40,7 +40,7 @@ describe.runIf(runLiveSmoke)("Qwen live smoke", () => {
   }, 130_000);
 
   it("generates a QuestionPlan accepted by the existing Zod schema", () => {
-    expect(questionPlan.surfaceQuestion).not.toHaveLength(0);
+    expect(questionPlan.surfaceQuestion).toMatch(/\p{Script=Han}/u);
   });
 
   it(

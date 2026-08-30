@@ -79,7 +79,7 @@
   "questionFamilies": [
     {
       "id": "problem-and-motivation",
-      "surfaceQuestion": "What problem were you trying to solve, and why did it matter in this project?",
+      "surfaceQuestion": "你当时具体想解决什么问题？这个问题在项目中为什么重要？",
       "primaryTargetId": "problem-framing",
       "requiredEvidence": [
         {
@@ -99,7 +99,7 @@
     },
     {
       "id": "personal-contribution",
-      "surfaceQuestion": "What did you personally design, implement, analyze, or decide?",
+      "surfaceQuestion": "在这个项目中，哪些设计、实现、分析或决策是由你本人完成的？",
       "primaryTargetId": "personal-ownership",
       "requiredEvidence": [
         {
@@ -115,7 +115,7 @@
     },
     {
       "id": "technical-choice",
-      "surfaceQuestion": "What important technical approach did you choose, and why did you choose it?",
+      "surfaceQuestion": "你选择了哪项重要的技术方案？为什么这样选择？",
       "primaryTargetId": "technical-reasoning",
       "requiredEvidence": [
         {
@@ -131,7 +131,7 @@
     },
     {
       "id": "results-and-validation",
-      "surfaceQuestion": "What result did you observe, and how did you validate it?",
+      "surfaceQuestion": "你实际观察到了什么结果？你是如何验证这个结果的？",
       "primaryTargetId": "evidence-based-result",
       "requiredEvidence": [
         {
@@ -151,7 +151,7 @@
     },
     {
       "id": "challenge-and-iteration",
-      "surfaceQuestion": "Describe a significant problem during the work, what you changed, and what happened afterward.",
+      "surfaceQuestion": "请描述项目中遇到的一个重要问题、你为此做出的调整，以及调整后的结果。",
       "primaryTargetId": "iteration-and-recovery",
       "requiredEvidence": [
         {
@@ -167,7 +167,7 @@
     },
     {
       "id": "limitations-and-boundaries",
-      "surfaceQuestion": "What could your work not establish, and what uncertainty remained?",
+      "surfaceQuestion": "这项工作尚不能证明什么？还存在哪些不确定性？",
       "primaryTargetId": "boundary-awareness",
       "requiredEvidence": [
         {
@@ -181,6 +181,7 @@
   ],
   "hints": {
     "planner": [
+      "Write surfaceQuestion in Simplified Chinese regardless of the project context language.",
       "Select one family that follows naturally from the candidate's stated project or research context.",
       "Keep one primary target and require only evidence that the generated surface question explicitly asks for.",
       "Freeze the target, evidence split, and allowed issue types before the answer starts."

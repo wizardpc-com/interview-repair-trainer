@@ -21,7 +21,7 @@ const scenario = parseScenarioPack(scenarioData);
 
 const questionPlan: QuestionPlan = {
   id: "question-1",
-  surfaceQuestion: "What problem were you trying to solve, and why did it matter?",
+  surfaceQuestion: "你当时具体想解决什么问题？这个问题为什么重要？",
   primaryTarget: {
     id: "problem-framing",
     description: "Explain the concrete problem, motivation, and scope.",
@@ -158,6 +158,11 @@ describe("provider-independent LLM service", () => {
         messages.some(({ content }) => /json/i.test(content)),
       ),
     ).toBe(true);
+    expect(
+      requestBodies[0].messages.some(({ content }) =>
+        content.includes("Simplified Chinese"),
+      ),
+    ).toBe(true);
     expect(requests.map(({ input }) => input)).toEqual([
       "https://example.test/compatible-mode/v1/chat/completions",
       "https://example.test/compatible-mode/v1/chat/completions",
@@ -173,6 +178,33 @@ describe("provider-independent LLM service", () => {
     await expect(
       qwenService(fetcher).generateQuestionPlan(plannerInput),
     ).resolves.toEqual({ ok: true, value: questionPlan });
+    expect(requests).toHaveLength(2);
+  });
+
+  it("retries an English surface question and accepts a Chinese correction", async () => {
+    const englishQuestionPlan = {
+      ...questionPlan,
+      surfaceQuestion:
+        "What problem were you trying to solve, and why did it matter?",
+    };
+    const { fetcher, requests } = queuedFetcher([
+      completionResponse(JSON.stringify(englishQuestionPlan)),
+      completionResponse(JSON.stringify(questionPlan)),
+    ]);
+
+    await expect(
+      qwenService(fetcher).generateQuestionPlan(plannerInput),
+    ).resolves.toEqual({ ok: true, value: questionPlan });
+
+    const secondRequest = z
+      .object({
+        messages: z.array(z.object({ content: z.string() }).passthrough()),
+      })
+      .passthrough()
+      .parse(JSON.parse(String(requests[1].init?.body)));
+    expect(secondRequest.messages.at(-1)?.content).toContain(
+      "surfaceQuestion must be written in Simplified Chinese",
+    );
     expect(requests).toHaveLength(2);
   });
 

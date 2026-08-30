@@ -19,6 +19,7 @@ type ChatMessage = Readonly<{
 }>;
 
 const QWEN_REQUEST_TIMEOUT_MS = 60_000;
+const HAN_CHARACTER_PATTERN = /\p{Script=Han}/u;
 
 export type QwenLlmServiceOptions = Readonly<{
   apiKey: string;
@@ -72,7 +73,7 @@ function questionPlanMessages(
     {
       role: "system",
       content:
-        "Create exactly one interview QuestionPlan from one scenario questionFamily. Return only a valid JSON object. Copy the selected primaryTarget from trainingTargets verbatim. For requiredEvidence, map each selected family's requiredEvidence.evidenceKindId to the matching top-level evidenceKinds object and output only its id and description. For optionalEvidence, map each optionalEvidenceKindId the same way. Never output evidenceKindId or surfaceQuestionBasis. Every id and description must match exactly. Use the selected family's allowedGateIssueTypes exactly. Do not add fields or invent, paraphrase, or combine definitions.",
+        "Create exactly one interview QuestionPlan from one scenario questionFamily. Return only a valid JSON object. Write surfaceQuestion in Simplified Chinese regardless of the language of the project context or source scenario. Copy the selected primaryTarget from trainingTargets verbatim. For requiredEvidence, map each selected family's requiredEvidence.evidenceKindId to the matching top-level evidenceKinds object and output only its id and description. For optionalEvidence, map each optionalEvidenceKindId the same way. Never output evidenceKindId or surfaceQuestionBasis. Every id and description must match exactly. Use the selected family's allowedGateIssueTypes exactly. Do not add fields or invent, paraphrase, or combine definitions.",
     },
     {
       role: "user",
@@ -81,7 +82,7 @@ function questionPlanMessages(
         input.projectContext,
         "Scenario:",
         JSON.stringify(scenario),
-        "Return JSON with exactly these fields: id, surfaceQuestion, primaryTarget, requiredEvidence, optionalEvidence, allowedGateIssueTypes. Use the selected questionFamily id as id. The surface question may be adapted to the project context, but it must still explicitly ask for every selected requiredEvidence item.",
+        "Return JSON with exactly these fields: id, surfaceQuestion, primaryTarget, requiredEvidence, optionalEvidence, allowedGateIssueTypes. Use the selected questionFamily id as id. The surfaceQuestion must be written in Simplified Chinese. It may be adapted to the project context, but it must still explicitly ask for every selected requiredEvidence item.",
       ].join("\n\n"),
     },
   ];
@@ -131,7 +132,13 @@ export class QwenLlmService implements LlmService {
   ): Promise<LlmResult<QuestionPlan>> {
     return this.requestValidated(
       questionPlanMessages(input),
-      createQuestionPlanSchema(input.scenario),
+      createQuestionPlanSchema(input.scenario).refine(
+        ({ surfaceQuestion }) => HAN_CHARACTER_PATTERN.test(surfaceQuestion),
+        {
+          message: "surfaceQuestion must be written in Simplified Chinese",
+          path: ["surfaceQuestion"],
+        },
+      ),
     );
   }
 

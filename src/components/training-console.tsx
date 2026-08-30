@@ -10,11 +10,11 @@ import {
 } from "../lib/interview-api-contracts";
 
 const STATE_LABELS: Record<PublicInterviewRuntimeDto["state"], string> = {
-  QUESTION_READY: "READY",
-  ANSWERING: "ANSWERING",
-  REPAIR: "REPAIR",
-  REANSWER: "REANSWER",
-  QUESTION_DONE: "COMPLETED",
+  QUESTION_READY: "待开始",
+  ANSWERING: "回答中",
+  REPAIR: "修复中",
+  REANSWER: "重新回答",
+  QUESTION_DONE: "已完成",
 };
 
 async function readApiResponse(response: Response): Promise<unknown> {
@@ -172,7 +172,7 @@ export function TrainingConsole() {
       setDraft(result.runtime.transcript);
     } catch (cause) {
       setError(
-        cause instanceof Error ? cause.message : "训练 Session 创建失败。",
+        cause instanceof Error ? cause.message : "训练创建失败。",
       );
     } finally {
       setIsPending(false);
@@ -229,10 +229,10 @@ export function TrainingConsole() {
         <header className="border-b border-[#15201d]/10 px-6 py-5 sm:px-10">
           <div className="mx-auto flex max-w-6xl items-center justify-between">
             <p className="text-sm font-semibold tracking-[-0.01em]">
-              Interview Repair Trainer
+              面试修复训练器
             </p>
             <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#66716c]">
-              Text-first console
+              文本训练台
             </p>
           </div>
         </header>
@@ -240,13 +240,13 @@ export function TrainingConsole() {
         <section className="mx-auto grid min-h-[calc(100vh-69px)] max-w-6xl items-center gap-12 px-6 py-14 lg:grid-cols-[0.82fr_1.18fr] lg:px-10">
           <div>
             <p className="mb-5 text-xs font-semibold uppercase tracking-[0.22em] text-[#bf5b3d]">
-              Project deep-dive practice
+              项目经历深挖训练
             </p>
             <h1 className="max-w-xl text-4xl font-semibold leading-[1.08] tracking-[-0.04em] sm:text-6xl">
               把项目经历，练成一段清楚的回答。
             </h1>
             <p className="mt-7 max-w-lg text-base leading-7 text-[#5e6964] sm:text-lg">
-              输入一段真实的项目或科研背景。系统会为本次训练准备一个问题，回答过程中保持专注，不提前展示评分。
+              输入项目经历，生成一道面试问题，再开始作答。回答过程中内容会自动保存，不会提前展示评分。
             </p>
           </div>
 
@@ -254,10 +254,10 @@ export function TrainingConsole() {
             <div className="mb-8 flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7b8580]">
-                  Setup
+                  训练设置
                 </p>
                 <h2 className="mt-2 text-2xl font-semibold tracking-[-0.025em]">
-                  创建训练 Session
+                  第一步：提供项目背景
                 </h2>
               </div>
               <span className="grid size-9 place-items-center rounded-full bg-[#dce6df] text-sm font-semibold text-[#274537]">
@@ -300,7 +300,7 @@ export function TrainingConsole() {
               onClick={() => void createSession()}
               disabled={projectContext.trim().length === 0 || isPending}
             >
-              {isPending ? "正在准备问题…" : "创建训练 Session"}
+              {isPending ? "正在生成问题…" : "生成面试问题"}
             </button>
           </div>
         </section>
@@ -316,9 +316,9 @@ export function TrainingConsole() {
       <header className="border-b border-[#13201b]/10 bg-[#f7f7f3]/90 px-5 py-4 backdrop-blur sm:px-8">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-6">
           <div>
-            <p className="text-sm font-semibold">Interview Training Console</p>
+            <p className="text-sm font-semibold">面试训练控制台</p>
             <p className="mt-0.5 text-xs text-[#728079]">
-              Question {runtime.question.index} of {runtime.question.total}
+              第 {runtime.question.index} 题 / 共 {runtime.question.total} 题
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -337,7 +337,7 @@ export function TrainingConsole() {
       <section className="mx-auto grid min-h-[calc(100vh-73px)] max-w-7xl gap-6 px-5 py-6 lg:grid-cols-[0.8fr_1.2fr] lg:px-8 lg:py-8">
         <aside className="flex flex-col rounded-[26px] bg-[#17382c] p-6 text-white sm:p-8">
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#a9c3b7]">
-            Interview prompt
+            本题问题
           </p>
           <h1 className="mt-8 text-3xl font-medium leading-[1.22] tracking-[-0.035em] sm:text-4xl lg:text-[2.7rem]">
             {runtime.question.surfaceQuestion}
@@ -346,10 +346,10 @@ export function TrainingConsole() {
             <div className="h-px bg-white/15" />
             <p className="mt-5 max-w-sm text-sm leading-6 text-[#bdd0c7]">
               {isAnswering
-                ? "回答期间不会出现评分或打断。完成后，本题即被封存。"
+                ? "请像真实面试一样作答。内容会自动保存，完成后将不能继续修改。"
                 : isDone
                   ? "回答已完成，本题内容已封存。"
-                  : "准备好后开始回答，计时与文本快照会从此刻启动。"}
+                  : "请先阅读问题。准备好后点击“开始回答”，回答计时和自动保存将从此刻启动。"}
             </p>
           </div>
         </aside>
@@ -358,18 +358,18 @@ export function TrainingConsole() {
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7b8781]">
-                Your answer
+                你的回答
               </p>
               <h2 className="mt-2 text-xl font-semibold tracking-[-0.02em]">
-                文本回答区
+                回答区域
               </h2>
             </div>
             <div className="flex items-center gap-2 text-xs text-[#78847e]" aria-live="polite">
               <span className="rounded-full bg-[#edf1ed] px-3 py-1.5">
-                Answer v{runtime.answerVersion}
+                回答版本 {runtime.answerVersion}
               </span>
               <span className="rounded-full bg-[#edf1ed] px-3 py-1.5">
-                Checkpoint v{runtime.checkpointVersion}
+                快照版本 {runtime.checkpointVersion}
               </span>
             </div>
           </div>
@@ -390,7 +390,7 @@ export function TrainingConsole() {
 
           <div className="mt-4 flex min-h-6 items-center justify-between text-xs text-[#7b8781]">
             <span aria-live="polite">
-              {isSaving ? "正在同步 transcript…" : isAnswering ? "Transcript 已自动同步" : ""}
+              {isSaving ? "正在保存回答…" : isAnswering ? "回答内容已自动保存" : ""}
             </span>
             <span>{draft.length} / 20,000</span>
           </div>
@@ -407,8 +407,8 @@ export function TrainingConsole() {
           <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-[#13201b]/10 pt-6">
             <p className="text-xs leading-5 text-[#7b8781]">
               {runtime.checkpoint === null
-                ? "尚未生成 checkpoint"
-                : `最近快照：v${runtime.checkpoint.checkpointVersion} · ${
+                ? "尚未生成回答快照"
+                : `最近快照：版本 ${runtime.checkpoint.checkpointVersion} · ${
                     runtime.checkpoint.freshness === "CURRENT" ? "当前" : "已封存"
                   }`}
             </p>
@@ -441,7 +441,7 @@ export function TrainingConsole() {
                 type="button"
                 onClick={reset}
               >
-                新建训练
+                开始新的训练
               </button>
             )}
           </div>

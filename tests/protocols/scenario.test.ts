@@ -46,7 +46,7 @@ describe("science and engineering project deep-dive scenario", () => {
     const evidenceKindIds = new Set(scenario.evidenceKinds.map(({ id }) => id));
 
     for (const family of scenario.questionFamilies) {
-      expect(family.surfaceQuestion).not.toBe("");
+      expect(family.surfaceQuestion).toMatch(/\p{Script=Han}/u);
       expect(targetIds.has(family.primaryTargetId)).toBe(true);
       expect(family).not.toHaveProperty("primaryTargetIds");
       expect(family.requiredEvidence.length).toBeGreaterThan(0);

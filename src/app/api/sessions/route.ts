@@ -14,14 +14,14 @@ export async function POST(request: Request): Promise<Response> {
   try {
     body = await request.json();
   } catch {
-    return errorResponse("INVALID_REQUEST", "Request body must be valid JSON", 400);
+    return errorResponse("INVALID_REQUEST", "请求内容必须是有效的 JSON。", 400);
   }
 
   const parsed = createSessionRequestSchema.safeParse(body);
   if (!parsed.success) {
     return errorResponse(
       "INVALID_REQUEST",
-      "Project or research context is required and must be at most 10,000 characters",
+      "项目或科研经历不能为空，且不能超过 10,000 个字符。",
       400,
     );
   }
@@ -37,7 +37,7 @@ export async function POST(request: Request): Promise<Response> {
       console.error("Interview question planning failed", result.error.cause);
       return errorResponse(
         "PLANNING_FAILED",
-        "The interview question could not be prepared. Please try again.",
+        "暂时无法生成面试问题，请重试。",
         502,
       );
     }
@@ -52,7 +52,7 @@ export async function POST(request: Request): Promise<Response> {
   } catch {
     return errorResponse(
       "SERVICE_UNAVAILABLE",
-      "The interview service is not configured or temporarily unavailable.",
+      "训练服务尚未配置或暂时不可用。",
       503,
     );
   }
