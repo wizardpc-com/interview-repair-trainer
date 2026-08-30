@@ -14,13 +14,14 @@ function createApplication(): InterviewApplication {
   const sessionStore = new InMemoryInterviewSessionStore({
     ttlMs: SESSION_TTL_MS,
   });
+  const llmService = createConfiguredLlmService();
 
   return Object.freeze({
     sessionService: new InterviewSessionService(
-      createConfiguredLlmService(),
+      llmService,
       sessionStore,
     ),
-    runtimeService: new InterviewRuntimeService(sessionStore),
+    runtimeService: new InterviewRuntimeService(sessionStore, llmService),
   });
 }
 

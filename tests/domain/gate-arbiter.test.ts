@@ -32,13 +32,21 @@ const questionPlan: QuestionPlan = {
   allowedGateIssueTypes: ["OWNERSHIP_AMBIGUOUS"],
 };
 
-const semanticResult: SemanticCheckResult = {
+const semanticResult = {
   questionId: questionPlan.id,
   checkpointVersion: 2,
   decision: "ISSUE_DETECTED",
   issueType: "OWNERSHIP_AMBIGUOUS",
   confidence: 0.99,
-};
+  gateability: "GATE_ELIGIBLE",
+  answerBoundary: "NONE",
+  triggeringCriterion: {
+    kind: "REQUIRED_EVIDENCE",
+    id: "personal-action",
+  },
+  issueExplanation: "The answer only describes team activity.",
+  repairCue: "State one personal action.",
+} satisfies SemanticCheckResult;
 
 const interviewState: InterviewRuntimeState = {
   state: "IN_PROGRESS",
@@ -59,11 +67,7 @@ function gateInput(overrides: Partial<GateArbiterInput> = {}): GateArbiterInput 
     semanticResult,
     interviewState,
     questionState,
-    evaluatorGateability: "GATE_ELIGIBLE",
-    triggeringCriterion: {
-      kind: "REQUIRED_EVIDENCE",
-      id: "personal-action",
-    },
+    meetsConfidenceThreshold: true,
     surfaceQuestionSupport: "SUPPORTED",
     hasSufficientAnswerContext: true,
     issueIsPersistent: true,
@@ -80,9 +84,12 @@ describe("Gate Arbiter", () => {
     expect(
       arbitrateGate(
         gateInput({
-          triggeringCriterion: {
-            kind: "PRIMARY_TARGET",
-            id: "ownership",
+          semanticResult: {
+            ...semanticResult,
+            triggeringCriterion: {
+              kind: "PRIMARY_TARGET",
+              id: "ownership",
+            },
           },
         }),
       ),
@@ -153,20 +160,53 @@ describe("Gate Arbiter", () => {
 
   it("continues for upstream uncertainty or a non-issue decision", () => {
     expect(
-      arbitrateGate(gateInput({ evaluatorGateability: "UNCERTAIN" })),
+      arbitrateGate(
+        gateInput({
+          semanticResult: {
+            ...semanticResult,
+            gateability: "UNCERTAIN",
+          },
+        }),
+      ),
     ).toBe("CONTINUE");
     expect(arbitrateGate(gateInput({ semanticResult: null }))).toBe("CONTINUE");
     expect(
       arbitrateGate(
         gateInput({
           semanticResult: {
-            ...semanticResult,
+            questionId: questionPlan.id,
+            checkpointVersion: 2,
+            confidence: 0.99,
+            gateability: "UNCERTAIN",
+            answerBoundary: "NONE",
             decision: "CONTINUE",
             issueType: null,
+            triggeringCriterion: null,
+            issueExplanation: null,
+            repairCue: null,
           },
         }),
       ),
     ).toBe("CONTINUE");
+  });
+
+  it("continues for any issue type at an honest or uncertain answer boundary", () => {
+    for (const answerBoundary of [
+      "HONEST_NO_MEASUREMENT",
+      "UNCERTAIN",
+    ] as const) {
+      expect(
+        arbitrateGate(
+          gateInput({
+            semanticResult: {
+              ...semanticResult,
+              issueType: "OWNERSHIP_AMBIGUOUS",
+              answerBoundary,
+            },
+          }),
+        ),
+      ).toBe("CONTINUE");
+    }
   });
 
   it("continues when the issue is transient or answer context is incomplete", () => {
@@ -180,9 +220,12 @@ describe("Gate Arbiter", () => {
     expect(
       arbitrateGate(
         gateInput({
-          triggeringCriterion: {
-            kind: "REQUIRED_EVIDENCE",
-            id: "team-context",
+          semanticResult: {
+            ...semanticResult,
+            triggeringCriterion: {
+              kind: "REQUIRED_EVIDENCE",
+              id: "team-context",
+            },
           },
         }),
       ),

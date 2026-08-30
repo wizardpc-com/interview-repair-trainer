@@ -39,8 +39,24 @@ textarea:focus-visible {
   animation: question-enter 520ms ease-out both;
 }
 
+@keyframes gate-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.gate-enter {
+  animation: gate-enter 360ms ease-out both;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .question-enter {
+  .question-enter,
+  .gate-enter {
     animation: none;
   }
 }

@@ -107,6 +107,7 @@ export function toPublicInterviewRuntime(
 
   return Object.freeze({
     sessionId: session.sessionId,
+    runtimeRevision: session.runtime.runtimeRevision,
     question: Object.freeze({
       questionId: questionPlan.id,
       surfaceQuestion: questionPlan.surfaceQuestion,
@@ -131,6 +132,19 @@ export function toPublicInterviewRuntime(
                 ? "CURRENT"
                 : "STALE",
           }),
+    hardGate:
+      questionRuntime.state === "REPAIR" &&
+      questionRuntime.hardGate !== null &&
+      questionRuntime.repairStatus !== null
+        ? Object.freeze({
+            status: questionRuntime.repairStatus,
+            title: "回答已暂停",
+            whyPaused: questionRuntime.hardGate.whyPaused,
+            repairCue: questionRuntime.hardGate.repairCue,
+            originalAnswer:
+              questionRuntime.originalAnswer ?? questionRuntime.transcript,
+          })
+        : null,
   });
 }
 

@@ -6,6 +6,7 @@ import {
   useRef,
   useState,
   type CSSProperties,
+  type RefObject,
 } from "react";
 import {
   answerActionResponseSchema,
@@ -23,8 +24,8 @@ import {
 const STATE_LABELS: Record<PublicInterviewRuntimeDto["state"], string> = {
   QUESTION_READY: "待回答",
   ANSWERING: "回答中",
-  REPAIR: "需要重答",
-  REANSWER: "重答中",
+  REPAIR: "回答已暂停",
+  REANSWER: "准备重新回答",
   QUESTION_DONE: "本题完成",
 };
 
@@ -62,29 +63,28 @@ async function postAnswerAction(
   return parsed.runtime;
 }
 
-function runtimeIsAtLeastAsCurrent(
+export function runtimeIsAtLeastAsCurrent(
   candidate: PublicInterviewRuntimeDto,
   current: PublicInterviewRuntimeDto,
 ): boolean {
-  const stateRank: Record<PublicInterviewRuntimeDto["state"], number> = {
-    QUESTION_READY: 0,
-    ANSWERING: 1,
-    REPAIR: 2,
-    REANSWER: 3,
-    QUESTION_DONE: 4,
-  };
+  return (
+    candidate.sessionId === current.sessionId &&
+    candidate.runtimeRevision >= current.runtimeRevision
+  );
+}
 
-  if (candidate.question.index !== current.question.index) {
-    return candidate.question.index > current.question.index;
+function checkpointKey(runtime: PublicInterviewRuntimeDto): string | null {
+  const checkpoint = runtime.checkpoint;
+  if (checkpoint === null || checkpoint.freshness !== "CURRENT") {
+    return null;
   }
 
-  return (
-    candidate.answerVersion > current.answerVersion ||
-    (candidate.answerVersion === current.answerVersion &&
-      (candidate.checkpointVersion > current.checkpointVersion ||
-        (candidate.checkpointVersion === current.checkpointVersion &&
-          stateRank[candidate.state] >= stateRank[current.state])))
-  );
+  return [
+    runtime.sessionId,
+    runtime.question.questionId,
+    checkpoint.answerVersion,
+    checkpoint.checkpointVersion,
+  ].join(":");
 }
 
 function MicrophoneGlyph() {
@@ -167,6 +167,111 @@ function VoiceVisualizer({
   );
 }
 
+export function HardGateView({
+  runtime,
+  isPending,
+  primaryActionRef,
+  onPrepareReanswer,
+  onOverride,
+}: Readonly<{
+  runtime: PublicInterviewRuntimeDto;
+  isPending: boolean;
+  primaryActionRef?: RefObject<HTMLButtonElement | null>;
+  onPrepareReanswer(): void;
+  onOverride(): void;
+}>) {
+  const hardGate = runtime.hardGate;
+  if (hardGate === null) {
+    return null;
+  }
+
+  const isPrepared = hardGate.status === "REANSWER_PREPARED";
+
+  return (
+    <section
+      aria-label="回答暂停"
+      aria-modal="true"
+      className="gate-enter relative z-20 mx-auto flex min-h-[calc(100dvh-69px)] w-full max-w-7xl flex-col px-5 py-8 sm:px-8 sm:py-10 lg:py-12"
+      role="dialog"
+    >
+      <div className="grid flex-1 gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:gap-14">
+        <div className="flex flex-col justify-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#e6a58e]">
+            实时回答修复
+          </p>
+          <h1 className="mt-5 text-5xl font-semibold leading-none tracking-[-0.055em] text-[#fff8ee] sm:text-7xl lg:text-8xl">
+            {isPrepared ? "已准备重新回答" : hardGate.title}
+          </h1>
+          <p className="mt-6 max-w-xl text-base leading-7 text-[#c9aaa0] sm:text-lg">
+            {isPrepared
+              ? "原回答已经保留。下一阶段会从同一个问题开始重新作答。"
+              : "先停在这里，修复一个关键缺口，再决定是否重新回答。"}
+          </p>
+
+          <div className="mt-10 space-y-7 border-l border-[#e6a58e]/25 pl-5 sm:pl-7">
+            <section>
+              <p className="text-xs font-semibold tracking-[0.16em] text-[#b98b7c]">
+                当前问题
+              </p>
+              <p className="mt-2 max-w-3xl text-xl font-medium leading-8 text-[#fff4e9] sm:text-2xl">
+                {runtime.question.surfaceQuestion}
+              </p>
+            </section>
+            <section>
+              <p className="text-xs font-semibold tracking-[0.16em] text-[#b98b7c]">
+                为什么暂停
+              </p>
+              <p className="mt-2 max-w-2xl text-base leading-7 text-[#ead8d0] sm:text-lg">
+                {hardGate.whyPaused}
+              </p>
+            </section>
+            <section>
+              <p className="text-xs font-semibold tracking-[0.16em] text-[#b98b7c]">
+                修复要求
+              </p>
+              <p className="mt-2 max-w-2xl text-lg font-semibold leading-8 text-[#ffd9c7] sm:text-xl">
+                {hardGate.repairCue}
+              </p>
+            </section>
+          </div>
+
+          {!isPrepared && (
+            <div className="mt-10 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+              <button
+                ref={primaryActionRef}
+                className="rounded-full bg-[#fff1e4] px-8 py-3.5 text-sm font-semibold text-[#4a2118] shadow-[0_18px_55px_rgba(0,0,0,0.22)] transition hover:-translate-y-0.5 hover:bg-white focus-visible:outline-[#ffd1be] disabled:cursor-not-allowed disabled:opacity-45"
+                type="button"
+                onClick={onPrepareReanswer}
+                disabled={isPending}
+              >
+                {isPending ? "正在准备…" : "重新回答"}
+              </button>
+              <button
+                className="px-2 py-2 text-sm text-[#caa99d] underline decoration-[#caa99d]/30 underline-offset-4 transition hover:text-[#fff4e9] disabled:cursor-not-allowed disabled:opacity-45"
+                type="button"
+                onClick={onOverride}
+                disabled={isPending}
+              >
+                我认为判断不合理，继续回答
+              </button>
+            </div>
+          )}
+        </div>
+
+        <aside className="flex min-h-72 flex-col justify-end rounded-[32px] border border-[#f4b39c]/12 bg-black/15 p-6 sm:p-8 lg:min-h-0">
+          <div className="flex items-center gap-3 text-xs font-semibold tracking-[0.14em] text-[#a98579]">
+            <span className="size-2 rounded-full bg-[#d37b5f]" />
+            你说到这里，被暂停了
+          </div>
+          <p className="mt-6 max-h-[45dvh] overflow-y-auto whitespace-pre-wrap pr-2 text-base leading-8 text-[#cdb9b1] sm:text-lg">
+            {hardGate.originalAnswer}
+          </p>
+        </aside>
+      </div>
+    </section>
+  );
+}
+
 export function TrainingConsole() {
   const [projectContext, setProjectContext] = useState("");
   const [runtime, setRuntime] = useState<PublicInterviewRuntimeDto | null>(null);
@@ -184,45 +289,28 @@ export function TrainingConsole() {
   const runtimeRef = useRef<PublicInterviewRuntimeDto | null>(null);
   const stableTranscriptRef = useRef("");
   const sttAdapterRef = useRef<BrowserSttAdapter | null>(null);
+  const captureEpochRef = useRef(0);
+  const attemptedCheckpointKeysRef = useRef(new Set<string>());
   const transcriptEndRef = useRef<HTMLSpanElement | null>(null);
   const textFallbackRef = useRef<HTMLTextAreaElement | null>(null);
+  const hardGateActionRef = useRef<HTMLButtonElement | null>(null);
 
   const applyRuntime = useCallback((candidate: PublicInterviewRuntimeDto) => {
-    setRuntime((current) => {
-      const next =
-        current === null || runtimeIsAtLeastAsCurrent(candidate, current)
-          ? candidate
-          : current;
-      runtimeRef.current = next;
-      return next;
-    });
+    const current = runtimeRef.current;
+    if (
+      current !== null &&
+      !runtimeIsAtLeastAsCurrent(candidate, current)
+    ) {
+      return false;
+    }
+
+    if (current?.state === "ANSWERING" && candidate.state !== "ANSWERING") {
+      captureEpochRef.current += 1;
+    }
+    runtimeRef.current = candidate;
+    setRuntime(candidate);
+    return true;
   }, []);
-
-  const persistTranscript = useCallback(
-    async (transcript: string) => {
-      const currentRuntime = runtimeRef.current;
-      if (currentRuntime === null || currentRuntime.state !== "ANSWERING") {
-        return;
-      }
-
-      const sessionId = currentRuntime.sessionId;
-      const pendingSave = saveChainRef.current.then(async () => {
-        setIsSaving(true);
-        try {
-          const nextRuntime = await postAnswerAction(sessionId, {
-            action: "UPDATE_TRANSCRIPT",
-            transcript,
-          });
-          applyRuntime(nextRuntime);
-        } finally {
-          setIsSaving(false);
-        }
-      });
-      saveChainRef.current = pendingSave.catch(() => undefined);
-      return pendingSave;
-    },
-    [applyRuntime],
-  );
 
   const stopVoiceCapture = useCallback(async () => {
     const adapter = sttAdapterRef.current;
@@ -234,6 +322,90 @@ export function TrainingConsole() {
     setInterimTranscript("");
     setMicrophoneStatus("idle");
   }, []);
+
+  const evaluateCheckpoint = useCallback(
+    async (checkpointRuntime: PublicInterviewRuntimeDto) => {
+      const key = checkpointKey(checkpointRuntime);
+      const checkpoint = checkpointRuntime.checkpoint;
+      if (
+        key === null ||
+        checkpoint === null ||
+        checkpointRuntime.state !== "ANSWERING" ||
+        attemptedCheckpointKeysRef.current.has(key)
+      ) {
+        return;
+      }
+
+      attemptedCheckpointKeysRef.current.add(key);
+      try {
+        const evaluated = await postAnswerAction(checkpointRuntime.sessionId, {
+          action: "EVALUATE_CHECKPOINT",
+          questionId: checkpointRuntime.question.questionId,
+          answerVersion: checkpoint.answerVersion,
+          checkpointVersion: checkpoint.checkpointVersion,
+        });
+        if (!applyRuntime(evaluated)) {
+          return;
+        }
+
+        if (evaluated.state === "REPAIR") {
+          stableTranscriptRef.current = evaluated.transcript;
+          setStableTranscript(evaluated.transcript);
+          setInterimTranscript("");
+          setAmplitude(0);
+          await stopVoiceCapture();
+        }
+      } catch {
+        // Semantic evaluation fails open. Transcript capture remains available.
+      }
+    },
+    [applyRuntime, stopVoiceCapture],
+  );
+
+  const persistTranscript = useCallback(
+    async (transcript: string) => {
+      const currentRuntime = runtimeRef.current;
+      if (currentRuntime === null || currentRuntime.state !== "ANSWERING") {
+        return;
+      }
+
+      const sessionId = currentRuntime.sessionId;
+      const captureEpoch = captureEpochRef.current;
+      const pendingSave = saveChainRef.current.then(async () => {
+        const latestRuntime = runtimeRef.current;
+        if (
+          captureEpoch !== captureEpochRef.current ||
+          latestRuntime?.sessionId !== sessionId ||
+          latestRuntime.state !== "ANSWERING"
+        ) {
+          return;
+        }
+
+        setIsSaving(true);
+        try {
+          const nextRuntime = await postAnswerAction(sessionId, {
+            action: "UPDATE_TRANSCRIPT",
+            transcript,
+          });
+          if (applyRuntime(nextRuntime)) {
+            void evaluateCheckpoint(nextRuntime);
+          }
+        } catch (cause) {
+          if (
+            captureEpoch === captureEpochRef.current &&
+            runtimeRef.current?.state === "ANSWERING"
+          ) {
+            throw cause;
+          }
+        } finally {
+          setIsSaving(false);
+        }
+      });
+      saveChainRef.current = pendingSave.catch(() => undefined);
+      return pendingSave;
+    },
+    [applyRuntime, evaluateCheckpoint],
+  );
 
   const switchToTextFallback = useCallback(
     async (message = "已切换到文本输入，回答仍会自动保存。") => {
@@ -249,10 +421,22 @@ export function TrainingConsole() {
     setInputMode("voice");
     setMicrophoneStatus("requesting");
     setVoiceNotice("请在浏览器提示中允许麦克风权限。");
+    const captureEpoch = captureEpochRef.current;
+
+    const captureIsCurrent = () =>
+      captureEpoch === captureEpochRef.current &&
+      runtimeRef.current?.state === "ANSWERING";
 
     const adapter = new BrowserSttAdapter({
-      onInterim: setInterimTranscript,
+      onInterim: (transcript) => {
+        if (captureIsCurrent()) {
+          setInterimTranscript(transcript);
+        }
+      },
       onFinal: (segment) => {
+        if (!captureIsCurrent()) {
+          return;
+        }
         const next = appendStableTranscript(stableTranscriptRef.current, segment);
         if (next === stableTranscriptRef.current) {
           return;
@@ -268,16 +452,22 @@ export function TrainingConsole() {
           );
         });
       },
-      onAmplitude: setAmplitude,
+      onAmplitude: (nextAmplitude) => {
+        if (captureIsCurrent()) {
+          setAmplitude(nextAmplitude);
+        }
+      },
       onError: (sttError: BrowserSttError) => {
-        void switchToTextFallback(sttError.message);
+        if (captureIsCurrent()) {
+          void switchToTextFallback(sttError.message);
+        }
       },
     });
     sttAdapterRef.current = adapter;
 
     try {
       await adapter.start();
-      if (sttAdapterRef.current !== adapter) {
+      if (sttAdapterRef.current !== adapter || !captureIsCurrent()) {
         await adapter.stop();
         return;
       }
@@ -368,6 +558,12 @@ export function TrainingConsole() {
     }
   }, [runtime?.state, stopVoiceCapture]);
 
+  useEffect(() => {
+    if (runtime?.state === "REPAIR") {
+      hardGateActionRef.current?.focus();
+    }
+  }, [runtime?.state]);
+
   useEffect(
     () => () => {
       void sttAdapterRef.current?.stop();
@@ -389,6 +585,7 @@ export function TrainingConsole() {
       const result = createSessionResponseSchema.parse(
         await readApiResponse(response),
       );
+      attemptedCheckpointKeysRef.current.clear();
       applyRuntime(result.runtime);
       stableTranscriptRef.current = result.runtime.transcript;
       setStableTranscript(result.runtime.transcript);
@@ -421,6 +618,7 @@ export function TrainingConsole() {
       applyRuntime(started);
       stableTranscriptRef.current = started.transcript;
       setStableTranscript(started.transcript);
+      captureEpochRef.current += 1;
       await startVoiceCapture();
     } catch (cause) {
       setError(
@@ -441,10 +639,66 @@ export function TrainingConsole() {
       await stopVoiceCapture();
       await persistTranscript(stableTranscriptRef.current);
       await saveChainRef.current;
+      if (runtimeRef.current?.state !== "ANSWERING") {
+        return;
+      }
       const completed = await postAnswerAction(runtime.sessionId, {
         action: "COMPLETE",
       });
       applyRuntime(completed);
+    } catch (cause) {
+      setError(
+        cause instanceof Error ? cause.message : "这次请求没有完成，请重试。",
+      );
+    } finally {
+      setIsPending(false);
+    }
+  }
+
+  async function prepareReanswerAction() {
+    const current = runtimeRef.current;
+    if (current === null || current.state !== "REPAIR") {
+      return;
+    }
+
+    setIsPending(true);
+    setError(null);
+    try {
+      const prepared = await postAnswerAction(current.sessionId, {
+        action: "PREPARE_REANSWER",
+      });
+      applyRuntime(prepared);
+      stableTranscriptRef.current = prepared.transcript;
+      setStableTranscript(prepared.transcript);
+    } catch (cause) {
+      setError(
+        cause instanceof Error ? cause.message : "这次请求没有完成，请重试。",
+      );
+    } finally {
+      setIsPending(false);
+    }
+  }
+
+  async function overrideGateAction() {
+    const current = runtimeRef.current;
+    if (current === null || current.state !== "REPAIR") {
+      return;
+    }
+
+    setIsPending(true);
+    setError(null);
+    try {
+      const resumed = await postAnswerAction(current.sessionId, {
+        action: "OVERRIDE_GATE",
+      });
+      if (!applyRuntime(resumed)) {
+        return;
+      }
+      stableTranscriptRef.current = resumed.transcript;
+      setStableTranscript(resumed.transcript);
+      setInterimTranscript("");
+      captureEpochRef.current += 1;
+      await startVoiceCapture();
     } catch (cause) {
       setError(
         cause instanceof Error ? cause.message : "这次请求没有完成，请重试。",
@@ -460,6 +714,8 @@ export function TrainingConsole() {
   }
 
   function reset() {
+    captureEpochRef.current += 1;
+    attemptedCheckpointKeysRef.current.clear();
     void stopVoiceCapture();
     setRuntime(null);
     runtimeRef.current = null;
@@ -560,17 +816,24 @@ export function TrainingConsole() {
 
   const isReady = runtime.state === "QUESTION_READY";
   const isAnswering = runtime.state === "ANSWERING";
+  const isRepair = runtime.state === "REPAIR" && runtime.hardGate !== null;
   const isDone = runtime.state === "QUESTION_DONE";
   const displayedTranscript = stableTranscript.trim();
 
   return (
     <main
-      className="relative min-h-dvh overflow-x-hidden bg-[#0d251e] text-[#f8f5ed]"
+      className={`relative min-h-dvh overflow-x-hidden text-[#f8f5ed] transition-colors duration-500 ${
+        isRepair ? "bg-[#281713]" : "bg-[#0d251e]"
+      }`}
       data-runtime-state={runtime.state}
     >
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,rgba(77,132,105,0.18),transparent_42%),linear-gradient(180deg,rgba(255,255,255,0.025),transparent_30%)]"
+        className={`pointer-events-none absolute inset-0 ${
+          isRepair
+            ? "bg-[radial-gradient(circle_at_25%_34%,rgba(186,91,61,0.2),transparent_42%),linear-gradient(180deg,rgba(255,255,255,0.025),transparent_35%)]"
+            : "bg-[radial-gradient(circle_at_50%_38%,rgba(77,132,105,0.18),transparent_42%),linear-gradient(180deg,rgba(255,255,255,0.025),transparent_30%)]"
+        }`}
       />
 
       <header className="relative z-10 border-b border-white/8 px-5 py-4 sm:px-8">
@@ -594,6 +857,15 @@ export function TrainingConsole() {
         </div>
       </header>
 
+      {isRepair ? (
+        <HardGateView
+          runtime={runtime}
+          isPending={isPending}
+          primaryActionRef={hardGateActionRef}
+          onPrepareReanswer={() => void prepareReanswerAction()}
+          onOverride={() => void overrideGateAction()}
+        />
+      ) : (
       <section className="relative z-10 mx-auto flex min-h-[calc(100dvh-69px)] max-w-7xl flex-col items-center px-5 pb-6 pt-8 sm:px-8 sm:pb-8 lg:pt-10">
         <div
           className={`question-enter flex w-full flex-col items-center text-center transition-all duration-500 ${
@@ -772,6 +1044,7 @@ export function TrainingConsole() {
           </div>
         )}
       </section>
+      )}
     </main>
   );
 }

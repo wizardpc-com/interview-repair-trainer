@@ -1,6 +1,6 @@
 # Architecture
 
-The repository keeps portable interview assets separate from product execution. The current code has completed Stages 1–7: domain contracts, deterministic Gate Arbiter policy, the core protocol and first scenario, a provider-independent single-model Qwen integration, hidden in-memory sessions, the text-first interview runtime, and an immersive browser voice-answer shell with text fallback.
+The repository keeps portable interview assets separate from product execution. The current code has completed Stages 1–8: domain contracts, deterministic Gate Arbiter policy, the core protocol and first scenario, a provider-independent single-model Qwen integration, hidden in-memory sessions, the text-first interview runtime, an immersive browser voice-answer shell with text fallback, and the first complete Semantic Evaluator to Hard Gate interaction.
 
 | Layer | Responsibility | Location |
 | --- | --- | --- |
@@ -129,9 +129,9 @@ The Training Console is deliberately not a chat transcript. Setup contains one p
 
 Internal protocol identifiers remain stable English machine values. The `zh-CN` presentation boundary maps runtime states, actions, errors, and future gate results to concise Chinese copy; it never renders issue ids, version counters, confidence, or provider details to ordinary users. This is a presentation contract, not a requirement for a general-purpose localization framework.
 
-Generated surface questions must use concise Simplified Chinese, preserve one selected question family's target and complete evidence split, ask only for its required evidence, and avoid coaching, scoring, broad multi-part requests, and internal protocol terms. After one correction attempt, a structurally valid plan with only an unsafe surface question falls back to the selected family's fixed Chinese question. Provider failures and structurally invalid plans still fail session creation rather than guessing a family or target.
+The planner selects one question family and must return its exact target, evidence split, and gate types through validated structured output. The application uses that family's fixed concise Chinese surface question so every gating criterion has source-defined surface support; model-adapted wording cannot silently omit a required request. Provider failures and structurally invalid plans still fail session creation rather than guessing a family or target.
 
-The future Semantic Evaluator returns structured internal metadata only. User-facing Hard Gate, re-answer, resolved, and unresolved copy is deterministic application copy derived from the validated issue and triggering criterion. It identifies one answer-level gap and one next action, preserves the original question and first answer, and never evaluates the user's personality or displays a numerical score.
+The Semantic Evaluator returns structured internal metadata only. User-facing Hard Gate copy is deterministic application copy derived from the validated issue and triggering criterion. It identifies one answer-level gap and one next action, preserves the original question and first answer, and never evaluates the user's personality or displays a numerical score.
 
 ## Browser speech input
 
@@ -141,7 +141,17 @@ The same microphone stream feeds a Web Audio `AnalyserNode`. The UI derives a no
 
 Microphone permission denial, missing SpeechRecognition support, audio setup failure, or recognition failure switches the answer stage to an explicit text fallback. Manual completion remains the only Stage 7 end condition. A future conservative silence-based completion candidate may be added separately, but it must remain independent from Semantic Hard Gate decisions.
 
-Stopping an answer, switching to text, leaving the page, or leaving `ANSWERING` stops SpeechRecognition, cancels animation and restart timers, disconnects audio nodes, closes the AudioContext, and stops every microphone track.
+Stopping an answer, switching to text, leaving the page, or leaving `ANSWERING` stops SpeechRecognition, cancels animation and restart timers, disconnects audio nodes, closes the AudioContext, and stops every microphone track. A Hard Gate performs this shutdown immediately, freezes the stable transcript, and invalidates late recognition callbacks before showing the repair decision.
+
+## Stage 8 semantic interruption
+
+Only a versioned checkpoint created from stable or final transcript text is eligible for evaluation. Interim speech text remains local to the browser. The client requests evaluation once per checkpoint identity, while the server enforces one in-flight evaluator call per session and rejects a different checkpoint until that call finishes.
+
+The server reloads the session after each evaluator response. A result can affect the Runtime only when its session, question, answer version, checkpoint version, and current state still match. Provider errors, timeouts, ambiguous or low-confidence results, invalid structured output after one retry, insufficient context, transient issues, unsupported criteria, and honest no-measurement boundaries all continue without interruption.
+
+Stage 8 centralizes its initial precision-first heuristic in the Runtime: a checkpoint needs at least 80 stable characters and five seconds before evaluation; a blocking issue needs at least 120 characters and ten seconds plus an explicit supported target or required-evidence criterion, `GATE_ELIGIBLE`, and the configured confidence floor. These values are product heuristics, not calibrated probabilities.
+
+Only the application-level Gate Arbiter can enter `REPAIR`. A successful gate consumes the question's single gate capacity, stores the frozen original answer, invalidates previous checkpoints, and exposes only deterministic Chinese presentation fields. The near-full-screen Hard Gate keeps the original surface question and answer visible. `PREPARE_REANSWER` records `REANSWER_PREPARED` without implementing Stage 9 re-recording; `OVERRIDE_GATE` records the disagreement, returns to `ANSWERING`, keeps the frozen QuestionPlan, and cannot open another Hard Gate for that question.
 
 ## Dependency direction
 

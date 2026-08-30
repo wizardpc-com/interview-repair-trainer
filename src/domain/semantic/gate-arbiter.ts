@@ -3,35 +3,27 @@ import type {
   InterviewRuntimeState,
   QuestionRuntimeState,
 } from "../interview/state";
-import type { SemanticCheckResult } from "./contracts";
+import type {
+  GateCriterion,
+  SemanticCheckResult,
+} from "./contracts";
 
 export type GateArbiterDecision = "GATE" | "CONTINUE";
-
-export type EvaluatorGateability = "GATE_ELIGIBLE" | "UNCERTAIN";
 
 export type SurfaceQuestionSupport =
   | "SUPPORTED"
   | "NOT_SUPPORTED"
   | "UNCERTAIN";
 
-export type GateCriterion =
-  | Readonly<{
-      kind: "PRIMARY_TARGET";
-      id: string;
-    }>
-  | Readonly<{
-      kind: "REQUIRED_EVIDENCE";
-      id: string;
-    }>;
+export type { GateCriterion } from "./contracts";
 
 export type GateArbiterInput = Readonly<{
   questionPlan: QuestionPlan;
   interviewState: InterviewRuntimeState;
   questionState: QuestionRuntimeState;
   semanticResult: SemanticCheckResult | null;
-  /** An uncalibrated upstream signal. It is necessary but never sufficient to gate. */
-  evaluatorGateability: EvaluatorGateability;
-  triggeringCriterion: GateCriterion | null;
+  /** Program-owned interpretation of the uncalibrated confidence signal. */
+  meetsConfidenceThreshold: boolean;
   surfaceQuestionSupport: SurfaceQuestionSupport;
   hasSufficientAnswerContext: boolean;
   issueIsPersistent: boolean;
@@ -55,7 +47,10 @@ export function arbitrateGate(input: GateArbiterInput): GateArbiterDecision {
     return "CONTINUE";
   }
 
-  if (input.evaluatorGateability !== "GATE_ELIGIBLE") {
+  if (
+    result.gateability !== "GATE_ELIGIBLE" ||
+    !input.meetsConfidenceThreshold
+  ) {
     return "CONTINUE";
   }
 
@@ -64,10 +59,16 @@ export function arbitrateGate(input: GateArbiterInput): GateArbiterDecision {
   }
 
   if (
-    input.triggeringCriterion === null ||
-    !criterionBelongsToQuestion(input.questionPlan, input.triggeringCriterion) ||
+    !criterionBelongsToQuestion(
+      input.questionPlan,
+      result.triggeringCriterion,
+    ) ||
     input.surfaceQuestionSupport !== "SUPPORTED"
   ) {
+    return "CONTINUE";
+  }
+
+  if (result.answerBoundary !== "NONE") {
     return "CONTINUE";
   }
 

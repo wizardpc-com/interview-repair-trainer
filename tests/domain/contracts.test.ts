@@ -97,6 +97,14 @@ describe("semantic and runtime contracts", () => {
       decision: "ISSUE_DETECTED",
       issueType: "OWNERSHIP_AMBIGUOUS",
       confidence: 0.95,
+      gateability: "GATE_ELIGIBLE",
+      answerBoundary: "NONE",
+      triggeringCriterion: {
+        kind: "REQUIRED_EVIDENCE",
+        id: "personal-action",
+      },
+      issueExplanation: "The answer only describes team activity.",
+      repairCue: "State one personal action.",
     };
 
     expect(result.confidence).toBe(0.95);

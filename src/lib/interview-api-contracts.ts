@@ -17,6 +17,16 @@ export const answerActionRequestSchema = z.discriminatedUnion("action", [
       transcript: z.string().max(20_000),
     })
     .strict(),
+  z
+    .object({
+      action: z.literal("EVALUATE_CHECKPOINT"),
+      questionId: nonEmptyString,
+      answerVersion: z.number().int().positive(),
+      checkpointVersion: z.number().int().positive(),
+    })
+    .strict(),
+  z.object({ action: z.literal("OVERRIDE_GATE") }).strict(),
+  z.object({ action: z.literal("PREPARE_REANSWER") }).strict(),
   z.object({ action: z.literal("COMPLETE") }).strict(),
 ]);
 
@@ -43,9 +53,20 @@ const publicCheckpointSchema = z
   })
   .strict();
 
+const publicHardGateSchema = z
+  .object({
+    status: z.enum(["GATE_PENDING", "REANSWER_PREPARED"]),
+    title: nonEmptyString,
+    whyPaused: nonEmptyString,
+    repairCue: nonEmptyString,
+    originalAnswer: z.string(),
+  })
+  .strict();
+
 export const publicInterviewRuntimeSchema = z
   .object({
     sessionId: nonEmptyString,
+    runtimeRevision: z.number().int().nonnegative(),
     question: z
       .object({
         questionId: nonEmptyString,
@@ -59,6 +80,7 @@ export const publicInterviewRuntimeSchema = z
     answerVersion: z.number().int().nonnegative(),
     checkpointVersion: z.number().int().nonnegative(),
     checkpoint: publicCheckpointSchema.nullable(),
+    hardGate: publicHardGateSchema.nullable(),
   })
   .strict();
 
@@ -95,6 +117,7 @@ export type PublicInterviewSessionDto = Readonly<{
 }>;
 export type PublicInterviewRuntimeDto = Readonly<{
   sessionId: string;
+  runtimeRevision: number;
   question: Readonly<{
     questionId: string;
     surfaceQuestion: string;
@@ -110,5 +133,12 @@ export type PublicInterviewRuntimeDto = Readonly<{
     checkpointVersion: number;
     createdAt: number;
     freshness: "CURRENT" | "STALE";
+  }> | null;
+  hardGate: Readonly<{
+    status: "GATE_PENDING" | "REANSWER_PREPARED";
+    title: string;
+    whyPaused: string;
+    repairCue: string;
+    originalAnswer: string;
   }> | null;
 }>;

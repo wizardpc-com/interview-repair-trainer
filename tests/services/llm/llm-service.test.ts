@@ -52,13 +52,25 @@ const semanticResult: SemanticCheckResult = {
   questionId: questionPlan.id,
   checkpointVersion: 1,
   confidence: 0.8,
+  gateability: "UNCERTAIN",
+  answerBoundary: "NONE",
   decision: "CONTINUE",
   issueType: null,
+  triggeringCriterion: null,
+  issueExplanation: null,
+  repairCue: null,
 };
 
 const plannerInput: GenerateQuestionPlanInput = {
   projectContext: "Built and evaluated a small autonomous navigation prototype.",
   scenario,
+};
+
+const canonicalQuestionPlan: QuestionPlan = {
+  ...questionPlan,
+  surfaceQuestion:
+    scenario.questionFamilies.find(({ id }) => id === questionPlan.id)
+      ?.surfaceQuestion ?? questionPlan.surfaceQuestion,
 };
 
 const evaluatorInput: EvaluateSemanticCheckpointInput = {
@@ -129,7 +141,7 @@ describe("provider-independent LLM service", () => {
 
     await expect(service.generateQuestionPlan(plannerInput)).resolves.toEqual({
       ok: true,
-      value: questionPlan,
+      value: canonicalQuestionPlan,
     });
     await expect(
       service.evaluateSemanticCheckpoint(evaluatorInput),
@@ -182,7 +194,7 @@ describe("provider-independent LLM service", () => {
 
     await expect(
       qwenService(fetcher).generateQuestionPlan(plannerInput),
-    ).resolves.toEqual({ ok: true, value: questionPlan });
+    ).resolves.toEqual({ ok: true, value: canonicalQuestionPlan });
     expect(requests).toHaveLength(2);
   });
 
@@ -199,7 +211,7 @@ describe("provider-independent LLM service", () => {
 
     await expect(
       qwenService(fetcher).generateQuestionPlan(plannerInput),
-    ).resolves.toEqual({ ok: true, value: questionPlan });
+    ).resolves.toEqual({ ok: true, value: canonicalQuestionPlan });
 
     const secondRequest = z
       .object({
@@ -332,7 +344,7 @@ describe("provider-independent LLM service", () => {
 
     await expect(
       qwenService(fetcher).generateQuestionPlan(plannerInput),
-    ).resolves.toEqual({ ok: true, value: questionPlan });
+    ).resolves.toEqual({ ok: true, value: canonicalQuestionPlan });
 
     const secondRequest = z
       .object({

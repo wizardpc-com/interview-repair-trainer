@@ -68,7 +68,7 @@ describe("interview runtime service", () => {
       idFactory: () => "session-1",
     });
     const sessionService = new InterviewSessionService(planningService(), store);
-    const runtimeService = new InterviewRuntimeService(store, {
+    const runtimeService = new InterviewRuntimeService(store, planningService(), {
       now: () => now,
       checkpointHeuristic: {
         minTranscriptCharacters: 10,
@@ -122,7 +122,7 @@ describe("interview runtime service", () => {
       idFactory: () => "session-frozen-plan",
     });
     const sessionService = new InterviewSessionService(planningService(), store);
-    const runtimeService = new InterviewRuntimeService(store, {
+    const runtimeService = new InterviewRuntimeService(store, planningService(), {
       now: () => 2_000,
     });
     await sessionService.create({
@@ -146,7 +146,7 @@ describe("interview runtime service", () => {
       idFactory: () => "session-public-runtime",
     });
     const sessionService = new InterviewSessionService(planningService(), store);
-    const runtimeService = new InterviewRuntimeService(store);
+    const runtimeService = new InterviewRuntimeService(store, planningService());
     await sessionService.create({
       projectContext: "A private project context.",
       scenario,
@@ -157,12 +157,14 @@ describe("interview runtime service", () => {
 
     expect(Object.keys(publicRuntime)).toEqual([
       "sessionId",
+      "runtimeRevision",
       "question",
       "state",
       "transcript",
       "answerVersion",
       "checkpointVersion",
       "checkpoint",
+      "hardGate",
     ]);
     expect(serialized).not.toContain("primaryTarget");
     expect(serialized).not.toContain("requiredEvidence");

@@ -92,8 +92,7 @@ function questionPlanMessages(
       role: "system",
       content: [
         "Create exactly one interview QuestionPlan from one scenario questionFamily and return only a valid JSON object.",
-        "Write surfaceQuestion in natural Simplified Chinese regardless of the project context language.",
-        "Sound like a concise technical interviewer, ask one primary objective in one or two short sentences, and explicitly ask for every requiredEvidence item and nothing beyond it.",
+        "Copy the selected questionFamily surfaceQuestion exactly.",
         "Do not add coaching, scoring, hidden criteria, internal protocol terms, or broad requests such as 请全面介绍, 请详细阐述各个方面, or 从多个维度分析.",
         "Copy the selected primaryTarget from trainingTargets verbatim.",
         "For requiredEvidence, map every selected family's requiredEvidence.evidenceKindId to the matching top-level evidenceKinds object and output only its id and description.",
@@ -110,7 +109,7 @@ function questionPlanMessages(
         input.projectContext,
         "Scenario:",
         JSON.stringify(scenario),
-        "Return JSON with exactly these fields: id, surfaceQuestion, primaryTarget, requiredEvidence, optionalEvidence, allowedGateIssueTypes. Use the selected questionFamily id as id. The surfaceQuestion must be written in Simplified Chinese. It may be adapted to the project context, but it must still explicitly ask for every selected requiredEvidence item.",
+        "Return JSON with exactly these fields: id, surfaceQuestion, primaryTarget, requiredEvidence, optionalEvidence, allowedGateIssueTypes. Use the selected questionFamily id as id and copy its surfaceQuestion exactly.",
       ].join("\n\n"),
     },
   ];
@@ -127,7 +126,12 @@ function semanticCheckpointMessages(
         "Do not write user-facing feedback and do not criticize or infer the candidate's attitude, honesty, confidence, intelligence, or interview readiness.",
         "Judge only the frozen surface question, primary target, and explicitly required evidence; do not judge specialist factual truth.",
         "Detect at most one of NOT_ANSWERING_QUESTION, VAGUE_WITHOUT_EVIDENCE, or OWNERSHIP_AMBIGUOUS.",
+        "When the surface question explicitly asks why, a sustained answer that only defines, describes, or implements what was chosen has not answered the reason; do not infer a rationale from technical detail alone.",
         "Use CONTINUE when uncertain, when context is insufficient, or when the answer states an honest measurement boundary.",
+        "For ISSUE_DETECTED, identify exactly one triggeringCriterion from the primaryTarget or requiredEvidence. Never use optionalEvidence.",
+        "Use gateability GATE_ELIGIBLE only for a clear issue; use UNCERTAIN for possible drift, ambiguity, or a transient partial answer.",
+        "Set answerBoundary to HONEST_NO_MEASUREMENT when the candidate explicitly says no reliable measurement or validation was made, UNCERTAIN when unclear, otherwise NONE.",
+        "issueExplanation and repairCue are short internal English semantic notes. They are advisory and will not be shown directly to the candidate.",
         "Confidence is an uncalibrated signal, not a probability.",
       ].join(" "),
     },
@@ -141,7 +145,7 @@ function semanticCheckpointMessages(
         `Checkpoint version: ${input.checkpointVersion}`,
         "Transcript:",
         input.transcript,
-        "Return JSON with exactly these fields: questionId, checkpointVersion, confidence, decision, issueType. decision is CONTINUE with issueType null, or ISSUE_DETECTED with one supported issueType.",
+        "Return JSON with exactly these fields: questionId, checkpointVersion, confidence, gateability, answerBoundary, decision, issueType, triggeringCriterion, issueExplanation, repairCue. For CONTINUE, issueType, triggeringCriterion, issueExplanation, and repairCue are null. For ISSUE_DETECTED, issueType is one supported issue, triggeringCriterion is {kind: PRIMARY_TARGET|REQUIRED_EVIDENCE, id}, and issueExplanation plus repairCue are short non-empty strings.",
       ].join("\n\n"),
     },
   ];
@@ -161,7 +165,7 @@ export class QwenLlmService implements LlmService {
     this.fetcher = options.fetcher ?? fetch;
   }
 
-  generateQuestionPlan(
+  async generateQuestionPlan(
     input: GenerateQuestionPlanInput,
   ): Promise<LlmResult<QuestionPlan>> {
     const structuralSchema = createQuestionPlanSchema(input.scenario);
@@ -174,7 +178,7 @@ export class QwenLlmService implements LlmService {
       },
     );
 
-    return this.requestValidated(
+    const result = await this.requestValidated(
       questionPlanMessages(input),
       presentationSchema,
       (decoded) => {
@@ -197,6 +201,29 @@ export class QwenLlmService implements LlmService {
         return fallbackResult.success ? fallbackResult.data : null;
       },
     );
+
+    if (!result.ok) {
+      return result;
+    }
+
+    const family = input.scenario.questionFamilies.find(
+      ({ id }) => id === result.value.id,
+    );
+    if (family === undefined) {
+      return failure(
+        "INVALID_STRUCTURED_OUTPUT",
+        "QuestionPlan does not match a scenario question family",
+        2,
+      );
+    }
+
+    return {
+      ok: true,
+      value: {
+        ...result.value,
+        surfaceQuestion: family.surfaceQuestion,
+      },
+    };
   }
 
   evaluateSemanticCheckpoint(
@@ -205,7 +232,7 @@ export class QwenLlmService implements LlmService {
     return this.requestValidated(
       semanticCheckpointMessages(input),
       createSemanticCheckResultSchema(
-        input.questionPlan.id,
+        input.questionPlan,
         input.checkpointVersion,
       ),
     );

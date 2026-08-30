@@ -1,6 +1,11 @@
 import { z } from "zod";
+import type { QuestionPlan } from "../../domain/interview/contracts";
 import type { InterviewScenarioPack } from "../../domain/interview/scenario";
-import { GATE_ISSUE_TYPES } from "../../domain/semantic/contracts";
+import {
+  ANSWER_BOUNDARIES,
+  EVALUATOR_GATEABILITIES,
+  GATE_ISSUE_TYPES,
+} from "../../domain/semantic/contracts";
 
 const nonEmptyString = z.string().trim().min(1);
 const gateIssueTypeSchema = z.enum(GATE_ISSUE_TYPES);
@@ -200,8 +205,25 @@ export function createQuestionPlanSchema(scenario: InterviewScenarioPack) {
 const semanticMetadata = {
   questionId: nonEmptyString,
   checkpointVersion: z.number().int().nonnegative(),
-  confidence: z.number().finite(),
+  confidence: z.number().finite().min(0).max(1),
+  gateability: z.enum(EVALUATOR_GATEABILITIES),
+  answerBoundary: z.enum(ANSWER_BOUNDARIES),
 };
+
+const gateCriterionSchema = z.discriminatedUnion("kind", [
+  z
+    .object({
+      kind: z.literal("PRIMARY_TARGET"),
+      id: nonEmptyString,
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal("REQUIRED_EVIDENCE"),
+      id: nonEmptyString,
+    })
+    .strict(),
+]);
 
 export const semanticCheckResultSchema = z.discriminatedUnion("decision", [
   z
@@ -209,6 +231,9 @@ export const semanticCheckResultSchema = z.discriminatedUnion("decision", [
       ...semanticMetadata,
       decision: z.literal("CONTINUE"),
       issueType: z.null(),
+      triggeringCriterion: z.null(),
+      issueExplanation: z.null(),
+      repairCue: z.null(),
     })
     .strict(),
   z
@@ -216,16 +241,19 @@ export const semanticCheckResultSchema = z.discriminatedUnion("decision", [
       ...semanticMetadata,
       decision: z.literal("ISSUE_DETECTED"),
       issueType: gateIssueTypeSchema,
+      triggeringCriterion: gateCriterionSchema,
+      issueExplanation: nonEmptyString.max(500),
+      repairCue: nonEmptyString.max(300),
     })
     .strict(),
 ]);
 
 export function createSemanticCheckResultSchema(
-  questionId: string,
+  questionPlan: QuestionPlan,
   checkpointVersion: number,
 ) {
   return semanticCheckResultSchema.superRefine((result, context) => {
-    if (result.questionId !== questionId) {
+    if (result.questionId !== questionPlan.id) {
       context.addIssue({
         code: "custom",
         message: "Semantic result questionId does not match the request",
@@ -238,6 +266,25 @@ export function createSemanticCheckResultSchema(
         code: "custom",
         message: "Semantic result checkpointVersion does not match the request",
         path: ["checkpointVersion"],
+      });
+    }
+
+    if (result.decision !== "ISSUE_DETECTED") {
+      return;
+    }
+
+    const criterionMatches =
+      result.triggeringCriterion.kind === "PRIMARY_TARGET"
+        ? result.triggeringCriterion.id === questionPlan.primaryTarget.id
+        : questionPlan.requiredEvidence.some(
+            ({ id }) => id === result.triggeringCriterion.id,
+          );
+    if (!criterionMatches) {
+      context.addIssue({
+        code: "custom",
+        message:
+          "triggeringCriterion must reference the primary target or required evidence",
+        path: ["triggeringCriterion", "id"],
       });
     }
   });

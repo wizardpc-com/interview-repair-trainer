@@ -24,8 +24,8 @@ describe("training console copy", () => {
 
     expect(source).toContain('QUESTION_READY: "待回答"');
     expect(source).toContain('ANSWERING: "回答中"');
-    expect(source).toContain('REPAIR: "需要重答"');
-    expect(source).toContain('REANSWER: "重答中"');
+    expect(source).toContain('REPAIR: "回答已暂停"');
+    expect(source).toContain('REANSWER: "准备重新回答"');
     expect(source).toContain('QUESTION_DONE: "本题完成"');
     expect(source).not.toContain("Interview prompt");
     expect(source).not.toContain("Your answer");
@@ -46,9 +46,18 @@ describe("training console copy", () => {
     const microphoneStart = source.indexOf("await startVoiceCapture()", startAction);
     expect(startAction).toBeGreaterThan(-1);
     expect(microphoneStart).toBeGreaterThan(startAction);
-    expect(source).toContain("onInterim: setInterimTranscript");
+    expect(source).toMatch(/onInterim:[\s\S]*captureIsCurrent\(\)/);
     expect(source).toMatch(/onFinal:[\s\S]*persistTranscript\(next\)/);
     expect(source).toContain('aria-label="实时转写"');
     expect(source).toContain("void sttAdapterRef.current?.stop()");
+    expect(source).toContain('action: "EVALUATE_CHECKPOINT"');
+    expect(source).toContain("captureEpochRef.current += 1");
+    expect(source).toMatch(
+      /evaluated\.state === "REPAIR"[\s\S]*await stopVoiceCapture\(\)/,
+    );
+    expect(source).toMatch(
+      /action: "OVERRIDE_GATE"[\s\S]*await startVoiceCapture\(\)/,
+    );
+    expect(source).toContain('latestRuntime.state !== "ANSWERING"');
   });
 });

@@ -31,12 +31,34 @@ export async function POST(
 
   try {
     const runtimeService = getInterviewApplication().runtimeService;
-    const runtime =
-      parsed.data.action === "START"
-        ? runtimeService.start(sessionId)
-        : parsed.data.action === "UPDATE_TRANSCRIPT"
-          ? runtimeService.updateTranscript(sessionId, parsed.data.transcript)
-          : runtimeService.complete(sessionId);
+    let runtime;
+    switch (parsed.data.action) {
+      case "START":
+        runtime = runtimeService.start(sessionId);
+        break;
+      case "UPDATE_TRANSCRIPT":
+        runtime = runtimeService.updateTranscript(
+          sessionId,
+          parsed.data.transcript,
+        );
+        break;
+      case "EVALUATE_CHECKPOINT":
+        runtime = await runtimeService.evaluateCheckpoint(sessionId, {
+          questionId: parsed.data.questionId,
+          answerVersion: parsed.data.answerVersion,
+          checkpointVersion: parsed.data.checkpointVersion,
+        });
+        break;
+      case "OVERRIDE_GATE":
+        runtime = runtimeService.overrideGate(sessionId);
+        break;
+      case "PREPARE_REANSWER":
+        runtime = runtimeService.prepareReanswer(sessionId);
+        break;
+      case "COMPLETE":
+        runtime = runtimeService.complete(sessionId);
+        break;
+    }
 
     return Response.json({ runtime });
   } catch (error) {

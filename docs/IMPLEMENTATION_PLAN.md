@@ -60,12 +60,12 @@ Across all stages, internal protocol identifiers remain English machine values w
 - **Tests:** Cover delayed permission request, interim/final separation, stable transcript append, analyser-derived amplitude, denial and unsupported fallback, and resource cleanup. Reuse all Stage 6 Runtime tests unchanged.
 - **Explicit non-goals:** Semantic Evaluator orchestration, Hard Gate, Repair, automatic silence completion, provider STT, audio persistence, and scoring.
 
-## 8. Semantic evaluator and Hard Gate
+## 8. Semantic evaluator and Hard Gate — complete
 
 - **Goal:** Evaluate checkpoints for the three MVP issue types and pass validated results through the Gate Arbiter.
 - **Files / modules likely involved:** evaluator orchestration under `src/server`, semantic schemas, Gate Arbiter integration, semantic fixture tests.
-- **Acceptance criteria:** Only `NOT_ANSWERING_QUESTION`, `VAGUE_WITHOUT_EVIDENCE`, and `OWNERSHIP_AMBIGUOUS` are supported; timeout, ambiguity, low confidence, and repeated invalid output continue; evaluator output contains no user-facing feedback; a gate returns one deterministic Chinese cue with one answer-level gap and one action, without exposing internal terms or confidence.
-- **Tests:** Run all fixtures below plus timeout, retry-once, stale, state, max-gate, fixed-copy mapping, and user-visible internal-term regression cases.
+- **Acceptance criteria:** Only stable, versioned checkpoints are evaluated; one server-side call is in flight per session; timeout, ambiguity, low confidence, repeated invalid output, stale results, insufficient context, transient issues, optional evidence, and honest no-measurement boundaries continue. Only the application Gate Arbiter can freeze the answer and enter `REPAIR`; the near-full-screen gate exposes one deterministic Chinese gap and one action without internal terms or confidence. Override records disagreement, resumes the same frozen plan, and cannot restore gate capacity. Re-answer preparation preserves the original answer for Stage 9.
+- **Tests:** Cover all fixtures below plus timeout, retry-once, single-flight, stale, state, max-gate, frozen transcript, microphone shutdown, late STT and evaluator results, override, re-answer preparation, fixed-copy mapping, and user-visible internal-term regression cases.
 - **Explicit non-goals:** Domain-knowledge truth grading, multiple simultaneous issues, calibrated probability claims, elaborate coaching.
 
 ## 9. Repair loop

@@ -1,9 +1,6 @@
-import scenarioData from "../../../../protocols/scenarios/science-engineering-project-deep-dive.json";
-import { parseScenarioPack } from "../../../domain/interview/scenario";
 import { createSessionRequestSchema } from "../../../lib/interview-api-contracts";
 import { getInterviewApplication } from "../../../server/application";
-
-const scenario = parseScenarioPack(scenarioData);
+import { phaseOneScenario } from "../../../server/phase-one-scenario";
 
 function errorResponse(code: string, message: string, status: number): Response {
   return Response.json({ error: { code, message } }, { status });
@@ -30,7 +27,7 @@ export async function POST(request: Request): Promise<Response> {
     const application = getInterviewApplication();
     const result = await application.sessionService.create({
       projectContext: parsed.data.projectContext,
-      scenario,
+      scenario: phaseOneScenario,
     });
 
     if (!result.ok) {

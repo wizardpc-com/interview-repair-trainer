@@ -3,7 +3,11 @@ import type {
   QuestionRuntimeState,
   QuestionState,
 } from "./state";
-import type { SemanticCheckResult } from "../semantic/contracts";
+import type {
+  GateCriterion,
+  GateIssueType,
+  SemanticCheckResult,
+} from "../semantic/contracts";
 
 /** MVP tunable heuristic; these thresholds are not scientifically calibrated. */
 export const MVP_CHECKPOINT_HEURISTIC = Object.freeze({
@@ -12,10 +16,27 @@ export const MVP_CHECKPOINT_HEURISTIC = Object.freeze({
   minCheckpointIntervalMs: 8_000,
 });
 
+/** MVP tunable heuristic; confidence is an uncalibrated gating input. */
+export const MVP_SEMANTIC_GATE_HEURISTIC = Object.freeze({
+  minContextCharacters: 80,
+  minContextDurationMs: 5_000,
+  minPersistentCharacters: 120,
+  minPersistentDurationMs: 10_000,
+  minConfidence: 0.8,
+});
+
 export type CheckpointHeuristic = Readonly<{
   minTranscriptCharacters: number;
   minAnswerDurationMs: number;
   minCheckpointIntervalMs: number;
+}>;
+
+export type SemanticGateHeuristic = Readonly<{
+  minContextCharacters: number;
+  minContextDurationMs: number;
+  minPersistentCharacters: number;
+  minPersistentDurationMs: number;
+  minConfidence: number;
 }>;
 
 export type SemanticCheckpoint = Readonly<{
@@ -27,17 +48,38 @@ export type SemanticCheckpoint = Readonly<{
   createdAt: number;
 }>;
 
+export type HardGateInterruption = Readonly<{
+  issueType: GateIssueType;
+  triggeringCriterion: GateCriterion;
+  checkpointVersion: number;
+  triggeredAt: number;
+  whyPaused: string;
+  repairCue: string;
+}>;
+
+export type GateOverrideRecord = Readonly<{
+  checkpointVersion: number;
+  recordedAt: number;
+}>;
+
+export type RepairStatus = "GATE_PENDING" | "REANSWER_PREPARED";
+
 export type AnswerRuntimeState = QuestionRuntimeState &
   Readonly<{
     transcript: string;
     answerStartedAt: number | null;
     lastCheckpointAt: number | null;
     latestCheckpoint: SemanticCheckpoint | null;
+    originalAnswer: string | null;
+    hardGate: HardGateInterruption | null;
+    gateOverride: GateOverrideRecord | null;
+    repairStatus: RepairStatus | null;
   }>;
 
 export type InterviewRuntime = Readonly<{
   sessionId: string;
   interviewState: InterviewRuntimeState;
+  runtimeRevision: number;
   currentQuestionIndex: number;
   questions: readonly AnswerRuntimeState[];
 }>;
@@ -48,6 +90,7 @@ export type CheckpointEligibility = Readonly<{
     | "ELIGIBLE"
     | "INVALID_STATE"
     | "REQUEST_IN_FLIGHT"
+    | "GATE_CAPACITY_EXHAUSTED"
     | "ANSWER_UNCHANGED"
     | "TRANSCRIPT_TOO_SHORT"
     | "ANSWER_TOO_NEW"
@@ -72,7 +115,7 @@ export class InterviewRuntimeError extends Error {
 const ALLOWED_QUESTION_TRANSITIONS = {
   QUESTION_READY: Object.freeze(["ANSWERING"]),
   ANSWERING: Object.freeze(["REPAIR", "QUESTION_DONE"]),
-  REPAIR: Object.freeze(["REANSWER"]),
+  REPAIR: Object.freeze(["ANSWERING", "REANSWER"]),
   REANSWER: Object.freeze(["QUESTION_DONE"]),
   QUESTION_DONE: Object.freeze([]),
 } as const satisfies Readonly<Record<QuestionState, readonly QuestionState[]>>;
@@ -86,6 +129,19 @@ function freezeQuestionState(
       state.latestCheckpoint === null
         ? null
         : Object.freeze({ ...state.latestCheckpoint }),
+    hardGate:
+      state.hardGate === null
+        ? null
+        : Object.freeze({
+            ...state.hardGate,
+            triggeringCriterion: Object.freeze({
+              ...state.hardGate.triggeringCriterion,
+            }),
+          }),
+    gateOverride:
+      state.gateOverride === null
+        ? null
+        : Object.freeze({ ...state.gateOverride }),
   });
 }
 
@@ -123,6 +179,7 @@ function replaceCurrentQuestion(
 
   return freezeRuntime({
     ...runtime,
+    runtimeRevision: runtime.runtimeRevision + 1,
     interviewState,
     currentQuestionIndex,
     questions,
@@ -170,6 +227,7 @@ export function createInterviewRuntime(
   return freezeRuntime({
     sessionId,
     interviewState: { state: "NOT_STARTED", activeQuestionId: null },
+    runtimeRevision: 0,
     currentQuestionIndex: 0,
     questions: questionIds.map((questionId) => ({
       questionId,
@@ -181,6 +239,10 @@ export function createInterviewRuntime(
       answerStartedAt: null,
       lastCheckpointAt: null,
       latestCheckpoint: null,
+      originalAnswer: null,
+      hardGate: null,
+      gateOverride: null,
+      repairStatus: null,
     })),
   });
 }
@@ -234,6 +296,9 @@ export function getCheckpointEligibility(
   }
   if (isRequestInFlight) {
     return { eligible: false, reason: "REQUEST_IN_FLIGHT" };
+  }
+  if (question.gateCount !== 0) {
+    return { eligible: false, reason: "GATE_CAPACITY_EXHAUSTED" };
   }
   if (question.latestCheckpoint?.answerVersion === question.answerVersion) {
     return { eligible: false, reason: "ANSWER_UNCHANGED" };
@@ -324,6 +389,93 @@ export function isCheckpointResultStale(
     checkpoint.checkpointVersion !== result.checkpointVersion ||
     isCheckpointStale(checkpoint, runtime)
   );
+}
+
+export function interruptForHardGate(
+  runtime: InterviewRuntime,
+  interruption: HardGateInterruption,
+): InterviewRuntime {
+  const question = currentQuestion(runtime);
+  assertTransition(question.state, "REPAIR");
+
+  if (
+    question.gateCount !== 0 ||
+    question.latestCheckpoint === null ||
+    question.latestCheckpoint.checkpointVersion !== interruption.checkpointVersion
+  ) {
+    throw new InterviewRuntimeError(
+      "INVALID_RUNTIME",
+      "Hard Gate interruption does not match the current checkpoint",
+    );
+  }
+
+  return replaceCurrentQuestion(runtime, {
+    ...question,
+    state: "REPAIR",
+    gateCount: 1,
+    originalAnswer: question.transcript,
+    hardGate: interruption,
+    gateOverride: null,
+    repairStatus: "GATE_PENDING",
+    latestCheckpoint: null,
+  });
+}
+
+export function overrideHardGate(
+  runtime: InterviewRuntime,
+  recordedAt: number,
+): InterviewRuntime {
+  const question = currentQuestion(runtime);
+  assertTransition(question.state, "ANSWERING");
+
+  if (
+    question.hardGate === null ||
+    question.originalAnswer === null ||
+    question.gateCount !== 1 ||
+    question.repairStatus !== "GATE_PENDING"
+  ) {
+    throw new InterviewRuntimeError(
+      "INVALID_TRANSITION",
+      "Cannot override a question without a pending Hard Gate decision",
+    );
+  }
+
+  return replaceCurrentQuestion(runtime, {
+    ...question,
+    state: "ANSWERING",
+    gateOverride: Object.freeze({
+      checkpointVersion: question.hardGate.checkpointVersion,
+      recordedAt,
+    }),
+    repairStatus: null,
+    latestCheckpoint: null,
+  });
+}
+
+export function prepareReanswer(
+  runtime: InterviewRuntime,
+): InterviewRuntime {
+  const question = currentQuestion(runtime);
+
+  if (
+    question.state !== "REPAIR" ||
+    question.hardGate === null ||
+    question.originalAnswer === null
+  ) {
+    throw new InterviewRuntimeError(
+      "INVALID_TRANSITION",
+      `Cannot prepare a re-answer while question is ${question.state}`,
+    );
+  }
+
+  if (question.repairStatus === "REANSWER_PREPARED") {
+    return runtime;
+  }
+
+  return replaceCurrentQuestion(runtime, {
+    ...question,
+    repairStatus: "REANSWER_PREPARED",
+  });
 }
 
 export function completeAnswer(runtime: InterviewRuntime): InterviewRuntime {
