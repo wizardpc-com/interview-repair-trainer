@@ -34,12 +34,12 @@ Each stage is one verifiable vertical increment. Finish its acceptance criteria,
 - **Tests:** Use a fake service for valid output, invalid output, and provider error cases; verify both roles resolve to the same configured model.
 - **Explicit non-goals:** Model router, fallback provider, automatic selection, second model or API key, multi-agent behavior.
 
-## 5. Hidden in-memory session
+## 5. Hidden in-memory session — complete
 
 - **Goal:** Store the frozen QuestionPlan in a server-only, in-memory session with TTL.
-- **Files / modules likely involved:** `src/server/session-store.ts`, session creation Route Handler, request and response schemas, store tests.
-- **Acceptance criteria:** The complete plan never reaches the frontend; the response exposes only the surface question and public runtime state; expired sessions are rejected.
-- **Tests:** Cover create, read, expiry, missing session, and response serialization without hidden fields.
+- **Files / modules involved:** `src/server/session-store.ts`, `src/server/interview-session-service.ts`, `tests/server/interview-session.test.ts`.
+- **Acceptance criteria:** Session creation uses the provider-independent LLM service, copies and freezes the complete plan server-side, exposes only the session id and surface questions, and rejects expired sessions. Planning failure creates no partial session.
+- **Tests:** Cover create and read, deep freezing, hidden-field serialization, lazy expiry, missing sessions, planning failure atomicity, and session isolation.
 - **Explicit non-goals:** Redis, PostgreSQL, accounts, durable recovery, horizontal scaling.
 
 ## 6. Text-first interview runtime

@@ -1,6 +1,6 @@
 # Architecture
 
-The repository keeps portable interview assets separate from product execution. The current code has completed Stages 1–4: domain contracts, deterministic Gate Arbiter policy, the core protocol and first scenario, and a provider-independent single-model Qwen integration. The remaining text-first runtime is still unimplemented.
+The repository keeps portable interview assets separate from product execution. The current code has completed Stages 1–5: domain contracts, deterministic Gate Arbiter policy, the core protocol and first scenario, a provider-independent single-model Qwen integration, and hidden in-memory sessions. The remaining text-first runtime is still unimplemented.
 
 | Layer | Responsibility | Location |
 | --- | --- | --- |
@@ -95,7 +95,9 @@ The Runtime does not claim to verify all science or engineering knowledge. A can
 
 ## Session and validation boundaries
 
-Phase 1 runs as a single application instance with an in-memory server session store and TTL. Redis, PostgreSQL, queues, accounts, and durable persistence are out of scope.
+Phase 1 runs as a single application instance with an in-memory server session store and TTL. Session creation calls the provider-independent `LlmService`; failed planning does not create a record. Successful plans are copied and recursively frozen in server memory with the project context and scenario id/version. Reads expire records lazily, with a minimal cleanup method available for bulk removal.
+
+The public session DTO is constructed by explicit field selection. It contains only the `sessionId` plus each `questionId` and `surfaceQuestion`; it does not contain project context, scenario hints, timestamps, primary targets, required or optional evidence, or allowed gate types. Redis, PostgreSQL, queues, accounts, durable persistence, and horizontal scaling are out of scope.
 
 Zod now validates generated QuestionPlans and SemanticCheckResults. When API routes are added, runtime schemas must also validate:
 

@@ -48,7 +48,9 @@ Explicitly stating that no reliable measurement was made is valid uncertainty or
 
 ## Single-instance session model
 
-Phase 1 runs as one application instance with an in-memory server session store and TTL. Redis, PostgreSQL, queues, accounts, and persistence infrastructure are explicitly out of scope. Horizontal scaling or durable sessions require a later architecture decision.
+Phase 1 runs as one application instance with an in-memory server session store and TTL. The store copies and recursively freezes complete QuestionPlans, expires records lazily, and exposes them only to trusted server code. A separately constructed public DTO contains only the session id and surface questions. Planning failure is atomic and writes no partial session.
+
+Redis, PostgreSQL, queues, accounts, and persistence infrastructure are explicitly out of scope. Process restarts lose sessions, and horizontal scaling or durable sessions require a later architecture decision.
 
 ## Structured validation
 
@@ -60,4 +62,4 @@ Node.js 24 is the reference local and Docker runtime. `package.json` retains the
 
 ## Current implementation state
 
-The repository contains the scaffold, Stage 1 domain contracts, the Stage 2 deterministic Gate Arbiter policy, the Stage 3 core protocol plus one scenario, and the Stage 4 single-model Qwen integration. It contains no committed credentials, database, speech connection, Hidden Session, hard gate runtime, repair loop, or multi-agent implementation.
+The repository contains the scaffold, Stage 1 domain contracts, the Stage 2 deterministic Gate Arbiter policy, the Stage 3 core protocol plus one scenario, the Stage 4 single-model Qwen integration, and the Stage 5 hidden in-memory Session. It contains no committed credentials, database, speech connection, full interview API/UI, semantic evaluator orchestration, hard gate runtime, repair loop, or multi-agent implementation.
