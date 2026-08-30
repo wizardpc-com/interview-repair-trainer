@@ -1,5 +1,6 @@
 import type { QuestionPlan } from "../domain/interview/contracts";
 import {
+  clearSemanticCandidates,
   completeAnswer,
   completeRepair,
   createCheckpoint,
@@ -11,7 +12,10 @@ import {
   MVP_FINAL_CHECKPOINT_MIN_CHARACTERS,
   MVP_SEMANTIC_GATE_HEURISTIC,
   overrideHardGate,
+  pauseForWrapUp,
+  resumeAfterWrapUp,
   setSemanticIssueCandidate,
+  setSemanticWrapUpCandidate,
   startAnswer,
   startReanswer,
   updateTranscript,
@@ -284,6 +288,12 @@ export class InterviewRuntimeService {
     return this.saveAndPublish(sessionId, runtime);
   }
 
+  continueAfterWrapUp(sessionId: string): PublicInterviewRuntimeDto {
+    const session = this.requireSession(sessionId);
+    const runtime = resumeAfterWrapUp(session.runtime);
+    return this.saveAndPublish(sessionId, runtime);
+  }
+
   complete(sessionId: string): Promise<PublicInterviewRuntimeDto> {
     const session = this.requireSession(sessionId);
     const question = session.runtime.questions[session.runtime.currentQuestionIndex];
@@ -294,6 +304,12 @@ export class InterviewRuntimeService {
 
     if (question.state === "REANSWER") {
       return this.completeReanswer(sessionId);
+    }
+
+    if (question.state === "WRAP_UP") {
+      return Promise.resolve(
+        this.saveAndPublish(sessionId, completeAnswer(session.runtime)),
+      );
     }
 
     if (question.state !== "ANSWERING") {
@@ -468,20 +484,51 @@ export class InterviewRuntimeService {
       return toPublicInterviewRuntime(latestSession);
     }
     if (!evaluation.ok) {
-      return this.clearSemanticIssueCandidate(latestSession);
+      return this.clearSemanticCandidates(latestSession);
     }
 
     const result = evaluation.value;
     if (isCheckpointResultStale(result, latestSession.runtime)) {
       return toPublicInterviewRuntime(latestSession);
     }
-    if (result.decision !== "ISSUE_DETECTED") {
-      return this.clearSemanticIssueCandidate(latestSession);
-    }
-
     const question = latestSession.runtime.questions[questionIndex];
     if (question === undefined || question.answerStartedAt === null) {
       return toPublicInterviewRuntime(latestSession);
+    }
+
+    if (
+      result.decision === "CONTINUE" &&
+      result.answerBoundary === "ANSWER_COMPLETE_BUT_RAMBLING"
+    ) {
+      if (checkpoint.kind !== "INTERIM" || question.wrapUpCount !== 0) {
+        return this.clearSemanticCandidates(latestSession);
+      }
+
+      const candidate = question.semanticWrapUpCandidate;
+      if (candidate === null) {
+        const runtime = setSemanticWrapUpCandidate(latestSession.runtime, {
+          answerVersion: checkpoint.answerVersion,
+          checkpointVersion: checkpoint.checkpointVersion,
+        });
+        return this.saveAndPublish(initialSession.sessionId, runtime);
+      }
+
+      if (
+        candidate.answerVersion >= checkpoint.answerVersion ||
+        candidate.checkpointVersion >= checkpoint.checkpointVersion
+      ) {
+        return toPublicInterviewRuntime(latestSession);
+      }
+
+      const runtime = pauseForWrapUp(latestSession.runtime, {
+        checkpointVersion: checkpoint.checkpointVersion,
+        triggeredAt: this.#now(),
+      });
+      return this.saveAndPublish(initialSession.sessionId, runtime);
+    }
+
+    if (result.decision !== "ISSUE_DETECTED") {
+      return this.clearSemanticCandidates(latestSession);
     }
 
     const transcriptCharacters = checkpoint.transcriptSnapshot.trim().length;
@@ -511,7 +558,7 @@ export class InterviewRuntimeService {
     });
 
     if (gateDecisionIfPersistent !== "GATE") {
-      return this.clearSemanticIssueCandidate(latestSession);
+      return this.clearSemanticCandidates(latestSession);
     }
 
     if (!isFinalCheckpoint) {
@@ -549,21 +596,22 @@ export class InterviewRuntimeService {
     return this.saveAndPublish(initialSession.sessionId, runtime);
   }
 
-  private clearSemanticIssueCandidate(
+  private clearSemanticCandidates(
     session: InterviewSession,
   ): PublicInterviewRuntimeDto {
     const question = session.runtime.questions[session.runtime.currentQuestionIndex];
     if (
       question === undefined ||
       question.state !== "ANSWERING" ||
-      question.semanticIssueCandidate === null
+      (question.semanticIssueCandidate === null &&
+        question.semanticWrapUpCandidate === null)
     ) {
       return toPublicInterviewRuntime(session);
     }
 
     return this.saveAndPublish(
       session.sessionId,
-      setSemanticIssueCandidate(session.runtime, null),
+      clearSemanticCandidates(session.runtime),
     );
   }
 

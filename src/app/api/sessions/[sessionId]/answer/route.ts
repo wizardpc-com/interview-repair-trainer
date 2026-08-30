@@ -53,6 +53,9 @@ export async function POST(
       case "OVERRIDE_GATE":
         runtime = runtimeService.overrideGate(sessionId);
         break;
+      case "CONTINUE_AFTER_WRAP_UP":
+        runtime = runtimeService.continueAfterWrapUp(sessionId);
+        break;
       case "START_REANSWER":
         runtime = runtimeService.startReanswer(sessionId);
         break;

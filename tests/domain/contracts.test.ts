@@ -128,6 +128,7 @@ describe("semantic and runtime contracts", () => {
     expect(QUESTION_STATES).toEqual([
       "QUESTION_READY",
       "ANSWERING",
+      "WRAP_UP",
       "REPAIR",
       "REANSWER",
       "QUESTION_DONE",

@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   HardGateView,
   RepairResultView,
+  WrapUpView,
   runtimeIsAtLeastAsCurrent,
 } from "../../src/components/training-console";
 import type { PublicInterviewRuntimeDto } from "../../src/lib/interview-api-contracts";
@@ -25,6 +26,7 @@ function hardGateRuntime(): PublicInterviewRuntimeDto {
     answerVersion: 3,
     checkpointVersion: 2,
     checkpoint: null,
+    wrapUpPrompt: null,
     hardGate: {
       status: "GATE_PENDING",
       title: "回答已暂停",
@@ -128,5 +130,33 @@ describe("Hard Gate view", () => {
     expect(markup).not.toMatch(
       /confidence|Hidden Target|primaryTarget|requiredEvidence|optionalEvidence/i,
     );
+  });
+
+  it("shows a non-Gate wrap-up choice with the frozen transcript", () => {
+    const runtime: PublicInterviewRuntimeDto = {
+      ...hardGateRuntime(),
+      runtimeRevision: 9,
+      state: "WRAP_UP",
+      hardGate: null,
+      wrapUpPrompt: {
+        title: "核心已经回答",
+        message: "你已经回应了问题核心，后面的内容开始偏离当前问题。",
+      },
+    };
+    const markup = renderToStaticMarkup(
+      createElement(WrapUpView, {
+        runtime,
+        isPending: false,
+        onFinish: vi.fn(),
+        onContinue: vi.fn(),
+      }),
+    );
+
+    expect(markup).toContain("核心已经回答");
+    expect(markup).toContain("结束本题");
+    expect(markup).toContain("继续回答");
+    expect(markup).toContain(runtime.transcript);
+    expect(markup).not.toContain("回答已暂停");
+    expect(markup).not.toMatch(/NOT_ANSWERING_QUESTION|confidence|Hidden Target/i);
   });
 });

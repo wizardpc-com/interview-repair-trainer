@@ -288,6 +288,7 @@ describe("Gate Arbiter", () => {
     for (const answerBoundary of [
       "HONEST_NO_MEASUREMENT",
       "UNCERTAIN",
+      "ANSWER_COMPLETE_BUT_RAMBLING",
     ] as const) {
       expect(
         arbitrateGate(

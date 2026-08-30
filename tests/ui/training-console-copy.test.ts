@@ -24,6 +24,7 @@ describe("training console copy", () => {
 
     expect(source).toContain('QUESTION_READY: "待回答"');
     expect(source).toContain('ANSWERING: "回答中"');
+    expect(source).toContain('WRAP_UP: "可以收住了"');
     expect(source).toContain('REPAIR: "回答已暂停"');
     expect(source).toContain('REANSWER: "重新回答中"');
     expect(source).toContain('QUESTION_DONE: "本题完成"');
@@ -54,7 +55,10 @@ describe("training console copy", () => {
     expect(source).toContain('action: "EVALUATE_CHECKPOINT"');
     expect(source).toContain("captureEpochRef.current += 1");
     expect(source).toMatch(
-      /evaluated\.state === "REPAIR"[\s\S]*await stopVoiceCapture\(\)/,
+      /evaluated\.state === "REPAIR" \|\| evaluated\.state === "WRAP_UP"[\s\S]*await stopVoiceCapture\(\)/,
+    );
+    expect(source).toMatch(
+      /action: "CONTINUE_AFTER_WRAP_UP"[\s\S]*resumed\.state !== "ANSWERING"[\s\S]*void startVoiceCapture\(\)/,
     );
     expect(source).toMatch(
       /action: "OVERRIDE_GATE"[\s\S]*void startVoiceCapture\(\)/,

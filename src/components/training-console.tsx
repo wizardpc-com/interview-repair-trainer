@@ -24,6 +24,7 @@ import {
 const STATE_LABELS: Record<PublicInterviewRuntimeDto["state"], string> = {
   QUESTION_READY: "待回答",
   ANSWERING: "回答中",
+  WRAP_UP: "可以收住了",
   REPAIR: "回答已暂停",
   REANSWER: "重新回答中",
   QUESTION_DONE: "本题完成",
@@ -272,6 +273,82 @@ export function HardGateView({
   );
 }
 
+export function WrapUpView({
+  runtime,
+  isPending,
+  onFinish,
+  onContinue,
+}: Readonly<{
+  runtime: PublicInterviewRuntimeDto;
+  isPending: boolean;
+  onFinish(): void;
+  onContinue(): void;
+}>) {
+  const prompt = runtime.wrapUpPrompt;
+  if (prompt === null) {
+    return null;
+  }
+
+  return (
+    <section
+      aria-label="回答收尾提醒"
+      className="gate-enter relative z-20 mx-auto flex min-h-[calc(100dvh-69px)] w-full max-w-6xl flex-col justify-center px-5 py-10 sm:px-8"
+    >
+      <div className="grid gap-8 rounded-[36px] border border-[#b9d8c8]/15 bg-black/10 p-6 sm:p-9 lg:grid-cols-[0.9fr_1.1fr] lg:p-12">
+        <div className="flex flex-col justify-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#94b8a6]">
+            实时表达提醒
+          </p>
+          <h1 className="mt-5 text-4xl font-semibold tracking-[-0.045em] text-[#f8f5ed] sm:text-6xl">
+            {prompt.title}
+          </h1>
+          <p className="mt-5 max-w-xl text-base leading-7 text-[#bed0c7] sm:text-lg">
+            {prompt.message}
+          </p>
+          <p className="mt-3 text-sm leading-6 text-[#8fa69a]">
+            这只是表达节奏提醒。你可以现在结束，也可以继续补充。
+          </p>
+
+          <div className="mt-9 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+            <button
+              className="rounded-full bg-[#f2eee4] px-8 py-3.5 text-sm font-semibold text-[#16382b] transition hover:-translate-y-0.5 hover:bg-white disabled:cursor-not-allowed disabled:opacity-45"
+              type="button"
+              onClick={onFinish}
+              disabled={isPending}
+            >
+              {isPending ? "正在结束…" : "结束本题"}
+            </button>
+            <button
+              className="px-2 py-2 text-sm text-[#adc2b8] underline decoration-white/20 underline-offset-4 transition hover:text-white disabled:cursor-not-allowed disabled:opacity-45"
+              type="button"
+              onClick={onContinue}
+              disabled={isPending}
+            >
+              继续回答
+            </button>
+          </div>
+        </div>
+
+        <aside className="rounded-[28px] border border-white/8 bg-[#071a14]/45 p-6 sm:p-8">
+          <p className="text-xs font-semibold tracking-[0.14em] text-[#8fa69a]">
+            当前问题
+          </p>
+          <p className="mt-3 text-lg font-medium leading-8 text-[#edf4ef]">
+            {runtime.question.surfaceQuestion}
+          </p>
+          <div className="my-6 h-px bg-white/8" />
+          <p className="text-xs font-semibold tracking-[0.14em] text-[#8fa69a]">
+            你已经说到这里
+          </p>
+          <p className="mt-3 max-h-[38dvh] overflow-y-auto whitespace-pre-wrap pr-2 text-sm leading-7 text-[#c5d2cc] sm:text-base">
+            {runtime.transcript}
+          </p>
+        </aside>
+      </div>
+    </section>
+  );
+}
+
 export function RepairResultView({
   runtime,
   onReset,
@@ -397,7 +474,7 @@ export function TrainingConsole() {
           return;
         }
 
-        if (evaluated.state === "REPAIR") {
+        if (evaluated.state === "REPAIR" || evaluated.state === "WRAP_UP") {
           stableTranscriptRef.current = evaluated.transcript;
           setStableTranscript(evaluated.transcript);
           setInterimTranscript("");
@@ -732,6 +809,67 @@ export function TrainingConsole() {
     }
   }
 
+  async function finishAfterWrapUp() {
+    const current = runtimeRef.current;
+    if (current === null || current.state !== "WRAP_UP") {
+      return;
+    }
+
+    setIsPending(true);
+    setError(null);
+    try {
+      const completed = await postAnswerAction(current.sessionId, {
+        action: "COMPLETE",
+      });
+      if (!applyRuntime(completed)) {
+        return;
+      }
+      stableTranscriptRef.current = completed.transcript;
+      setStableTranscript(completed.transcript);
+      setInterimTranscript("");
+    } catch (cause) {
+      setError(
+        cause instanceof Error ? cause.message : "这次请求没有完成，请重试。",
+      );
+    } finally {
+      setIsPending(false);
+    }
+  }
+
+  async function continueAfterWrapUpAction() {
+    const current = runtimeRef.current;
+    if (current === null || current.state !== "WRAP_UP") {
+      return;
+    }
+
+    setIsPending(true);
+    setError(null);
+    try {
+      const resumed = await postAnswerAction(current.sessionId, {
+        action: "CONTINUE_AFTER_WRAP_UP",
+      });
+      if (!applyRuntime(resumed) || resumed.state !== "ANSWERING") {
+        return;
+      }
+      stableTranscriptRef.current = resumed.transcript;
+      setStableTranscript(resumed.transcript);
+      setInterimTranscript("");
+      setAmplitude(0);
+      captureEpochRef.current += 1;
+      if (inputMode === "voice") {
+        void startVoiceCapture();
+      } else {
+        setMicrophoneStatus("fallback");
+      }
+    } catch (cause) {
+      setError(
+        cause instanceof Error ? cause.message : "这次请求没有完成，请重试。",
+      );
+    } finally {
+      setIsPending(false);
+    }
+  }
+
   async function startReanswerAction() {
     const current = runtimeRef.current;
     if (current === null || current.state !== "REPAIR") {
@@ -902,6 +1040,7 @@ export function TrainingConsole() {
 
   const isReady = runtime.state === "QUESTION_READY";
   const isAnswering = runtime.state === "ANSWERING";
+  const isWrapUp = runtime.state === "WRAP_UP" && runtime.wrapUpPrompt !== null;
   const isReanswer = runtime.state === "REANSWER";
   const isRecording = isAnswering || isReanswer;
   const isRepair = runtime.state === "REPAIR" && runtime.hardGate !== null;
@@ -947,7 +1086,14 @@ export function TrainingConsole() {
         </div>
       </header>
 
-      {isRepair ? (
+      {isWrapUp ? (
+        <WrapUpView
+          runtime={runtime}
+          isPending={isPending}
+          onFinish={() => void finishAfterWrapUp()}
+          onContinue={() => void continueAfterWrapUpAction()}
+        />
+      ) : isRepair ? (
         <HardGateView
           runtime={runtime}
           isPending={isPending}

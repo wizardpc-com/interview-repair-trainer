@@ -28,6 +28,7 @@ export const answerActionRequestSchema = z.discriminatedUnion("action", [
     })
     .strict(),
   z.object({ action: z.literal("OVERRIDE_GATE") }).strict(),
+  z.object({ action: z.literal("CONTINUE_AFTER_WRAP_UP") }).strict(),
   z.object({ action: z.literal("START_REANSWER") }).strict(),
   z.object({ action: z.literal("COMPLETE") }).strict(),
 ]);
@@ -73,6 +74,13 @@ const publicRepairResultSchema = z
   })
   .strict();
 
+const publicWrapUpPromptSchema = z
+  .object({
+    title: z.literal("核心已经回答"),
+    message: nonEmptyString,
+  })
+  .strict();
+
 export const publicInterviewRuntimeSchema = z
   .object({
     sessionId: nonEmptyString,
@@ -91,6 +99,7 @@ export const publicInterviewRuntimeSchema = z
     answerVersion: z.number().int().nonnegative(),
     checkpointVersion: z.number().int().nonnegative(),
     checkpoint: publicCheckpointSchema.nullable(),
+    wrapUpPrompt: publicWrapUpPromptSchema.nullable(),
     hardGate: publicHardGateSchema.nullable(),
     repairResult: publicRepairResultSchema.nullable(),
   })
@@ -147,6 +156,10 @@ export type PublicInterviewRuntimeDto = Readonly<{
     createdAt: number;
     kind: (typeof CHECKPOINT_KINDS)[number];
     freshness: "CURRENT" | "STALE";
+  }> | null;
+  wrapUpPrompt: Readonly<{
+    title: "核心已经回答";
+    message: string;
   }> | null;
   hardGate: Readonly<{
     status: "GATE_PENDING" | "REANSWERING";

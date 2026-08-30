@@ -57,6 +57,16 @@ export type SemanticIssueCandidate = Readonly<{
   checkpointVersion: number;
 }>;
 
+export type SemanticWrapUpCandidate = Readonly<{
+  answerVersion: number;
+  checkpointVersion: number;
+}>;
+
+export type WrapUpInterruption = Readonly<{
+  checkpointVersion: number;
+  triggeredAt: number;
+}>;
+
 export type HardGateInterruption = Readonly<{
   issueType: GateIssueType;
   triggeringCriterion: GateCriterion;
@@ -92,6 +102,9 @@ export type AnswerRuntimeState = QuestionRuntimeState &
     gateOverride: GateOverrideRecord | null;
     repairStatus: RepairStatus | null;
     semanticIssueCandidate: SemanticIssueCandidate | null;
+    semanticWrapUpCandidate: SemanticWrapUpCandidate | null;
+    wrapUpCount: 0 | 1;
+    wrapUp: WrapUpInterruption | null;
     afterEvaluation: SemanticCheckResult | null;
     repairOutcome: RepairOutcome | null;
   }>;
@@ -134,7 +147,8 @@ export class InterviewRuntimeError extends Error {
 
 const ALLOWED_QUESTION_TRANSITIONS = {
   QUESTION_READY: Object.freeze(["ANSWERING"]),
-  ANSWERING: Object.freeze(["REPAIR", "QUESTION_DONE"]),
+  ANSWERING: Object.freeze(["WRAP_UP", "REPAIR", "QUESTION_DONE"]),
+  WRAP_UP: Object.freeze(["ANSWERING", "QUESTION_DONE"]),
   REPAIR: Object.freeze(["ANSWERING", "REANSWER"]),
   REANSWER: Object.freeze(["QUESTION_DONE"]),
   QUESTION_DONE: Object.freeze([]),
@@ -187,6 +201,12 @@ function freezeQuestionState(
               ...state.semanticIssueCandidate.triggeringCriterion,
             }),
           }),
+    semanticWrapUpCandidate:
+      state.semanticWrapUpCandidate === null
+        ? null
+        : Object.freeze({ ...state.semanticWrapUpCandidate }),
+    wrapUp:
+      state.wrapUp === null ? null : Object.freeze({ ...state.wrapUp }),
     afterEvaluation:
       state.afterEvaluation === null
         ? null
@@ -304,6 +324,9 @@ export function createInterviewRuntime(
       gateOverride: null,
       repairStatus: null,
       semanticIssueCandidate: null,
+      semanticWrapUpCandidate: null,
+      wrapUpCount: 0,
+      wrapUp: null,
       afterEvaluation: null,
       repairOutcome: null,
     })),
@@ -447,6 +470,48 @@ export function setSemanticIssueCandidate(
   return replaceCurrentQuestion(runtime, {
     ...question,
     semanticIssueCandidate: candidate,
+    semanticWrapUpCandidate:
+      candidate === null ? question.semanticWrapUpCandidate : null,
+  });
+}
+
+export function setSemanticWrapUpCandidate(
+  runtime: InterviewRuntime,
+  candidate: SemanticWrapUpCandidate | null,
+): InterviewRuntime {
+  const question = currentQuestion(runtime);
+  assertAnswering(question);
+
+  const current = question.semanticWrapUpCandidate;
+  if (current === candidate || (current === null && candidate === null)) {
+    return runtime;
+  }
+
+  return replaceCurrentQuestion(runtime, {
+    ...question,
+    semanticIssueCandidate:
+      candidate === null ? question.semanticIssueCandidate : null,
+    semanticWrapUpCandidate: candidate,
+  });
+}
+
+export function clearSemanticCandidates(
+  runtime: InterviewRuntime,
+): InterviewRuntime {
+  const question = currentQuestion(runtime);
+  assertAnswering(question);
+
+  if (
+    question.semanticIssueCandidate === null &&
+    question.semanticWrapUpCandidate === null
+  ) {
+    return runtime;
+  }
+
+  return replaceCurrentQuestion(runtime, {
+    ...question,
+    semanticIssueCandidate: null,
+    semanticWrapUpCandidate: null,
   });
 }
 
@@ -498,7 +563,8 @@ export function interruptForHardGate(
   if (
     question.gateCount !== 0 ||
     question.latestCheckpoint === null ||
-    question.latestCheckpoint.checkpointVersion !== interruption.checkpointVersion ||
+    question.latestCheckpoint.checkpointVersion !==
+      interruption.checkpointVersion ||
     question.latestCheckpoint.answerVersion !== question.answerVersion ||
     question.latestCheckpoint.transcriptSnapshot !== question.transcript ||
     interruption.beforeEvaluation.questionId !== question.questionId ||
@@ -526,8 +592,61 @@ export function interruptForHardGate(
     repairStatus: "GATE_PENDING",
     latestCheckpoint: null,
     semanticIssueCandidate: null,
+    semanticWrapUpCandidate: null,
     afterEvaluation: null,
     repairOutcome: null,
+  });
+}
+
+export function pauseForWrapUp(
+  runtime: InterviewRuntime,
+  interruption: WrapUpInterruption,
+): InterviewRuntime {
+  const question = currentQuestion(runtime);
+  assertTransition(question.state, "WRAP_UP");
+
+  if (
+    question.wrapUpCount !== 0 ||
+    question.latestCheckpoint === null ||
+    question.latestCheckpoint.kind !== "INTERIM" ||
+    question.latestCheckpoint.checkpointVersion !== interruption.checkpointVersion ||
+    question.latestCheckpoint.answerVersion !== question.answerVersion ||
+    question.latestCheckpoint.transcriptSnapshot !== question.transcript
+  ) {
+    throw new InterviewRuntimeError(
+      "INVALID_RUNTIME",
+      "Wrap-up interruption does not match the current checkpoint",
+    );
+  }
+
+  return replaceCurrentQuestion(runtime, {
+    ...question,
+    state: "WRAP_UP",
+    wrapUpCount: 1,
+    wrapUp: interruption,
+    latestCheckpoint: null,
+    semanticIssueCandidate: null,
+    semanticWrapUpCandidate: null,
+  });
+}
+
+export function resumeAfterWrapUp(runtime: InterviewRuntime): InterviewRuntime {
+  const question = currentQuestion(runtime);
+  assertTransition(question.state, "ANSWERING");
+
+  if (question.wrapUpCount !== 1 || question.wrapUp === null) {
+    throw new InterviewRuntimeError(
+      "INVALID_TRANSITION",
+      "Cannot resume without a wrap-up interruption",
+    );
+  }
+
+  return replaceCurrentQuestion(runtime, {
+    ...question,
+    state: "ANSWERING",
+    latestCheckpoint: null,
+    semanticIssueCandidate: null,
+    semanticWrapUpCandidate: null,
   });
 }
 
@@ -560,6 +679,7 @@ export function overrideHardGate(
     repairStatus: null,
     latestCheckpoint: null,
     semanticIssueCandidate: null,
+    semanticWrapUpCandidate: null,
   });
 }
 
@@ -597,6 +717,7 @@ export function startReanswer(
     repairedAnswer: null,
     repairStatus: "REANSWERING",
     semanticIssueCandidate: null,
+    semanticWrapUpCandidate: null,
     afterEvaluation: null,
     repairOutcome: null,
   });
@@ -606,7 +727,7 @@ export function completeAnswer(runtime: InterviewRuntime): InterviewRuntime {
   const question = currentQuestion(runtime);
   assertTransition(question.state, "QUESTION_DONE");
 
-  if (question.state !== "ANSWERING") {
+  if (question.state !== "ANSWERING" && question.state !== "WRAP_UP") {
     throw new InterviewRuntimeError(
       "INVALID_TRANSITION",
       `Cannot complete an initial answer while question is ${question.state}`,
@@ -629,7 +750,12 @@ export function completeAnswer(runtime: InterviewRuntime): InterviewRuntime {
 
   return replaceCurrentQuestion(
     runtime,
-    { ...question, state: "QUESTION_DONE", semanticIssueCandidate: null },
+    {
+      ...question,
+      state: "QUESTION_DONE",
+      semanticIssueCandidate: null,
+      semanticWrapUpCandidate: null,
+    },
     interviewState,
     nextQuestion === undefined ? runtime.currentQuestionIndex : nextQuestionIndex,
   );
@@ -688,6 +814,7 @@ export function completeRepair(
       repairOutcome: outcome,
       latestCheckpoint: null,
       semanticIssueCandidate: null,
+      semanticWrapUpCandidate: null,
     },
     interviewState,
     nextQuestion === undefined ? runtime.currentQuestionIndex : nextQuestionIndex,

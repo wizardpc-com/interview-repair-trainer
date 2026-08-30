@@ -207,6 +207,7 @@ describe("interview runtime service", () => {
       "answerVersion",
       "checkpointVersion",
       "checkpoint",
+      "wrapUpPrompt",
       "hardGate",
       "repairResult",
     ]);

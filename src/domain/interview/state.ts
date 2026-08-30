@@ -5,6 +5,7 @@ export type InterviewState = (typeof INTERVIEW_STATES)[number];
 export const QUESTION_STATES = [
   "QUESTION_READY",
   "ANSWERING",
+  "WRAP_UP",
   "REPAIR",
   "REANSWER",
   "QUESTION_DONE",

@@ -18,6 +18,7 @@ export const ANSWER_BOUNDARIES = [
   "NONE",
   "HONEST_NO_MEASUREMENT",
   "UNCERTAIN",
+  "ANSWER_COMPLETE_BUT_RAMBLING",
 ] as const;
 
 export type AnswerBoundary = (typeof ANSWER_BOUNDARIES)[number];

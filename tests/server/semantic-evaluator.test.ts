@@ -123,6 +123,15 @@ function continueResult(
   };
 }
 
+function wrapUpResult(
+  input: EvaluateSemanticCheckpointInput,
+): SemanticCheckResult {
+  return {
+    ...continueResult(input),
+    answerBoundary: "ANSWER_COMPLETE_BUT_RAMBLING",
+  };
+}
+
 function issueResult(
   input: EvaluateSemanticCheckpointInput,
   issueType: GateIssueType,
@@ -260,6 +269,148 @@ describe("semantic evaluator orchestration", () => {
 
     expect(runtime).toMatchObject({ state: "ANSWERING", hardGate: null });
     expect(harness.evaluateSemanticCheckpoint).toHaveBeenCalledOnce();
+  });
+
+  it("pauses only after a wrap-up signal persists on a newer INTERIM checkpoint", async () => {
+    const harness = createHarness(
+      whyPlan,
+      successfulEvaluator(wrapUpResult),
+      {
+        transcript:
+          "我选择了轻量模型，因为设备内存有限；随后我继续展开了与当前选择理由无关的项目背景。",
+        checkpointKind: "INTERIM",
+      },
+    );
+
+    const first = await harness.service.evaluateCheckpoint(
+      harness.sessionId,
+      harness.identity,
+    );
+    expect(first).toMatchObject({
+      state: "ANSWERING",
+      wrapUpPrompt: null,
+      hardGate: null,
+    });
+    expect(
+      harness.store.get(harness.sessionId)?.runtime.questions[0]
+        .semanticWrapUpCandidate,
+    ).toMatchObject({
+      answerVersion: harness.identity.answerVersion,
+      checkpointVersion: harness.identity.checkpointVersion,
+    });
+
+    harness.setNow(20_000);
+    harness.service.updateTranscript(
+      harness.sessionId,
+      `${harness.transcript}我又继续介绍了其他模块的部署历史和团队分工。`,
+      1,
+    );
+    const checkpoint = harness.store.get(harness.sessionId)?.runtime.questions[0]
+      .latestCheckpoint;
+    if (checkpoint === null || checkpoint === undefined) {
+      throw new Error("Expected a newer wrap-up checkpoint");
+    }
+
+    const paused = await harness.service.evaluateCheckpoint(harness.sessionId, {
+      questionId: checkpoint.questionId,
+      answerVersion: checkpoint.answerVersion,
+      checkpointVersion: checkpoint.checkpointVersion,
+    });
+
+    expect(paused).toMatchObject({
+      state: "WRAP_UP",
+      wrapUpPrompt: {
+        title: "核心已经回答",
+      },
+      hardGate: null,
+    });
+    expect(
+      harness.store.get(harness.sessionId)?.runtime.questions[0],
+    ).toMatchObject({
+      state: "WRAP_UP",
+      gateCount: 0,
+      wrapUpCount: 1,
+      latestCheckpoint: null,
+    });
+    expect(harness.evaluateSemanticCheckpoint).toHaveBeenCalledTimes(2);
+  });
+
+  it("resumes after wrap-up without spending Gate capacity or interrupting twice", async () => {
+    const harness = createHarness(
+      whyPlan,
+      successfulEvaluator(wrapUpResult),
+      { checkpointKind: "INTERIM" },
+    );
+    await harness.service.evaluateCheckpoint(harness.sessionId, harness.identity);
+    harness.setNow(20_000);
+    harness.service.updateTranscript(
+      harness.sessionId,
+      `${harness.transcript} More unrelated background follows.`,
+      1,
+    );
+    const second = harness.store.get(harness.sessionId)?.runtime.questions[0]
+      .latestCheckpoint;
+    if (second === null || second === undefined) {
+      throw new Error("Expected a second checkpoint");
+    }
+    await harness.service.evaluateCheckpoint(harness.sessionId, {
+      questionId: second.questionId,
+      answerVersion: second.answerVersion,
+      checkpointVersion: second.checkpointVersion,
+    });
+
+    const resumed = harness.service.continueAfterWrapUp(harness.sessionId);
+    expect(resumed).toMatchObject({ state: "ANSWERING", hardGate: null });
+    harness.setNow(30_000);
+    harness.service.updateTranscript(
+      harness.sessionId,
+      `${resumed.transcript} Still more unrelated background.`,
+      1,
+    );
+    const third = harness.store.get(harness.sessionId)?.runtime.questions[0]
+      .latestCheckpoint;
+    if (third === null || third === undefined) {
+      throw new Error("Expected a checkpoint after resuming");
+    }
+    const continued = await harness.service.evaluateCheckpoint(harness.sessionId, {
+      questionId: third.questionId,
+      answerVersion: third.answerVersion,
+      checkpointVersion: third.checkpointVersion,
+    });
+
+    expect(continued).toMatchObject({ state: "ANSWERING", hardGate: null });
+    expect(
+      harness.store.get(harness.sessionId)?.runtime.questions[0],
+    ).toMatchObject({ gateCount: 0, wrapUpCount: 1 });
+  });
+
+  it("finishes a frozen wrap-up answer without another evaluator call", async () => {
+    const harness = createHarness(
+      whyPlan,
+      successfulEvaluator(wrapUpResult),
+      { checkpointKind: "INTERIM" },
+    );
+    await harness.service.evaluateCheckpoint(harness.sessionId, harness.identity);
+    harness.setNow(20_000);
+    harness.service.updateTranscript(
+      harness.sessionId,
+      `${harness.transcript} More unrelated background follows.`,
+      1,
+    );
+    const second = harness.store.get(harness.sessionId)?.runtime.questions[0]
+      .latestCheckpoint;
+    if (second === null || second === undefined) {
+      throw new Error("Expected a second checkpoint");
+    }
+    await harness.service.evaluateCheckpoint(harness.sessionId, {
+      questionId: second.questionId,
+      answerVersion: second.answerVersion,
+      checkpointVersion: second.checkpointVersion,
+    });
+
+    const completed = await harness.service.complete(harness.sessionId);
+    expect(completed).toMatchObject({ state: "QUESTION_DONE" });
+    expect(harness.evaluateSemanticCheckpoint).toHaveBeenCalledTimes(2);
   });
 
   it("continues when team context is quickly followed by a personal contribution", async () => {

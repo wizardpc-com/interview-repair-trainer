@@ -11,6 +11,8 @@ import {
   isCheckpointStale,
   isQuestionTransitionAllowed,
   overrideHardGate,
+  pauseForWrapUp,
+  resumeAfterWrapUp,
   startAnswer,
   startReanswer,
   updateTranscript,
@@ -84,6 +86,9 @@ describe("text-first interview runtime", () => {
   it("allows the active and reserved question transitions only", () => {
     expect(isQuestionTransitionAllowed("QUESTION_READY", "ANSWERING")).toBe(true);
     expect(isQuestionTransitionAllowed("ANSWERING", "QUESTION_DONE")).toBe(true);
+    expect(isQuestionTransitionAllowed("ANSWERING", "WRAP_UP")).toBe(true);
+    expect(isQuestionTransitionAllowed("WRAP_UP", "ANSWERING")).toBe(true);
+    expect(isQuestionTransitionAllowed("WRAP_UP", "QUESTION_DONE")).toBe(true);
     expect(isQuestionTransitionAllowed("ANSWERING", "REPAIR")).toBe(true);
     expect(isQuestionTransitionAllowed("REPAIR", "REANSWER")).toBe(true);
     expect(isQuestionTransitionAllowed("REANSWER", "QUESTION_DONE")).toBe(true);
@@ -113,6 +118,78 @@ describe("text-first interview runtime", () => {
     expect(done.interviewState).toEqual({
       state: "INTERVIEW_DONE",
       activeQuestionId: null,
+    });
+  });
+
+  it("freezes a rambling answer, resumes without consuming Gate capacity, and cannot pause twice", () => {
+    let runtime = startAnswer(
+      createInterviewRuntime("session-1", ["question-1"]),
+      1_000,
+    );
+    runtime = updateTranscript(
+      runtime,
+      "I answered the requested problem and then continued into unrelated detail.",
+    );
+    const checkpointed = createCheckpoint(runtime, 10_000, "INTERIM");
+    const paused = pauseForWrapUp(checkpointed.runtime, {
+      checkpointVersion: checkpointed.checkpoint.checkpointVersion,
+      triggeredAt: 10_100,
+    });
+    const pausedQuestion = paused.questions[0];
+
+    expect(pausedQuestion).toMatchObject({
+      state: "WRAP_UP",
+      transcript: checkpointed.checkpoint.transcriptSnapshot,
+      gateCount: 0,
+      wrapUpCount: 1,
+      latestCheckpoint: null,
+      semanticIssueCandidate: null,
+      semanticWrapUpCandidate: null,
+    });
+    expect(isCheckpointStale(checkpointed.checkpoint, paused)).toBe(true);
+    expect(() => updateTranscript(paused, "late transcript")).toThrow(
+      "Cannot update an answer while question is WRAP_UP",
+    );
+
+    const resumed = resumeAfterWrapUp(paused);
+    expect(resumed.questions[0]).toMatchObject({
+      state: "ANSWERING",
+      transcript: checkpointed.checkpoint.transcriptSnapshot,
+      gateCount: 0,
+      wrapUpCount: 1,
+    });
+
+    const next = createCheckpoint(
+      updateTranscript(resumed, `${resumed.questions[0].transcript} More detail.`),
+      20_000,
+      "INTERIM",
+    );
+    expect(() =>
+      pauseForWrapUp(next.runtime, {
+        checkpointVersion: next.checkpoint.checkpointVersion,
+        triggeredAt: 20_100,
+      }),
+    ).toThrow("Wrap-up interruption does not match the current checkpoint");
+  });
+
+  it("can finish directly from a wrap-up pause", () => {
+    let runtime = startAnswer(
+      createInterviewRuntime("session-1", ["question-1"]),
+      1_000,
+    );
+    runtime = updateTranscript(runtime, "A complete answer with extra detail.");
+    const checkpointed = createCheckpoint(runtime, 10_000, "INTERIM");
+    runtime = pauseForWrapUp(checkpointed.runtime, {
+      checkpointVersion: checkpointed.checkpoint.checkpointVersion,
+      triggeredAt: 10_100,
+    });
+
+    const done = completeAnswer(runtime);
+    expect(done.questions[0]).toMatchObject({
+      state: "QUESTION_DONE",
+      transcript: "A complete answer with extra detail.",
+      gateCount: 0,
+      wrapUpCount: 1,
     });
   });
 

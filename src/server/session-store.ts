@@ -135,6 +135,14 @@ export function toPublicInterviewRuntime(
                 ? "CURRENT"
                 : "STALE",
           }),
+    wrapUpPrompt:
+      questionRuntime.state === "WRAP_UP" && questionRuntime.wrapUp !== null
+        ? Object.freeze({
+            title: "核心已经回答" as const,
+            message:
+              "你已经回应了问题核心，后面的内容开始偏离当前问题。",
+          })
+        : null,
     hardGate:
       (questionRuntime.state === "REPAIR" ||
         questionRuntime.state === "REANSWER") &&

@@ -243,6 +243,23 @@ describe("provider-independent LLM service", () => {
     ]);
   });
 
+  it("accepts the validated non-Gate wrap-up boundary", async () => {
+    const wrapUpResult: SemanticCheckResult = {
+      ...semanticResult,
+      answerBoundary: "ANSWER_COMPLETE_BUT_RAMBLING",
+    };
+    const { fetcher } = queuedFetcher([
+      completionResponse(JSON.stringify(wrapUpResult)),
+    ]);
+
+    await expect(
+      qwenService(fetcher).evaluateSemanticCheckpoint({
+        ...evaluatorInput,
+        checkpointKind: "INTERIM",
+      }),
+    ).resolves.toEqual({ ok: true, value: wrapUpResult });
+  });
+
   it("states the evaluator boundaries and distinguishes INTERIM from FINAL", async () => {
     const { fetcher, requests } = queuedFetcher([
       completionResponse(JSON.stringify(semanticResult)),
@@ -324,6 +341,15 @@ describe("provider-independent LLM service", () => {
     );
     expect(prompt).toContain(
       "For checkpointKind INTERIM only, also prefer CONTINUE",
+    );
+    expect(prompt).toContain(
+      "set answerBoundary to ANSWER_COMPLETE_BUT_RAMBLING with decision CONTINUE",
+    );
+    expect(prompt).toContain(
+      "Do not use ANSWER_COMPLETE_BUT_RAMBLING merely because an answer is long",
+    );
+    expect(prompt).toContain(
+      "ANSWER_COMPLETE_BUT_RAMBLING is a non-Gate flow signal",
     );
     expect(prompt).toContain(
       "For checkpointKind FINAL, the user has actively ended the answer",
