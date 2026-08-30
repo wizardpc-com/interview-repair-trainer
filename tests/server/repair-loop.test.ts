@@ -537,6 +537,37 @@ describe("repair and re-answer orchestration", () => {
     },
   );
 
+  it("S06 preserves the frozen QuestionPlan after a rejected repair-time rewrite", async () => {
+    const harness = createHarness(whyPlan, [
+      issueEvaluation("NOT_ANSWERING_QUESTION", {
+        kind: "PRIMARY_TARGET",
+        id: "technical-reasoning",
+      }),
+      errorEvaluation("INVALID_STRUCTURED_OUTPUT"),
+    ]);
+    const frozenPlan = harness.store.get(harness.sessionId)?.questionPlans[0];
+
+    await enterRepair(harness, "原回答只说明了方案是什么。");
+    harness.service.startReanswer(harness.sessionId);
+    harness.service.updateTranscript(
+      harness.sessionId,
+      "我补充约束和选择理由，但模型输出试图改写计划。",
+      2,
+    );
+
+    await expect(harness.service.complete(harness.sessionId)).resolves.toMatchObject({
+      state: "REANSWER",
+      repairResult: null,
+    });
+    expect(harness.store.get(harness.sessionId)?.questionPlans[0]).toBe(
+      frozenPlan,
+    );
+    expect(harness.evaluateSemanticCheckpoint.mock.calls[1]?.[0].questionPlan).toBe(
+      frozenPlan,
+    );
+    expect(harness.generateQuestionPlan).not.toHaveBeenCalled();
+  });
+
   it("discards stale initial and re-answer results without changing REANSWER", async () => {
     const staleRepairEvaluation: Evaluation = (input) => {
       const result = continueEvaluation()(input);

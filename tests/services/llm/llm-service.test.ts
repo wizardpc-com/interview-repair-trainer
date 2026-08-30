@@ -556,6 +556,35 @@ describe("provider-independent LLM service", () => {
     expect(requests).toHaveLength(2);
   });
 
+  it("S06 rejects evaluator output that tries to replace the frozen plan", async () => {
+    const attemptedPlanRewrite = {
+      ...semanticResult,
+      primaryTarget: {
+        id: "model-rewritten-target",
+        description: "A target invented during repair.",
+      },
+      requiredEvidence: [
+        {
+          id: "model-rewritten-evidence",
+          description: "Evidence invented during repair.",
+        },
+      ],
+    };
+    const { fetcher, requests } = queuedFetcher([
+      completionResponse(JSON.stringify(attemptedPlanRewrite)),
+      completionResponse(JSON.stringify(attemptedPlanRewrite)),
+    ]);
+
+    await expect(
+      qwenService(fetcher).evaluateSemanticCheckpoint(evaluatorInput),
+    ).resolves.toMatchObject({
+      ok: false,
+      error: { code: "INVALID_STRUCTURED_OUTPUT", attempts: 2 },
+    });
+    expect(evaluatorInput.questionPlan).toBe(questionPlan);
+    expect(requests).toHaveLength(2);
+  });
+
   it("does not retry a provider transport failure as structured output", async () => {
     const { fetcher, requests } = queuedFetcher([
       new Response(null, { status: 503 }),

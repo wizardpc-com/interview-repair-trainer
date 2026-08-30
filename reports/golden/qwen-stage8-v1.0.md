@@ -1,6 +1,6 @@
 # Stage 8 Qwen Golden Test Report (full)
 
-- Generated: 2026-08-30T12:30:43.645Z
+- Generated: 2026-08-30T12:44:39.615Z
 - Mode: `full`
 - Oracle: v1.0, SHA256 `A1678254FF31F2BF05D85D99EBBD7C101C28E23324B795CEFCD7065B983972FC`
 - Model: `qwen3.8-flash`
@@ -14,8 +14,8 @@
 ## Metrics
 
 - First-pass evaluator-only decision accuracy: 19/20 (95.0%)
-- First-pass evaluator-only label accuracy (decision + IssueType): 18/20 (90.0%)
-- First-pass IssueType accuracy among expected issues: 9/10 (90.0%)
+- First-pass evaluator-only label accuracy (decision + IssueType): 19/20 (95.0%)
+- First-pass IssueType accuracy among expected issues: 10/10 (100.0%)
 - First-pass structured-output JSON validity before retry: 20/20 (100.0%)
 - First-pass structured-output Zod validity before retry: 20/20 (100.0%)
 - First-pass structured output accepted without retry: 20/20 (100.0%)
@@ -25,12 +25,12 @@
 - P0 Product False Gate release bar: 0/18 — PASS
 - P0 evaluator-only false issues: 3/18
 - P1 evaluator-only issue recall: 30/30 (100.0%)
-- P1 evaluator-only IssueType accuracy: 29/30 (96.7%)
+- P1 evaluator-only IssueType accuracy: 28/30 (93.3%)
 - P1 Arbiter recall with Oracle-complete context (diagnostic only): 30/30 (100.0%)
 - P1 Current Product Gate Recall release bar: 30/30 (100.0%) — PASS
 - Recovered structured-output retries: 0/68; unrecovered schema failures: 0
 - Recovered retry cases: none
-- Unstable cases: G07, G14
+- Unstable cases: G14, G20
 - Stage 9 recommendation: YES
 
 ## G01–G20 First Pass
@@ -50,7 +50,7 @@
 | G11 | CONTINUE | CONTINUE | null | null | CONTINUE | CONTINUE | Evaluator label correct / Product correct | — | FINAL | ELIGIBLE | SUFFICIENT | FINAL_COMPLETION |
 | G12 | ISSUE_DETECTED | ISSUE_DETECTED | NOT_ANSWERING_QUESTION | NOT_ANSWERING_QUESTION | GATE | GATE | Evaluator label correct / Product correct | — | FINAL | ELIGIBLE | SUFFICIENT | FINAL_COMPLETION |
 | G13 | CONTINUE | CONTINUE | null | null | CONTINUE | CONTINUE | Evaluator label correct / Product correct | — | FINAL | ELIGIBLE | SUFFICIENT | FINAL_COMPLETION |
-| G14 | ISSUE_DETECTED | ISSUE_DETECTED | NOT_ANSWERING_QUESTION | VAGUE_WITHOUT_EVIDENCE | GATE | GATE | Evaluator error / Product gate matched | evaluator semantic error | FINAL | ELIGIBLE | SUFFICIENT | FINAL_COMPLETION |
+| G14 | ISSUE_DETECTED | ISSUE_DETECTED | NOT_ANSWERING_QUESTION | NOT_ANSWERING_QUESTION | GATE | GATE | Evaluator label correct / Product correct | — | FINAL | ELIGIBLE | SUFFICIENT | FINAL_COMPLETION |
 | G15 | CONTINUE | CONTINUE | null | null | CONTINUE | CONTINUE | Evaluator label correct / Product correct | — | FINAL | ELIGIBLE | SUFFICIENT | FINAL_COMPLETION |
 | G16 | ISSUE_DETECTED | ISSUE_DETECTED | VAGUE_WITHOUT_EVIDENCE | VAGUE_WITHOUT_EVIDENCE | GATE | GATE | Evaluator label correct / Product correct | — | FINAL | ELIGIBLE | SUFFICIENT | FINAL_COMPLETION |
 | G17 | CONTINUE | CONTINUE | null | null | CONTINUE | CONTINUE | Evaluator label correct / Product correct | — | FINAL | ELIGIBLE | SUFFICIENT | FINAL_COMPLETION |
@@ -63,7 +63,7 @@
 | Case | Semantic runs | Product Gate runs | Correct Gate |
 |---|---|---|---|
 | G05 | CONTINUE / CONTINUE / CONTINUE | CONTINUE / CONTINUE / CONTINUE | 3/3 |
-| G07 | ISSUE_DETECTED:VAGUE_WITHOUT_EVIDENCE / ISSUE_DETECTED:OWNERSHIP_AMBIGUOUS / ISSUE_DETECTED:VAGUE_WITHOUT_EVIDENCE | CONTINUE / CONTINUE / CONTINUE | 3/3 |
+| G07 | ISSUE_DETECTED:OWNERSHIP_AMBIGUOUS / ISSUE_DETECTED:OWNERSHIP_AMBIGUOUS / ISSUE_DETECTED:OWNERSHIP_AMBIGUOUS | CONTINUE / CONTINUE / CONTINUE | 3/3 |
 | G09 | CONTINUE / CONTINUE / CONTINUE | CONTINUE / CONTINUE / CONTINUE | 3/3 |
 | G13 | CONTINUE / CONTINUE / CONTINUE | CONTINUE / CONTINUE / CONTINUE | 3/3 |
 | G17 | CONTINUE / CONTINUE / CONTINUE | CONTINUE / CONTINUE / CONTINUE | 3/3 |
@@ -79,10 +79,10 @@
 | G08 | ISSUE_DETECTED:OWNERSHIP_AMBIGUOUS / ISSUE_DETECTED:OWNERSHIP_AMBIGUOUS / ISSUE_DETECTED:OWNERSHIP_AMBIGUOUS | GATE / GATE / GATE | 3/3 |
 | G10 | ISSUE_DETECTED:VAGUE_WITHOUT_EVIDENCE / ISSUE_DETECTED:VAGUE_WITHOUT_EVIDENCE / ISSUE_DETECTED:VAGUE_WITHOUT_EVIDENCE | GATE / GATE / GATE | 3/3 |
 | G12 | ISSUE_DETECTED:NOT_ANSWERING_QUESTION / ISSUE_DETECTED:NOT_ANSWERING_QUESTION / ISSUE_DETECTED:NOT_ANSWERING_QUESTION | GATE / GATE / GATE | 3/3 |
-| G14 | ISSUE_DETECTED:VAGUE_WITHOUT_EVIDENCE / ISSUE_DETECTED:NOT_ANSWERING_QUESTION / ISSUE_DETECTED:NOT_ANSWERING_QUESTION | GATE / GATE / GATE | 3/3 |
+| G14 | ISSUE_DETECTED:NOT_ANSWERING_QUESTION / ISSUE_DETECTED:VAGUE_WITHOUT_EVIDENCE / ISSUE_DETECTED:NOT_ANSWERING_QUESTION | GATE / GATE / GATE | 3/3 |
 | G16 | ISSUE_DETECTED:VAGUE_WITHOUT_EVIDENCE / ISSUE_DETECTED:VAGUE_WITHOUT_EVIDENCE / ISSUE_DETECTED:VAGUE_WITHOUT_EVIDENCE | GATE / GATE / GATE | 3/3 |
 | G18 | ISSUE_DETECTED:NOT_ANSWERING_QUESTION / ISSUE_DETECTED:NOT_ANSWERING_QUESTION / ISSUE_DETECTED:NOT_ANSWERING_QUESTION | GATE / GATE / GATE | 3/3 |
-| G20 | ISSUE_DETECTED:NOT_ANSWERING_QUESTION / ISSUE_DETECTED:NOT_ANSWERING_QUESTION / ISSUE_DETECTED:NOT_ANSWERING_QUESTION | GATE / GATE / GATE | 3/3 |
+| G20 | ISSUE_DETECTED:VAGUE_WITHOUT_EVIDENCE / ISSUE_DETECTED:NOT_ANSWERING_QUESTION / ISSUE_DETECTED:NOT_ANSWERING_QUESTION | GATE / GATE / GATE | 3/3 |
 
 ## Failure Classification
 
@@ -125,38 +125,11 @@ structuredOutput:
    "kind": "PRIMARY_TARGET",
    "id": "personal-ownership"
   },
-  "issueExplanation": "The candidate states a role ('backend') but does not specify which designs, implementations, analyses, or decisions were personally completed, failing to separate personal contribution from general team activity.",
-  "repairCue": "List specific tasks you performed (e.g., 'I designed the API schema', 'I implemented the database layer') rather than just stating your role."
+  "issueExplanation": "The candidate states a general role ('responsible for backend') but does not specify which particular designs, implementations, analyses, or decisions were personally completed, failing to separate individual contribution from team activity.",
+  "repairCue": "List specific tasks you performed (e.g., 'I designed the API schema', 'I implemented the database connection pool') rather than just stating your role."
 }
 rawResponseBody:
-{"choices":[{"finish_reason":"stop","index":0,"message":{"content":"{\n  \"questionId\": \"personal-contribution\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"ISSUE_DETECTED\",\n  \"issueType\": \"OWNERSHIP_AMBIGUOUS\",\n  \"triggeringCriterion\": {\n   \"kind\": \"PRIMARY_TARGET\",\n   \"id\": \"personal-ownership\"\n  },\n  \"issueExplanation\": \"The candidate states a role ('backend') but does not specify which designs, implementations, analyses, or decisions were personally completed, failing to separate personal contribution from general team activity.\",\n  \"repairCue\": \"List specific tasks you performed (e.g., 'I designed the API schema', 'I implemented the database layer') rather than just stating your role.\"\n}","role":"assistant"}}],"created":1788092919,"id":"chatcmpl-389dd7b6-7e18-9ff0-90a5-fef653f47aa0","model":"qwen3.8-flash","object":"chat.completion","usage":{"completion_tokens":191,"prompt_tokens":1031,"prompt_tokens_details":{"cached_tokens":1024,"text_tokens":1031},"total_tokens":1222}}
-````
-
-### G14 — evaluator semantic error
-
-Expected: ISSUE_DETECTED/NOT_ANSWERING_QUESTION, GATE. Actual: ISSUE_DETECTED/VAGUE_WITHOUT_EVIDENCE, GATE.
-
-````text
-attempt 1, HTTP 200
-transportErrorName: null
-structuredOutput:
-{
-  "questionId": "technical-choice",
-  "checkpointVersion": 1,
-  "confidence": 0.95,
-  "gateability": "GATE_ELIGIBLE",
-  "answerBoundary": "NONE",
-  "decision": "ISSUE_DETECTED",
-  "issueType": "VAGUE_WITHOUT_EVIDENCE",
-  "triggeringCriterion": {
-   "kind": "REQUIRED_EVIDENCE",
-   "id": "decision-rationale"
-  },
-  "issueExplanation": "The candidate lists the technical choices (hybrid retrieval) and activities but provides no reasoning or tradeoffs explaining why this choice was made over alternatives.",
-  "repairCue": "Explain the specific reasons for choosing hybrid retrieval, such as performance metrics, recall/precision tradeoffs, or limitations of dense/BM25 alone."
-}
-rawResponseBody:
-{"choices":[{"finish_reason":"stop","index":0,"message":{"content":"{\n  \"questionId\": \"technical-choice\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"ISSUE_DETECTED\",\n  \"issueType\": \"VAGUE_WITHOUT_EVIDENCE\",\n  \"triggeringCriterion\": {\n   \"kind\": \"REQUIRED_EVIDENCE\",\n   \"id\": \"decision-rationale\"\n  },\n  \"issueExplanation\": \"The candidate lists the technical choices (hybrid retrieval) and activities but provides no reasoning or tradeoffs explaining why this choice was made over alternatives.\",\n  \"repairCue\": \"Explain the specific reasons for choosing hybrid retrieval, such as performance metrics, recall/precision tradeoffs, or limitations of dense/BM25 alone.\"\n}","role":"assistant"}}],"created":1788092932,"id":"chatcmpl-e5ebae86-c6f5-9cb4-8ab3-803cac3e5d91","model":"qwen3.8-flash","object":"chat.completion","usage":{"completion_tokens":189,"prompt_tokens":1035,"prompt_tokens_details":{"cached_tokens":1024,"text_tokens":1035},"total_tokens":1224}}
+{"choices":[{"finish_reason":"stop","index":0,"message":{"content":"{\n  \"questionId\": \"personal-contribution\",\n  \"checkpointVersion\": 1,\n  \"confidence\": 0.95,\n  \"gateability\": \"GATE_ELIGIBLE\",\n  \"answerBoundary\": \"NONE\",\n  \"decision\": \"ISSUE_DETECTED\",\n  \"issueType\": \"OWNERSHIP_AMBIGUOUS\",\n  \"triggeringCriterion\": {\n   \"kind\": \"PRIMARY_TARGET\",\n   \"id\": \"personal-ownership\"\n  },\n  \"issueExplanation\": \"The candidate states a general role ('responsible for backend') but does not specify which particular designs, implementations, analyses, or decisions were personally completed, failing to separate individual contribution from team activity.\",\n  \"repairCue\": \"List specific tasks you performed (e.g., 'I designed the API schema', 'I implemented the database connection pool') rather than just stating your role.\"\n}","role":"assistant"}}],"created":1788093764,"id":"chatcmpl-4a66def3-f3ee-9e51-b52d-41103badbc4e","model":"qwen3.8-flash","object":"chat.completion","usage":{"completion_tokens":196,"prompt_tokens":1031,"prompt_tokens_details":{"cached_tokens":0,"text_tokens":1031},"total_tokens":1227}}
 ````
 
 Full raw outputs for all first-pass and stability runs are retained in the JSON report.
