@@ -10,7 +10,7 @@ Each stage is one verifiable vertical increment. Finish its acceptance criteria,
 - **Tests:** Cover allowed issue types, QuestionPlan invariants, and state value invariants; production build supplies the type check.
 - **Explicit non-goals:** API routes, LLM calls, session storage, state-machine behavior.
 
-## 2. Gate policy and arbiter
+## 2. Gate policy and arbiter — complete
 
 - **Goal:** Implement the deterministic application-level Gate Arbiter before connecting an evaluator.
 - **Files / modules likely involved:** `src/domain/semantic/gate-arbiter.ts`, `tests/domain/gate-arbiter.test.ts`, `tests/fixtures/semantic-gates.ts`.
