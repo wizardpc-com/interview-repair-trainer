@@ -2,6 +2,8 @@
 
 Each stage is one verifiable vertical increment. Finish its acceptance criteria, run `npm test` and `npm run build`, and commit it before starting the next stage. The paths below are likely locations, not a requirement to add extra abstractions.
 
+Across all stages, internal protocol identifiers remain English machine values while ordinary user copy is concise Simplified Chinese. The UI must not render issue ids, confidence, answer or checkpoint versions, provider details, or uncalibrated scores. Generated questions may be project-specific, but state labels, actions, errors, and gate or repair results are deterministic application copy.
+
 ## 1. Domain contracts — complete
 
 - **Goal:** Define `TrainingTarget`, `EvidenceRequirement`, `QuestionPlan`, `GateIssueType`, `SemanticCheckResult`, and interview state types.
@@ -62,16 +64,16 @@ Each stage is one verifiable vertical increment. Finish its acceptance criteria,
 
 - **Goal:** Evaluate checkpoints for the three MVP issue types and pass validated results through the Gate Arbiter.
 - **Files / modules likely involved:** evaluator orchestration under `src/server`, semantic schemas, Gate Arbiter integration, semantic fixture tests.
-- **Acceptance criteria:** Only `NOT_ANSWERING_QUESTION`, `VAGUE_WITHOUT_EVIDENCE`, and `OWNERSHIP_AMBIGUOUS` are supported; timeout, ambiguity, low confidence, and repeated invalid output continue; a gate returns one minimal repair cue.
-- **Tests:** Run all fixtures below plus timeout, retry-once, stale, state, and max-gate cases.
+- **Acceptance criteria:** Only `NOT_ANSWERING_QUESTION`, `VAGUE_WITHOUT_EVIDENCE`, and `OWNERSHIP_AMBIGUOUS` are supported; timeout, ambiguity, low confidence, and repeated invalid output continue; evaluator output contains no user-facing feedback; a gate returns one deterministic Chinese cue with one answer-level gap and one action, without exposing internal terms or confidence.
+- **Tests:** Run all fixtures below plus timeout, retry-once, stale, state, max-gate, fixed-copy mapping, and user-visible internal-term regression cases.
 - **Explicit non-goals:** Domain-knowledge truth grading, multiple simultaneous issues, calibrated probability claims, elaborate coaching.
 
 ## 9. Repair loop
 
 - **Goal:** Freeze the original answer, accept a re-answer, and re-evaluate it against the same precommitted target.
 - **Files / modules likely involved:** repair state transitions, repair Route Handler, session updates, repair tests.
-- **Acceptance criteria:** The target and required evidence cannot change during repair; outcomes are `successful` or `unresolved`; the original answer remains available for reporting.
-- **Tests:** Cover target identity, successful repair, unresolved repair, invalid re-answer state, and late evaluator result discard.
+- **Acceptance criteria:** The target, required evidence, and surface question cannot change during repair; the original answer remains frozen and viewable; one deterministic Chinese cue leads to a single re-answer; completion records the issue as resolved or unresolved and exits the loop.
+- **Tests:** Cover target identity, first-answer preservation, successful repair, unresolved repair, invalid re-answer state, one-gate capacity, and late evaluator result discard.
 - **Explicit non-goals:** New questions during repair, target regeneration, repeated repair loops, advanced UI.
 
 ## 10. Repair metrics and report

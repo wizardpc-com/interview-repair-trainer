@@ -123,7 +123,15 @@ Periodic checkpoint eligibility is an explicitly tunable MVP heuristic, not a sc
 
 `POST /api/sessions` validates project context, plans and freezes one question, and returns only the public session and runtime DTOs. `POST /api/sessions/:sessionId/answer` validates `START`, `UPDATE_TRANSCRIPT`, and `COMPLETE` actions. Public runtime responses include the surface question, state, transcript, version counters, and checkpoint freshness metadata; they exclude project context and every private QuestionPlan field.
 
-The Training Console is deliberately not a chat transcript. Setup contains one project/research context field. Before answering, the surface question occupies the center of a near-full-screen interview stage. During answering, the question remains visible above a microphone focus and a compact read-only transcript. Version and save information remains secondary. This stage can later be frozen behind a near-full-screen Hard Gate without turning the experience into a form layout.
+The Training Console is deliberately not a chat transcript. Setup contains one project/research context field. Before answering, the surface question occupies the center of a near-full-screen interview stage. During answering, the question remains visible above a microphone focus and a compact read-only transcript. Save status remains secondary; answer and checkpoint versions stay in the public DTO for synchronization but are not rendered in the ordinary interface. This stage can later be frozen behind a near-full-screen Hard Gate without turning the experience into a form layout.
+
+## User-facing Chinese boundary
+
+Internal protocol identifiers remain stable English machine values. The `zh-CN` presentation boundary maps runtime states, actions, errors, and future gate results to concise Chinese copy; it never renders issue ids, version counters, confidence, or provider details to ordinary users. This is a presentation contract, not a requirement for a general-purpose localization framework.
+
+Generated surface questions must use concise Simplified Chinese, preserve one selected question family's target and complete evidence split, ask only for its required evidence, and avoid coaching, scoring, broad multi-part requests, and internal protocol terms. After one correction attempt, a structurally valid plan with only an unsafe surface question falls back to the selected family's fixed Chinese question. Provider failures and structurally invalid plans still fail session creation rather than guessing a family or target.
+
+The future Semantic Evaluator returns structured internal metadata only. User-facing Hard Gate, re-answer, resolved, and unresolved copy is deterministic application copy derived from the validated issue and triggering criterion. It identifies one answer-level gap and one next action, preserves the original question and first answer, and never evaluates the user's personality or displays a numerical score.
 
 ## Browser speech input
 

@@ -21,11 +21,11 @@ import {
 } from "../services/stt/browser-stt";
 
 const STATE_LABELS: Record<PublicInterviewRuntimeDto["state"], string> = {
-  QUESTION_READY: "待开始",
-  ANSWERING: "正在回答",
-  REPAIR: "修复中",
-  REANSWER: "重新回答",
-  QUESTION_DONE: "已完成",
+  QUESTION_READY: "待回答",
+  ANSWERING: "回答中",
+  REPAIR: "需要重答",
+  REANSWER: "重答中",
+  QUESTION_DONE: "本题完成",
 };
 
 type InputMode = "voice" | "text";
@@ -36,13 +36,13 @@ async function readApiResponse(response: Response): Promise<unknown> {
   try {
     body = await response.json();
   } catch {
-    throw new Error("服务返回了无法读取的响应，请稍后重试。");
+    throw new Error("这次请求没有完成，请重试。");
   }
 
   if (!response.ok) {
     const error = apiErrorResponseSchema.safeParse(body);
     throw new Error(
-      error.success ? error.data.error.message : "请求未能完成，请稍后重试。",
+      error.success ? error.data.error.message : "这次请求没有完成，请重试。",
     );
   }
 
@@ -261,7 +261,11 @@ export function TrainingConsole() {
         setStableTranscript(next);
         setInterimTranscript("");
         void persistTranscript(next).catch((cause: unknown) => {
-          setError(cause instanceof Error ? cause.message : "回答保存失败。");
+          setError(
+            cause instanceof Error
+              ? cause.message
+              : "暂时没能保存回答。你的内容还在，请重试。",
+          );
         });
       },
       onAmplitude: setAmplitude,
@@ -305,7 +309,11 @@ export function TrainingConsole() {
 
     const timeout = window.setTimeout(() => {
       void persistTranscript(stableTranscript).catch((cause: unknown) => {
-        setError(cause instanceof Error ? cause.message : "回答保存失败。");
+        setError(
+          cause instanceof Error
+            ? cause.message
+            : "暂时没能保存回答。你的内容还在，请重试。",
+        );
       });
     }, 700);
 
@@ -330,7 +338,11 @@ export function TrainingConsole() {
         return;
       }
       void persistTranscript(transcript).catch((cause: unknown) => {
-        setError(cause instanceof Error ? cause.message : "回答保存失败。");
+        setError(
+          cause instanceof Error
+            ? cause.message
+            : "暂时没能保存回答。你的内容还在，请重试。",
+        );
       });
     }, 2_000);
 
@@ -385,7 +397,11 @@ export function TrainingConsole() {
       setMicrophoneStatus("idle");
       setVoiceNotice(null);
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "训练创建失败。");
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : "暂时无法准备面试问题，请重试。",
+      );
     } finally {
       setIsPending(false);
     }
@@ -407,7 +423,9 @@ export function TrainingConsole() {
       setStableTranscript(started.transcript);
       await startVoiceCapture();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "无法开始回答。");
+      setError(
+        cause instanceof Error ? cause.message : "这次请求没有完成，请重试。",
+      );
     } finally {
       setIsPending(false);
     }
@@ -428,7 +446,9 @@ export function TrainingConsole() {
       });
       applyRuntime(completed);
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "无法完成回答。");
+      setError(
+        cause instanceof Error ? cause.message : "这次请求没有完成，请重试。",
+      );
     } finally {
       setIsPending(false);
     }
@@ -713,10 +733,7 @@ export function TrainingConsole() {
               </p>
             )}
 
-            <div className="mt-auto flex w-full max-w-4xl flex-wrap items-center justify-between gap-4 pt-6">
-              <p className="text-[11px] text-[#758b80]">
-                回答版本 {runtime.answerVersion} · 快照版本 {runtime.checkpointVersion}
-              </p>
+            <div className="mt-auto flex w-full max-w-4xl justify-end pt-6">
               <button
                 className="rounded-full border border-white/15 px-6 py-2.5 text-sm text-[#c7d4ce] transition hover:border-white/30 hover:bg-white/7 hover:text-white disabled:cursor-not-allowed disabled:opacity-35"
                 type="button"
@@ -740,7 +757,7 @@ export function TrainingConsole() {
               本题回答已完成
             </h2>
             <p className="mt-3 text-sm text-[#9eb1a8]">
-              回答内容和最终快照已封存，当前阶段不会展示评分。
+              本题回答已保存。
             </p>
             <section className="mt-8 max-h-52 w-full overflow-y-auto rounded-3xl border border-white/8 bg-black/10 px-6 py-5 text-left text-sm leading-7 text-[#cbd7d1]">
               {stableTranscript}

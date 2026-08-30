@@ -20,7 +20,7 @@ import { QwenLlmService } from "../../../src/services/llm/qwen-llm-service";
 const scenario = parseScenarioPack(scenarioData);
 
 const questionPlan: QuestionPlan = {
-  id: "question-1",
+  id: "problem-and-motivation",
   surfaceQuestion: "你当时具体想解决什么问题？这个问题为什么重要？",
   primaryTarget: {
     id: "problem-framing",
@@ -163,6 +163,11 @@ describe("provider-independent LLM service", () => {
         content.includes("Simplified Chinese"),
       ),
     ).toBe(true);
+    expect(
+      requestBodies[1].messages.some(({ content }) =>
+        content.includes("Do not write user-facing feedback"),
+      ),
+    ).toBe(true);
     expect(requests.map(({ input }) => input)).toEqual([
       "https://example.test/compatible-mode/v1/chat/completions",
       "https://example.test/compatible-mode/v1/chat/completions",
@@ -205,6 +210,108 @@ describe("provider-independent LLM service", () => {
     expect(secondRequest.messages.at(-1)?.content).toContain(
       "surfaceQuestion must be written in Simplified Chinese",
     );
+    expect(requests).toHaveLength(2);
+  });
+
+  it("uses the selected family's fixed Chinese question after two unsafe surface questions", async () => {
+    const englishQuestionPlan = {
+      ...questionPlan,
+      surfaceQuestion:
+        "What problem were you trying to solve, and why did it matter?",
+    };
+    const { fetcher, requests } = queuedFetcher([
+      completionResponse(JSON.stringify(englishQuestionPlan)),
+      completionResponse(JSON.stringify(englishQuestionPlan)),
+    ]);
+
+    await expect(
+      qwenService(fetcher).generateQuestionPlan(plannerInput),
+    ).resolves.toEqual({
+      ok: true,
+      value: {
+        ...questionPlan,
+        surfaceQuestion:
+          scenario.questionFamilies.find(
+            ({ id }) => id === questionPlan.id,
+          )?.surfaceQuestion,
+      },
+    });
+    expect(requests).toHaveLength(2);
+  });
+
+  it("rejects a plan whose id does not match its selected question family", async () => {
+    const mismatchedQuestionPlan = {
+      ...questionPlan,
+      id: "personal-contribution",
+    };
+    const { fetcher, requests } = queuedFetcher([
+      completionResponse(JSON.stringify(mismatchedQuestionPlan)),
+      completionResponse(JSON.stringify(mismatchedQuestionPlan)),
+    ]);
+
+    await expect(
+      qwenService(fetcher).generateQuestionPlan(plannerInput),
+    ).resolves.toMatchObject({
+      ok: false,
+      error: { code: "INVALID_STRUCTURED_OUTPUT", attempts: 2 },
+    });
+    expect(requests).toHaveLength(2);
+  });
+
+  it("rejects a plan that omits required evidence from the selected family", async () => {
+    const incompleteQuestionPlan = {
+      ...questionPlan,
+      requiredEvidence: questionPlan.requiredEvidence.slice(0, 1),
+    };
+    const { fetcher, requests } = queuedFetcher([
+      completionResponse(JSON.stringify(incompleteQuestionPlan)),
+      completionResponse(JSON.stringify(incompleteQuestionPlan)),
+    ]);
+
+    await expect(
+      qwenService(fetcher).generateQuestionPlan(plannerInput),
+    ).resolves.toMatchObject({
+      ok: false,
+      error: { code: "INVALID_STRUCTURED_OUTPUT", attempts: 2 },
+    });
+    expect(requests).toHaveLength(2);
+  });
+
+  it("rejects a plan that omits optional evidence from the selected family", async () => {
+    const incompleteQuestionPlan = {
+      ...questionPlan,
+      optionalEvidence: [],
+    };
+    const { fetcher, requests } = queuedFetcher([
+      completionResponse(JSON.stringify(incompleteQuestionPlan)),
+      completionResponse(JSON.stringify(incompleteQuestionPlan)),
+    ]);
+
+    await expect(
+      qwenService(fetcher).generateQuestionPlan(plannerInput),
+    ).resolves.toMatchObject({
+      ok: false,
+      error: { code: "INVALID_STRUCTURED_OUTPUT", attempts: 2 },
+    });
+    expect(requests).toHaveLength(2);
+  });
+
+  it("rejects a plan that omits an allowed issue type from the selected family", async () => {
+    const incompleteQuestionPlan = {
+      ...questionPlan,
+      allowedGateIssueTypes: questionPlan.allowedGateIssueTypes.slice(0, 1),
+    };
+    const { fetcher, requests } = queuedFetcher([
+      completionResponse(JSON.stringify(incompleteQuestionPlan)),
+      completionResponse(JSON.stringify(incompleteQuestionPlan)),
+    ]);
+
+    await expect(
+      qwenService(fetcher).generateQuestionPlan(plannerInput),
+    ).resolves.toMatchObject({
+      ok: false,
+      error: { code: "INVALID_STRUCTURED_OUTPUT", attempts: 2 },
+    });
     expect(requests).toHaveLength(2);
   });
 

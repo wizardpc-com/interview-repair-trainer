@@ -20,6 +20,24 @@ type ChatMessage = Readonly<{
 
 const QWEN_REQUEST_TIMEOUT_MS = 60_000;
 const HAN_CHARACTER_PATTERN = /\p{Script=Han}/u;
+const INTERNAL_SURFACE_TERM_PATTERN =
+  /QuestionPlan|primaryTarget|requiredEvidence|optionalEvidence|NOT_ANSWERING_QUESTION|VAGUE_WITHOUT_EVIDENCE|OWNERSHIP_AMBIGUOUS|Checkpoint|Evaluator|Hard Gate|confidence|REPAIR|REANSWER/i;
+const OVERBROAD_SURFACE_PHRASES = [
+  "请全面介绍",
+  "请详细阐述各个方面",
+  "从多个维度分析",
+] as const;
+
+function surfaceQuestionIsAcceptable(surfaceQuestion: string): boolean {
+  const question = surfaceQuestion.trim();
+  return (
+    question.length <= 120 &&
+    !question.includes("\n") &&
+    HAN_CHARACTER_PATTERN.test(question) &&
+    !INTERNAL_SURFACE_TERM_PATTERN.test(question) &&
+    !OVERBROAD_SURFACE_PHRASES.some((phrase) => question.includes(phrase))
+  );
+}
 
 export type QwenLlmServiceOptions = Readonly<{
   apiKey: string;
@@ -72,8 +90,18 @@ function questionPlanMessages(
   return [
     {
       role: "system",
-      content:
-        "Create exactly one interview QuestionPlan from one scenario questionFamily. Return only a valid JSON object. Write surfaceQuestion in Simplified Chinese regardless of the language of the project context or source scenario. Copy the selected primaryTarget from trainingTargets verbatim. For requiredEvidence, map each selected family's requiredEvidence.evidenceKindId to the matching top-level evidenceKinds object and output only its id and description. For optionalEvidence, map each optionalEvidenceKindId the same way. Never output evidenceKindId or surfaceQuestionBasis. Every id and description must match exactly. Use the selected family's allowedGateIssueTypes exactly. Do not add fields or invent, paraphrase, or combine definitions.",
+      content: [
+        "Create exactly one interview QuestionPlan from one scenario questionFamily and return only a valid JSON object.",
+        "Write surfaceQuestion in natural Simplified Chinese regardless of the project context language.",
+        "Sound like a concise technical interviewer, ask one primary objective in one or two short sentences, and explicitly ask for every requiredEvidence item and nothing beyond it.",
+        "Do not add coaching, scoring, hidden criteria, internal protocol terms, or broad requests such as 请全面介绍, 请详细阐述各个方面, or 从多个维度分析.",
+        "Copy the selected primaryTarget from trainingTargets verbatim.",
+        "For requiredEvidence, map every selected family's requiredEvidence.evidenceKindId to the matching top-level evidenceKinds object and output only its id and description.",
+        "For optionalEvidence, map every optionalEvidenceKindId the same way.",
+        "Never output evidenceKindId or surfaceQuestionBasis. Every id and description must match exactly.",
+        "Use the selected questionFamily id as the QuestionPlan id and use its allowedGateIssueTypes exactly.",
+        "Do not add fields or invent, paraphrase, omit, or combine definitions.",
+      ].join(" "),
     },
     {
       role: "user",
@@ -94,8 +122,14 @@ function semanticCheckpointMessages(
   return [
     {
       role: "system",
-      content:
-        "Evaluate answer structure only. Return only a valid JSON object and never decide whether to Gate. Detect at most one of NOT_ANSWERING_QUESTION, VAGUE_WITHOUT_EVIDENCE, or OWNERSHIP_AMBIGUOUS. Use CONTINUE when uncertain, when context is insufficient, or when the answer states an honest measurement boundary. Confidence is an uncalibrated signal, not a probability.",
+      content: [
+        "Evaluate answer structure only. Return only a valid JSON object and never decide whether to Gate.",
+        "Do not write user-facing feedback and do not criticize or infer the candidate's attitude, honesty, confidence, intelligence, or interview readiness.",
+        "Judge only the frozen surface question, primary target, and explicitly required evidence; do not judge specialist factual truth.",
+        "Detect at most one of NOT_ANSWERING_QUESTION, VAGUE_WITHOUT_EVIDENCE, or OWNERSHIP_AMBIGUOUS.",
+        "Use CONTINUE when uncertain, when context is insufficient, or when the answer states an honest measurement boundary.",
+        "Confidence is an uncalibrated signal, not a probability.",
+      ].join(" "),
     },
     {
       role: "user",
@@ -130,15 +164,38 @@ export class QwenLlmService implements LlmService {
   generateQuestionPlan(
     input: GenerateQuestionPlanInput,
   ): Promise<LlmResult<QuestionPlan>> {
+    const structuralSchema = createQuestionPlanSchema(input.scenario);
+    const presentationSchema = structuralSchema.refine(
+      ({ surfaceQuestion }) => surfaceQuestionIsAcceptable(surfaceQuestion),
+      {
+        message:
+          "surfaceQuestion must be written in Simplified Chinese, remain concise, and avoid broad requests or internal protocol terms",
+        path: ["surfaceQuestion"],
+      },
+    );
+
     return this.requestValidated(
       questionPlanMessages(input),
-      createQuestionPlanSchema(input.scenario).refine(
-        ({ surfaceQuestion }) => HAN_CHARACTER_PATTERN.test(surfaceQuestion),
-        {
-          message: "surfaceQuestion must be written in Simplified Chinese",
-          path: ["surfaceQuestion"],
-        },
-      ),
+      presentationSchema,
+      (decoded) => {
+        const structuralResult = structuralSchema.safeParse(decoded);
+        if (!structuralResult.success) {
+          return null;
+        }
+
+        const family = input.scenario.questionFamilies.find(
+          ({ id }) => id === structuralResult.data.id,
+        );
+        if (family === undefined) {
+          return null;
+        }
+
+        const fallbackResult = presentationSchema.safeParse({
+          ...structuralResult.data,
+          surfaceQuestion: family.surfaceQuestion,
+        });
+        return fallbackResult.success ? fallbackResult.data : null;
+      },
     );
   }
 
@@ -157,6 +214,7 @@ export class QwenLlmService implements LlmService {
   private async requestValidated<T>(
     messages: readonly ChatMessage[],
     schema: ZodType<T>,
+    recoverInvalid?: (decoded: unknown) => T | null,
   ): Promise<LlmResult<T>> {
     let correction =
       "The previous response failed schema validation. Return only one corrected JSON object with the exact requested fields.";
@@ -190,6 +248,12 @@ export class QwenLlmService implements LlmService {
       const validated = schema.safeParse(decoded);
       if (validated.success) {
         return { ok: true, value: validated.data };
+      }
+      if (attempt === 2 && recoverInvalid !== undefined) {
+        const recovered = recoverInvalid(decoded);
+        if (recovered !== null) {
+          return { ok: true, value: recovered };
+        }
       }
       const issues = validated.error.issues.map(({ path, message }) => ({
         path,

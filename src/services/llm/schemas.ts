@@ -132,6 +132,14 @@ export function createQuestionPlanSchema(scenario: InterviewScenarioPack) {
       return;
     }
 
+    if (plan.id !== family.id) {
+      context.addIssue({
+        code: "custom",
+        message: "QuestionPlan id must match the selected question family",
+        path: ["id"],
+      });
+    }
+
     const familyRequiredEvidence = new Set(
       family.requiredEvidence.map(({ evidenceKindId }) => evidenceKindId),
     );
@@ -145,6 +153,13 @@ export function createQuestionPlanSchema(scenario: InterviewScenarioPack) {
         });
       }
     });
+    if (plan.requiredEvidence.length !== familyRequiredEvidence.size) {
+      context.addIssue({
+        code: "custom",
+        message: "requiredEvidence must include every requirement for the selected question family",
+        path: ["requiredEvidence"],
+      });
+    }
     plan.optionalEvidence.forEach(({ id }, index) => {
       if (!familyOptionalEvidence.has(id)) {
         context.addIssue({
@@ -154,6 +169,13 @@ export function createQuestionPlanSchema(scenario: InterviewScenarioPack) {
         });
       }
     });
+    if (plan.optionalEvidence.length !== familyOptionalEvidence.size) {
+      context.addIssue({
+        code: "custom",
+        message: "optionalEvidence must match the selected question family",
+        path: ["optionalEvidence"],
+      });
+    }
     plan.allowedGateIssueTypes.forEach((issueType, index) => {
       if (!family.allowedGateIssueTypes.includes(issueType)) {
         context.addIssue({
@@ -163,6 +185,15 @@ export function createQuestionPlanSchema(scenario: InterviewScenarioPack) {
         });
       }
     });
+    if (
+      plan.allowedGateIssueTypes.length !== family.allowedGateIssueTypes.length
+    ) {
+      context.addIssue({
+        code: "custom",
+        message: "allowedGateIssueTypes must match the selected question family",
+        path: ["allowedGateIssueTypes"],
+      });
+    }
   });
 }
 

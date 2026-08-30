@@ -22,12 +22,18 @@ describe("training console copy", () => {
       "utf8",
     );
 
-    expect(source).toContain('QUESTION_READY: "待开始"');
-    expect(source).toContain('ANSWERING: "正在回答"');
-    expect(source).toContain('QUESTION_DONE: "已完成"');
+    expect(source).toContain('QUESTION_READY: "待回答"');
+    expect(source).toContain('ANSWERING: "回答中"');
+    expect(source).toContain('REPAIR: "需要重答"');
+    expect(source).toContain('REANSWER: "重答中"');
+    expect(source).toContain('QUESTION_DONE: "本题完成"');
     expect(source).not.toContain("Interview prompt");
     expect(source).not.toContain("Your answer");
     expect(source).not.toContain("Transcript 已自动同步");
+    expect(source).not.toContain("回答版本");
+    expect(source).not.toContain("快照版本");
+    expect(source).not.toContain("最终快照");
+    expect(source).not.toContain('REPAIR: "修复中"');
   });
 
   it("keeps voice input behind the start action and interim text local", () => {
