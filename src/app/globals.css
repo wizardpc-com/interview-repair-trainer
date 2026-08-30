@@ -23,3 +23,24 @@ textarea:focus-visible {
   outline: 2px solid #315c49;
   outline-offset: 3px;
 }
+
+@keyframes question-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.question-enter {
+  animation: question-enter 520ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .question-enter {
+    animation: none;
+  }
+}

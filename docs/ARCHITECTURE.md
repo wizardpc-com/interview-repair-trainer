@@ -1,6 +1,6 @@
 # Architecture
 
-The repository keeps portable interview assets separate from product execution. The current code has completed Stages 1–6: domain contracts, deterministic Gate Arbiter policy, the core protocol and first scenario, a provider-independent single-model Qwen integration, hidden in-memory sessions, and the text-first interview runtime with its first Training Console.
+The repository keeps portable interview assets separate from product execution. The current code has completed Stages 1–7: domain contracts, deterministic Gate Arbiter policy, the core protocol and first scenario, a provider-independent single-model Qwen integration, hidden in-memory sessions, the text-first interview runtime, and an immersive browser voice-answer shell with text fallback.
 
 | Layer | Responsibility | Location |
 | --- | --- | --- |
@@ -17,7 +17,8 @@ Protocol export artifacts belong in `protocols/exports/`. Provider-specific LLM 
 project or research context input
   -> generate and freeze QuestionPlan in the hidden server session
   -> expose the surface question
-  -> text answer input
+  -> browser speech input or text fallback
+  -> stable transcript input
   -> semantic checkpoint
   -> Semantic Evaluator
   -> Gate Arbiter
@@ -28,7 +29,7 @@ project or research context input
   -> metrics and report
 ```
 
-Browser STT is added only after this slice is stable. STT converts speech to input text and does not participate in domain decisions.
+Browser STT converts speech to input text and does not participate in domain decisions. Interim recognition text remains presentation-only; only final recognition segments or explicit text fallback edits update the stable transcript consumed by the existing Runtime.
 
 ## Single-model LLM boundary
 
@@ -106,7 +107,7 @@ Zod now validates generated QuestionPlans and SemanticCheckResults. When API rou
 
 Parsed JSON cannot enter the domain through an unchecked type cast.
 
-## Text-first runtime and public API
+## Interview runtime and public API
 
 Each hidden session now owns an immutable runtime snapshot alongside its frozen QuestionPlan. The active Stage 6 path is deterministic:
 
@@ -122,7 +123,17 @@ Periodic checkpoint eligibility is an explicitly tunable MVP heuristic, not a sc
 
 `POST /api/sessions` validates project context, plans and freezes one question, and returns only the public session and runtime DTOs. `POST /api/sessions/:sessionId/answer` validates `START`, `UPDATE_TRANSCRIPT`, and `COMPLETE` actions. Public runtime responses include the surface question, state, transcript, version counters, and checkpoint freshness metadata; they exclude project context and every private QuestionPlan field.
 
-The Training Console is deliberately not a chat transcript. Setup contains one project/research context field. Training uses the surface question as the dominant visual anchor, a quiet answer workspace, explicit state and version indicators, automatic transcript synchronization, and one primary action. The left prompt region and right workspace provide a stable replacement boundary for the later near-full-screen Hard Gate.
+The Training Console is deliberately not a chat transcript. Setup contains one project/research context field. Before answering, the surface question occupies the center of a near-full-screen interview stage. During answering, the question remains visible above a microphone focus and a compact read-only transcript. Version and save information remains secondary. This stage can later be frozen behind a near-full-screen Hard Gate without turning the experience into a form layout.
+
+## Browser speech input
+
+Stage 7 adds a Chrome-first Browser STT adapter under `src/services/stt`. The adapter requests microphone access only after the application has accepted `START`, configures continuous `zh-CN` Web Speech recognition, and separates interim display text from final stable segments. Only stable segments are appended and sent through the existing `UPDATE_TRANSCRIPT` action, preserving `answerVersion`, checkpoint eligibility, checkpoint snapshots, and stale detection without adding speech concepts to the domain.
+
+The same microphone stream feeds a Web Audio `AnalyserNode`. The UI derives a normalized RMS amplitude from actual time-domain samples and uses it only for microphone rings and level bars. Audio levels never enter semantic evaluation or Gate Arbiter inputs.
+
+Microphone permission denial, missing SpeechRecognition support, audio setup failure, or recognition failure switches the answer stage to an explicit text fallback. Manual completion remains the only Stage 7 end condition. A future conservative silence-based completion candidate may be added separately, but it must remain independent from Semantic Hard Gate decisions.
+
+Stopping an answer, switching to text, leaving the page, or leaving `ANSWERING` stops SpeechRecognition, cancels animation and restart timers, disconnects audio nodes, closes the AudioContext, and stops every microphone track.
 
 ## Dependency direction
 

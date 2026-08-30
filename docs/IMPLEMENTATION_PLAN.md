@@ -1,4 +1,4 @@
-# Text-First MVP Implementation Plan
+# Interview Repair Trainer Implementation Plan
 
 Each stage is one verifiable vertical increment. Finish its acceptance criteria, run `npm test` and `npm run build`, and commit it before starting the next stage. The paths below are likely locations, not a requirement to add extra abstractions.
 
@@ -50,7 +50,15 @@ Each stage is one verifiable vertical increment. Finish its acceptance criteria,
 - **Tests:** Cover valid and invalid transitions, text submission, checkpoint creation, and out-of-order result rejection.
 - **Explicit non-goals:** Browser STT, semantic evaluator orchestration, Hard Gate presentation, repair flow, and final UI polish.
 
-## 7. Semantic evaluator and Hard Gate
+## 7. Immersive voice answer shell — complete
+
+- **Goal:** Add a Chrome-first browser voice input shell while preserving the complete text-first Runtime contract.
+- **Files / modules involved:** `src/services/stt/browser-stt.ts`, `src/components/training-console.tsx`, browser adapter tests, and UI tests.
+- **Acceptance criteria:** Microphone access begins only after `START`; interim recognition remains local; final segments update the existing transcript; actual analyser samples drive microphone feedback; denied or unsupported speech input falls back to text; all microphone resources stop on completion, fallback, state exit, or page exit.
+- **Tests:** Cover delayed permission request, interim/final separation, stable transcript append, analyser-derived amplitude, denial and unsupported fallback, and resource cleanup. Reuse all Stage 6 Runtime tests unchanged.
+- **Explicit non-goals:** Semantic Evaluator orchestration, Hard Gate, Repair, automatic silence completion, provider STT, audio persistence, and scoring.
+
+## 8. Semantic evaluator and Hard Gate
 
 - **Goal:** Evaluate checkpoints for the three MVP issue types and pass validated results through the Gate Arbiter.
 - **Files / modules likely involved:** evaluator orchestration under `src/server`, semantic schemas, Gate Arbiter integration, semantic fixture tests.
@@ -58,7 +66,7 @@ Each stage is one verifiable vertical increment. Finish its acceptance criteria,
 - **Tests:** Run all fixtures below plus timeout, retry-once, stale, state, and max-gate cases.
 - **Explicit non-goals:** Domain-knowledge truth grading, multiple simultaneous issues, calibrated probability claims, elaborate coaching.
 
-## 8. Repair loop
+## 9. Repair loop
 
 - **Goal:** Freeze the original answer, accept a re-answer, and re-evaluate it against the same precommitted target.
 - **Files / modules likely involved:** repair state transitions, repair Route Handler, session updates, repair tests.
@@ -66,7 +74,7 @@ Each stage is one verifiable vertical increment. Finish its acceptance criteria,
 - **Tests:** Cover target identity, successful repair, unresolved repair, invalid re-answer state, and late evaluator result discard.
 - **Explicit non-goals:** New questions during repair, target regeneration, repeated repair loops, advanced UI.
 
-## 9. Repair metrics and report
+## 10. Repair metrics and report
 
 - **Goal:** Produce a deterministic report from stored runtime events and validated evaluator outputs.
 - **Files / modules likely involved:** `src/domain/interview/metrics.ts`, report Route Handler, report view, aggregation tests.
@@ -74,10 +82,10 @@ Each stage is one verifiable vertical increment. Finish its acceptance criteria,
 - **Tests:** Cover no-gate, repaired, unresolved, and incomplete-session reports plus deterministic replay of the same events.
 - **Explicit non-goals:** Scores such as `87.4`, rankings, long-term profiles, database-backed analytics.
 
-## 10. Deferred adapters and polish
+## 11. Deferred adapters and polish
 
-- **Goal:** Only after stages 1-9 are stable, add Browser STT with text fallback, focused UI polish, optional protocol export, or a separately approved dual-model experiment.
-- **Files / modules likely involved:** `src/services/stt`, `src/components`, `scripts`, and a future architecture decision for any model split.
+- **Goal:** Only after the core repair loop is stable, add focused UI polish, optional protocol export, or a separately approved dual-model experiment.
+- **Files / modules likely involved:** `src/components`, `scripts`, and a future architecture decision for any model split.
 - **Acceptance criteria:** Every adapter preserves the existing text-first domain contract and fallback path; any dual-model work is justified by measured need.
 - **Tests:** Reuse the complete text-first suite and add adapter failure and fallback cases.
 - **Explicit non-goals:** Treating any deferred item as a prerequisite for the core repair loop.
