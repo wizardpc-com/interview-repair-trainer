@@ -13,7 +13,7 @@ import type {
 export const MVP_CHECKPOINT_HEURISTIC = Object.freeze({
   minTranscriptCharacters: 80,
   minAnswerDurationMs: 5_000,
-  minCheckpointIntervalMs: 8_000,
+  minCheckpointIntervalMs: 5_000,
 });
 
 export const MVP_FINAL_CHECKPOINT_MIN_CHARACTERS = 4;

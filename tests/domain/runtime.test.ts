@@ -10,6 +10,7 @@ import {
   isCheckpointResultStale,
   isCheckpointStale,
   isQuestionTransitionAllowed,
+  MVP_CHECKPOINT_HEURISTIC,
   overrideHardGate,
   pauseForWrapUp,
   resumeAfterWrapUp,
@@ -83,6 +84,14 @@ function gatedRuntime(): Readonly<{
 }
 
 describe("text-first interview runtime", () => {
+  it("uses the stricter five-second stable checkpoint cadence", () => {
+    expect(MVP_CHECKPOINT_HEURISTIC).toEqual({
+      minTranscriptCharacters: 80,
+      minAnswerDurationMs: 5_000,
+      minCheckpointIntervalMs: 5_000,
+    });
+  });
+
   it("allows the active and reserved question transitions only", () => {
     expect(isQuestionTransitionAllowed("QUESTION_READY", "ANSWERING")).toBe(true);
     expect(isQuestionTransitionAllowed("ANSWERING", "QUESTION_DONE")).toBe(true);
@@ -259,10 +268,10 @@ describe("text-first interview runtime", () => {
     );
 
     const revised = updateTranscript(checkpointed, `${"x".repeat(80)} revised`);
-    expect(getCheckpointEligibility(revised, 13_999, false).reason).toBe(
+    expect(getCheckpointEligibility(revised, 10_999, false).reason).toBe(
       "CHECKPOINT_TOO_RECENT",
     );
-    expect(getCheckpointEligibility(revised, 14_000, false).eligible).toBe(true);
+    expect(getCheckpointEligibility(revised, 11_000, false).eligible).toBe(true);
 
     expect(
       getCheckpointEligibility(

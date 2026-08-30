@@ -349,6 +349,12 @@ describe("provider-independent LLM service", () => {
       "Do not use ANSWER_COMPLETE_BUT_RAMBLING merely because an answer is long",
     );
     expect(prompt).toContain(
+      "mainly inventories unrequested components, implementation history, broad aspirations, team context, or generic project praise",
+    );
+    expect(prompt).toContain(
+      "The later material does not need to be completely unrelated",
+    );
+    expect(prompt).toContain(
       "ANSWER_COMPLETE_BUT_RAMBLING is a non-Gate flow signal",
     );
     expect(prompt).toContain(
