@@ -1,0 +1,12 @@
+.git
+.next
+node_modules
+coverage
+*.log
+.env
+.env.*
+.npmrc
+*.key
+*.pem
+*.p12
+*.pfx
