@@ -3,10 +3,10 @@ import type {
   LlmService,
   LlmServiceError,
 } from "../services/llm/llm-service";
+import type { PublicInterviewSessionDto } from "../lib/interview-api-contracts";
 import {
   toPublicInterviewSession,
   type InMemoryInterviewSessionStore,
-  type PublicInterviewSessionDto,
 } from "./session-store";
 
 export type CreateInterviewSessionInput = Readonly<{

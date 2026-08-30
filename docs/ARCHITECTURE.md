@@ -1,6 +1,6 @@
 # Architecture
 
-The repository keeps portable interview assets separate from product execution. The current code has completed Stages 1–5: domain contracts, deterministic Gate Arbiter policy, the core protocol and first scenario, a provider-independent single-model Qwen integration, and hidden in-memory sessions. The remaining text-first runtime is still unimplemented.
+The repository keeps portable interview assets separate from product execution. The current code has completed Stages 1–6: domain contracts, deterministic Gate Arbiter policy, the core protocol and first scenario, a provider-independent single-model Qwen integration, hidden in-memory sessions, and the text-first interview runtime with its first Training Console.
 
 | Layer | Responsibility | Location |
 | --- | --- | --- |
@@ -105,6 +105,24 @@ Zod now validates generated QuestionPlans and SemanticCheckResults. When API rou
 - any additional untrusted boundary payloads.
 
 Parsed JSON cannot enter the domain through an unchecked type cast.
+
+## Text-first runtime and public API
+
+Each hidden session now owns an immutable runtime snapshot alongside its frozen QuestionPlan. The active Stage 6 path is deterministic:
+
+```text
+QUESTION_READY -> ANSWERING -> QUESTION_DONE
+```
+
+The transition table also reserves `ANSWERING -> REPAIR -> REANSWER -> QUESTION_DONE` for later stages, but Stage 6 exposes no Repair action or UI. Application code starts, updates, checkpoints, and completes an answer; LLM output cannot invoke a transition.
+
+Every accepted transcript change increments `answerVersion`. Creating a checkpoint increments `checkpointVersion` independently and stores the session id, question id, both versions, the transcript snapshot, and creation time. A checkpoint is stale when its session or question differs, either version no longer matches, a newer checkpoint exists, or the question is no longer in `ANSWERING`. This makes all prior checkpoints invalid immediately after a transcript revision or `QUESTION_DONE`.
+
+Periodic checkpoint eligibility is an explicitly tunable MVP heuristic, not a scientifically calibrated threshold. The initial values require 80 characters in the trimmed transcript, five seconds since answer start, eight seconds since the previous checkpoint, a changed answer version, and no request already in flight. Completing a non-empty answer preserves a final snapshot even if the periodic heuristic has not fired.
+
+`POST /api/sessions` validates project context, plans and freezes one question, and returns only the public session and runtime DTOs. `POST /api/sessions/:sessionId/answer` validates `START`, `UPDATE_TRANSCRIPT`, and `COMPLETE` actions. Public runtime responses include the surface question, state, transcript, version counters, and checkpoint freshness metadata; they exclude project context and every private QuestionPlan field.
+
+The Training Console is deliberately not a chat transcript. Setup contains one project/research context field. Training uses the surface question as the dominant visual anchor, a quiet answer workspace, explicit state and version indicators, automatic transcript synchronization, and one primary action. The left prompt region and right workspace provide a stable replacement boundary for the later near-full-screen Hard Gate.
 
 ## Dependency direction
 

@@ -18,6 +18,8 @@ type ChatMessage = Readonly<{
   content: string;
 }>;
 
+const QWEN_REQUEST_TIMEOUT_MS = 60_000;
+
 export type QwenLlmServiceOptions = Readonly<{
   apiKey: string;
   baseUrl: string;
@@ -70,7 +72,7 @@ function questionPlanMessages(
     {
       role: "system",
       content:
-        "Create exactly one interview QuestionPlan. Return only a valid JSON object. Use one primaryTarget, keep requiredEvidence separate from optionalEvidence, and use only scenario-supported ids and Gate issue types.",
+        "Create exactly one interview QuestionPlan from one scenario questionFamily. Return only a valid JSON object. Copy the selected primaryTarget from trainingTargets verbatim. For requiredEvidence, map each selected family's requiredEvidence.evidenceKindId to the matching top-level evidenceKinds object and output only its id and description. For optionalEvidence, map each optionalEvidenceKindId the same way. Never output evidenceKindId or surfaceQuestionBasis. Every id and description must match exactly. Use the selected family's allowedGateIssueTypes exactly. Do not add fields or invent, paraphrase, or combine definitions.",
     },
     {
       role: "user",
@@ -79,7 +81,7 @@ function questionPlanMessages(
         input.projectContext,
         "Scenario:",
         JSON.stringify(scenario),
-        "Return JSON with exactly these fields: id, surfaceQuestion, primaryTarget, requiredEvidence, optionalEvidence, allowedGateIssueTypes. Required evidence must be reasonably implied by the surface question.",
+        "Return JSON with exactly these fields: id, surfaceQuestion, primaryTarget, requiredEvidence, optionalEvidence, allowedGateIssueTypes. Use the selected questionFamily id as id. The surface question may be adapted to the project context, but it must still explicitly ask for every selected requiredEvidence item.",
       ].join("\n\n"),
     },
   ];
@@ -149,6 +151,9 @@ export class QwenLlmService implements LlmService {
     messages: readonly ChatMessage[],
     schema: ZodType<T>,
   ): Promise<LlmResult<T>> {
+    let correction =
+      "The previous response failed schema validation. Return only one corrected JSON object with the exact requested fields.";
+
     for (let attempt = 1; attempt <= 2; attempt += 1) {
       const attemptMessages =
         attempt === 1
@@ -157,8 +162,7 @@ export class QwenLlmService implements LlmService {
               ...messages,
               {
                 role: "user" as const,
-                content:
-                  "The previous response failed schema validation. Return only one corrected JSON object with the exact requested fields.",
+                content: correction,
               },
             ];
       const completion = await this.requestCompletion(attemptMessages, attempt);
@@ -171,12 +175,26 @@ export class QwenLlmService implements LlmService {
       try {
         decoded = JSON.parse(completion.value);
       } catch {
+        correction =
+          "The previous response was not valid JSON. Return only one corrected JSON object with the exact requested fields.";
         continue;
       }
 
       const validated = schema.safeParse(decoded);
       if (validated.success) {
         return { ok: true, value: validated.data };
+      }
+      const issues = validated.error.issues.map(({ path, message }) => ({
+        path,
+        message,
+      }));
+      correction = [
+        "The previous response failed schema validation.",
+        JSON.stringify(issues),
+        "Return only one corrected JSON object with the exact requested fields.",
+      ].join("\n");
+      if (process.env.NODE_ENV === "development") {
+        console.error("Structured LLM output failed validation", issues);
       }
     }
 
@@ -196,6 +214,7 @@ export class QwenLlmService implements LlmService {
     try {
       response = await this.fetcher(this.endpoint, {
         method: "POST",
+        signal: AbortSignal.timeout(QWEN_REQUEST_TIMEOUT_MS),
         headers: {
           Authorization: `Bearer ${this.apiKey}`,
           "Content-Type": "application/json",

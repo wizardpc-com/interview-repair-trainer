@@ -5,6 +5,14 @@ import {
   type QuestionPlan,
   type TrainingTarget,
 } from "../domain/interview/contracts";
+import {
+  createInterviewRuntime,
+  type InterviewRuntime,
+} from "../domain/interview/runtime";
+import type {
+  PublicInterviewRuntimeDto,
+  PublicInterviewSessionDto,
+} from "../lib/interview-api-contracts";
 
 export type SessionScenarioReference = Readonly<{
   id: string;
@@ -16,18 +24,9 @@ export type InterviewSession = Readonly<{
   projectContext: string;
   scenario: SessionScenarioReference;
   questionPlans: readonly QuestionPlan[];
+  runtime: InterviewRuntime;
   createdAt: number;
   expiresAt: number;
-}>;
-
-export type PublicQuestionDto = Readonly<{
-  questionId: string;
-  surfaceQuestion: string;
-}>;
-
-export type PublicInterviewSessionDto = Readonly<{
-  sessionId: string;
-  questions: readonly PublicQuestionDto[];
 }>;
 
 export type CreateInterviewSessionRecord = Readonly<{
@@ -93,6 +92,48 @@ export function toPublicInterviewSession(
   });
 }
 
+export function toPublicInterviewRuntime(
+  session: InterviewSession,
+): PublicInterviewRuntimeDto {
+  const questionIndex = session.runtime.currentQuestionIndex;
+  const questionRuntime = session.runtime.questions[questionIndex];
+  const questionPlan = session.questionPlans[questionIndex];
+
+  if (questionRuntime === undefined || questionPlan === undefined) {
+    throw new Error("Stored session has no current question");
+  }
+
+  const checkpoint = questionRuntime.latestCheckpoint;
+
+  return Object.freeze({
+    sessionId: session.sessionId,
+    question: Object.freeze({
+      questionId: questionPlan.id,
+      surfaceQuestion: questionPlan.surfaceQuestion,
+      index: questionIndex + 1,
+      total: session.questionPlans.length,
+    }),
+    state: questionRuntime.state,
+    transcript: questionRuntime.transcript,
+    answerVersion: questionRuntime.answerVersion,
+    checkpointVersion: questionRuntime.checkpointVersion,
+    checkpoint:
+      checkpoint === null
+        ? null
+        : Object.freeze({
+            answerVersion: checkpoint.answerVersion,
+            checkpointVersion: checkpoint.checkpointVersion,
+            createdAt: checkpoint.createdAt,
+            freshness:
+              questionRuntime.state === "ANSWERING" &&
+              questionRuntime.answerVersion === checkpoint.answerVersion &&
+              questionRuntime.checkpointVersion === checkpoint.checkpointVersion
+                ? "CURRENT"
+                : "STALE",
+          }),
+  });
+}
+
 export class InMemoryInterviewSessionStore {
   readonly #sessions = new Map<string, InterviewSession>();
   readonly #ttlMs: number;
@@ -120,6 +161,7 @@ export class InMemoryInterviewSessionStore {
     }
 
     const createdAt = this.#now();
+    const questionPlans = Object.freeze(input.questionPlans.map(freezeQuestionPlan));
     const session = Object.freeze({
       sessionId,
       projectContext: input.projectContext,
@@ -127,13 +169,43 @@ export class InMemoryInterviewSessionStore {
         id: input.scenario.id,
         version: input.scenario.version,
       }),
-      questionPlans: Object.freeze(input.questionPlans.map(freezeQuestionPlan)),
+      questionPlans,
+      runtime: createInterviewRuntime(
+        sessionId,
+        questionPlans.map(({ id }) => id),
+      ),
       createdAt,
       expiresAt: createdAt + this.#ttlMs,
     });
 
     this.#sessions.set(sessionId, session);
     return session;
+  }
+
+  updateRuntime(
+    sessionId: string,
+    runtime: InterviewRuntime,
+  ): InterviewSession | null {
+    const session = this.get(sessionId);
+    if (session === null) {
+      return null;
+    }
+    if (runtime.sessionId !== sessionId) {
+      throw new Error("Runtime session id does not match stored session");
+    }
+
+    const storedQuestionIds = session.questionPlans.map(({ id }) => id);
+    const runtimeQuestionIds = runtime.questions.map(({ questionId }) => questionId);
+    if (
+      storedQuestionIds.length !== runtimeQuestionIds.length ||
+      storedQuestionIds.some((id, index) => id !== runtimeQuestionIds[index])
+    ) {
+      throw new Error("Runtime question ids do not match the frozen QuestionPlans");
+    }
+
+    const updatedSession = Object.freeze({ ...session, runtime });
+    this.#sessions.set(sessionId, updatedSession);
+    return updatedSession;
   }
 
   get(sessionId: string): InterviewSession | null {

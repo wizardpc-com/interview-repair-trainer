@@ -159,6 +159,38 @@ describe("provider-independent LLM service", () => {
     expect(requests).toHaveLength(2);
   });
 
+  it("feeds schema issue paths back into the single structured-output retry", async () => {
+    const invalidQuestionPlan = {
+      ...questionPlan,
+      requiredEvidence: [
+        {
+          evidenceKindId: "problem-context",
+          surfaceQuestionBasis: "The question asks for the problem.",
+        },
+      ],
+    };
+    const { fetcher, requests } = queuedFetcher([
+      completionResponse(JSON.stringify(invalidQuestionPlan)),
+      completionResponse(JSON.stringify(questionPlan)),
+    ]);
+
+    await expect(
+      qwenService(fetcher).generateQuestionPlan(plannerInput),
+    ).resolves.toEqual({ ok: true, value: questionPlan });
+
+    const secondRequest = z
+      .object({
+        messages: z.array(z.object({ content: z.string() }).passthrough()),
+      })
+      .passthrough()
+      .parse(JSON.parse(String(requests[1].init?.body)));
+    const correction = secondRequest.messages.at(-1)?.content;
+
+    expect(correction).toContain("requiredEvidence");
+    expect(correction).toContain("expected string");
+    expect(requests).toHaveLength(2);
+  });
+
   it("rejects schema-invalid output after exactly one retry", async () => {
     const invalidQuestionPlan = {
       ...questionPlan,

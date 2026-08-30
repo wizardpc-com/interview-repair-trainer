@@ -42,13 +42,13 @@ Each stage is one verifiable vertical increment. Finish its acceptance criteria,
 - **Tests:** Cover create and read, deep freezing, hidden-field serialization, lazy expiry, missing sessions, planning failure atomicity, and session isolation.
 - **Explicit non-goals:** Redis, PostgreSQL, accounts, durable recovery, horizontal scaling.
 
-## 6. Text-first interview runtime
+## 6. Text-first interview runtime — complete
 
 - **Goal:** Accept text answers, run the interview state machine, and emit versioned semantic checkpoints.
-- **Files / modules likely involved:** `src/domain/interview/runtime.ts`, answer Route Handler, checkpoint scheduler, runtime tests.
+- **Files / modules involved:** `src/domain/interview/runtime.ts`, `src/server/interview-runtime-service.ts`, session and answer Route Handlers, `src/components/training-console.tsx`, and runtime/server tests.
 - **Acceptance criteria:** State transitions are application-controlled; answer and checkpoint versions are monotonic; old results can be identified as stale.
 - **Tests:** Cover valid and invalid transitions, text submission, checkpoint creation, and out-of-order result rejection.
-- **Explicit non-goals:** Browser STT, Hard Gate presentation, repair flow, UI polish.
+- **Explicit non-goals:** Browser STT, semantic evaluator orchestration, Hard Gate presentation, repair flow, and final UI polish.
 
 ## 7. Semantic evaluator and Hard Gate
 
