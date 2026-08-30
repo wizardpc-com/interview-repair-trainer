@@ -23,10 +23,12 @@ export type LlmResult<T> =
       error: LlmServiceError;
     }>;
 
-export type GenerateQuestionPlanInput = Readonly<{
+export type GenerateInterviewPlanInput = Readonly<{
   projectContext: string;
   scenario: InterviewScenarioPack;
 }>;
+
+export type GenerateQuestionPlanInput = GenerateInterviewPlanInput;
 
 export type EvaluateSemanticCheckpointInput = Readonly<{
   projectContext: string;
@@ -38,6 +40,10 @@ export type EvaluateSemanticCheckpointInput = Readonly<{
 
 export interface LlmService {
   readonly model: string;
+
+  generateInterviewPlan(
+    input: GenerateInterviewPlanInput,
+  ): Promise<LlmResult<readonly QuestionPlan[]>>;
 
   generateQuestionPlan(
     input: GenerateQuestionPlanInput,

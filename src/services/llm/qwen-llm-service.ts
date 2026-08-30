@@ -3,14 +3,17 @@ import type { QuestionPlan } from "../../domain/interview/contracts";
 import type { SemanticCheckResult } from "../../domain/semantic/contracts";
 import type {
   EvaluateSemanticCheckpointInput,
+  GenerateInterviewPlanInput,
   GenerateQuestionPlanInput,
   LlmResult,
   LlmService,
   LlmServiceError,
 } from "./llm-service";
 import {
+  createInterviewPlanSchema,
   createQuestionPlanSchema,
   createSemanticCheckResultSchema,
+  interviewPlanJsonSchema,
   questionPlanJsonSchema,
   semanticCheckResultJsonSchema,
 } from "./schemas";
@@ -91,7 +94,6 @@ function questionPlanMessages(
     evidenceKinds: input.scenario.evidenceKinds,
     gateIssueTypes: input.scenario.gateIssueTypes,
     questionFamilies: input.scenario.questionFamilies,
-    plannerHints: input.scenario.hints.planner,
   };
 
   return [
@@ -100,6 +102,7 @@ function questionPlanMessages(
       content: [
         "Create exactly one interview QuestionPlan from one scenario questionFamily and return only a valid JSON object.",
         "Copy the selected questionFamily surfaceQuestion exactly.",
+        "Keep user-facing question text in Simplified Chinese.",
         "Do not add coaching, scoring, hidden criteria, internal protocol terms, or broad requests such as 请全面介绍, 请详细阐述各个方面, or 从多个维度分析.",
         "Copy the selected primaryTarget from trainingTargets verbatim.",
         "For requiredEvidence, map every selected family's requiredEvidence.evidenceKindId to the matching top-level evidenceKinds object and output only its id and description.",
@@ -117,6 +120,47 @@ function questionPlanMessages(
         "Scenario:",
         JSON.stringify(scenario),
         "Return JSON with exactly these fields: id, surfaceQuestion, primaryTarget, requiredEvidence, optionalEvidence, allowedGateIssueTypes. Use the selected questionFamily id as id and copy its surfaceQuestion exactly.",
+      ].join("\n\n"),
+    },
+  ];
+}
+
+function interviewPlanMessages(
+  input: GenerateInterviewPlanInput,
+): readonly ChatMessage[] {
+  const scenario = {
+    id: input.scenario.id,
+    trainingTargets: input.scenario.trainingTargets,
+    evidenceKinds: input.scenario.evidenceKinds,
+    gateIssueTypes: input.scenario.gateIssueTypes,
+    questionFamilies: input.scenario.questionFamilies,
+    plannerHints: input.scenario.hints.planner,
+  };
+
+  return [
+    {
+      role: "system",
+      content: [
+        "Create exactly three interview QuestionPlans from three distinct scenario questionFamilies and return only one valid JSON object with a questionPlans array.",
+        "Prefer personal-contribution, technical-choice, and results-and-validation when they fit the supplied context; otherwise select the three most relevant distinct families.",
+        "Copy each selected questionFamily surfaceQuestion exactly and never repeat a family id.",
+        "Do not add coaching, scoring, hidden criteria, internal protocol terms, or broad requests such as 请全面介绍, 请详细阐述各个方面, or 从多个维度分析.",
+        "For every plan, copy the selected primaryTarget from trainingTargets verbatim.",
+        "For requiredEvidence, map every selected family's requiredEvidence.evidenceKindId to the matching top-level evidenceKinds object and output only its id and description.",
+        "For optionalEvidence, map every optionalEvidenceKindId the same way.",
+        "Never output evidenceKindId or surfaceQuestionBasis. Every id and description must match exactly.",
+        "Use each selected questionFamily id as the QuestionPlan id and use its allowedGateIssueTypes exactly.",
+        "Do not add fields or invent, paraphrase, omit, or combine definitions.",
+      ].join(" "),
+    },
+    {
+      role: "user",
+      content: [
+        "Project or research context:",
+        input.projectContext,
+        "Scenario:",
+        JSON.stringify(scenario),
+        "Return JSON with exactly one field named questionPlans. It must contain exactly three objects with exactly these fields: id, surfaceQuestion, primaryTarget, requiredEvidence, optionalEvidence, allowedGateIssueTypes.",
       ].join("\n\n"),
     },
   ];
@@ -194,6 +238,67 @@ export class QwenLlmService implements LlmService {
     this.model = options.model;
     this.endpoint = `${options.baseUrl.replace(/\/+$/, "")}/chat/completions`;
     this.fetcher = options.fetcher ?? fetch;
+  }
+
+  async generateInterviewPlan(
+    input: GenerateInterviewPlanInput,
+  ): Promise<LlmResult<readonly QuestionPlan[]>> {
+    const structuralSchema = createInterviewPlanSchema(input.scenario);
+    const presentationSchema = structuralSchema.superRefine(
+      ({ questionPlans }, context) => {
+        questionPlans.forEach(({ surfaceQuestion }, index) => {
+          if (!surfaceQuestionIsAcceptable(surfaceQuestion)) {
+            context.addIssue({
+              code: "custom",
+              message:
+                "surfaceQuestion must be written in Simplified Chinese, remain concise, and avoid broad requests or internal protocol terms",
+              path: ["questionPlans", index, "surfaceQuestion"],
+            });
+          }
+        });
+      },
+    );
+
+    const result = await this.requestValidated(
+      interviewPlanMessages(input),
+      presentationSchema,
+      {
+        name: "interview_plan",
+        schema: interviewPlanJsonSchema,
+      },
+      (decoded) => {
+        const structuralResult = structuralSchema.safeParse(decoded);
+        if (!structuralResult.success) {
+          return null;
+        }
+
+        const questionPlans = structuralResult.data.questionPlans.map((plan) => {
+          const family = input.scenario.questionFamilies.find(
+            ({ id }) => id === plan.id,
+          );
+          return family === undefined
+            ? plan
+            : { ...plan, surfaceQuestion: family.surfaceQuestion };
+        });
+        const fallbackResult = presentationSchema.safeParse({ questionPlans });
+        return fallbackResult.success ? fallbackResult.data : null;
+      },
+    );
+
+    if (!result.ok) {
+      return result;
+    }
+
+    const questionPlans = result.value.questionPlans.map((plan) => {
+      const family = input.scenario.questionFamilies.find(
+        ({ id }) => id === plan.id,
+      );
+      return family === undefined
+        ? plan
+        : { ...plan, surfaceQuestion: family.surfaceQuestion };
+    });
+
+    return { ok: true, value: questionPlans };
   }
 
   async generateQuestionPlan(

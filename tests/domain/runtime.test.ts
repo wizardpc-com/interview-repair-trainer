@@ -130,6 +130,111 @@ describe("text-first interview runtime", () => {
     });
   });
 
+  it("advances through three questions and finishes the interview after the third", () => {
+    let runtime = createInterviewRuntime("session-round", [
+      "question-1",
+      "question-2",
+      "question-3",
+    ]);
+
+    runtime = completeAnswer(
+      updateTranscript(startAnswer(runtime, 1_000), "First answer."),
+    );
+    expect(runtime).toMatchObject({
+      currentQuestionIndex: 1,
+      interviewState: { state: "IN_PROGRESS", activeQuestionId: "question-2" },
+    });
+    expect(runtime.questions.map(({ state }) => state)).toEqual([
+      "QUESTION_DONE",
+      "QUESTION_READY",
+      "QUESTION_READY",
+    ]);
+
+    runtime = completeAnswer(
+      updateTranscript(startAnswer(runtime, 2_000), "Second answer."),
+    );
+    expect(runtime.currentQuestionIndex).toBe(2);
+    expect(runtime.interviewState).toEqual({
+      state: "IN_PROGRESS",
+      activeQuestionId: "question-3",
+    });
+
+    runtime = completeAnswer(
+      updateTranscript(startAnswer(runtime, 3_000), "Third answer."),
+    );
+    expect(runtime.currentQuestionIndex).toBe(2);
+    expect(runtime.questions.every(({ state }) => state === "QUESTION_DONE")).toBe(
+      true,
+    );
+    expect(runtime.interviewState).toEqual({
+      state: "INTERVIEW_DONE",
+      activeQuestionId: null,
+    });
+  });
+
+  it.each(["SUCCESSFUL", "UNRESOLVED"] as const)(
+    "advances to the next question after a %s repair",
+    (outcome) => {
+      let runtime = startAnswer(
+        createInterviewRuntime("session-repair-round", [
+          "question-1",
+          "question-2",
+          "question-3",
+        ]),
+        1_000,
+      );
+      runtime = updateTranscript(runtime, "The first answer misses the reason.");
+      const firstCheckpoint = createCheckpoint(runtime, 2_000, "FINAL");
+      const beforeEvaluation = issueResult(
+        firstCheckpoint.checkpoint.checkpointVersion,
+      );
+      runtime = interruptForHardGate(firstCheckpoint.runtime, {
+        issueType: beforeEvaluation.issueType,
+        triggeringCriterion: beforeEvaluation.triggeringCriterion,
+        checkpointVersion: beforeEvaluation.checkpointVersion,
+        triggeredAt: 2_100,
+        whyPaused: "请补充选择原因。",
+        repairCue: "说明一个真实约束。",
+        beforeEvaluation,
+      });
+      runtime = updateTranscript(
+        startReanswer(runtime, 3_000),
+        "I chose it because memory was limited.",
+      );
+      const repairCheckpoint = createCheckpoint(runtime, 4_000, "FINAL");
+      const afterEvaluation: SemanticCheckResult =
+        outcome === "SUCCESSFUL"
+          ? {
+              questionId: "question-1",
+              checkpointVersion: repairCheckpoint.checkpoint.checkpointVersion,
+              confidence: 0.9,
+              gateability: "UNCERTAIN",
+              answerBoundary: "NONE",
+              decision: "CONTINUE",
+              issueType: null,
+              triggeringCriterion: null,
+              issueExplanation: null,
+              repairCue: null,
+            }
+          : issueResult(repairCheckpoint.checkpoint.checkpointVersion);
+
+      const advanced = completeRepair(
+        repairCheckpoint.runtime,
+        afterEvaluation,
+        outcome,
+      );
+      expect(advanced).toMatchObject({
+        currentQuestionIndex: 1,
+        interviewState: { state: "IN_PROGRESS", activeQuestionId: "question-2" },
+      });
+      expect(advanced.questions[0]).toMatchObject({
+        state: "QUESTION_DONE",
+        repairOutcome: outcome,
+      });
+      expect(advanced.questions[1].state).toBe("QUESTION_READY");
+    },
+  );
+
   it("freezes a rambling answer, resumes without consuming Gate capacity, and cannot pause twice", () => {
     let runtime = startAnswer(
       createInterviewRuntime("session-1", ["question-1"]),

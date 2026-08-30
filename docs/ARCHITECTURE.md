@@ -1,6 +1,6 @@
 # Architecture
 
-The repository keeps portable interview assets separate from product execution. The current code has completed Stages 1–9: domain contracts, deterministic Gate Arbiter policy, the core protocol and first scenario, a provider-independent single-model Qwen integration, hidden in-memory sessions, the text-first interview runtime, an immersive browser voice-answer shell with text fallback, Semantic Evaluator to Hard Gate interaction, and one same-target Repair and Re-answer loop.
+The repository keeps portable interview assets separate from product execution. The current code has completed Stages 1–10: domain contracts, deterministic Gate Arbiter policy, the core protocol and first scenario, a provider-independent single-model Qwen integration, hidden in-memory sessions, a three-question text-first interview runtime, an immersive browser voice-answer shell with text fallback, Semantic Evaluator to Hard Gate interaction, same-target Repair and Re-answer, a non-Gate real-time wrap-up reminder, and a deterministic round report.
 
 | Layer | Responsibility | Location |
 | --- | --- | --- |
@@ -15,18 +15,17 @@ Protocol export artifacts belong in `protocols/exports/`. Provider-specific LLM 
 
 ```text
 project or research context input
-  -> generate and freeze QuestionPlan in the hidden server session
-  -> expose the surface question
+  -> generate and freeze three distinct QuestionPlans in one hidden server session
+  -> for each question: expose only the surface question
   -> browser speech input or text fallback
   -> stable transcript input
   -> semantic checkpoint
   -> Semantic Evaluator
   -> Gate Arbiter
   -> Hard Gate or CONTINUE
-  -> repair
-  -> re-answer
-  -> re-evaluate the same frozen target
-  -> metrics and report
+  -> optional repair and same-target re-answer
+  -> advance to the next frozen question
+  -> after question 3: deterministic runtime report
 ```
 
 Browser STT converts speech to input text and does not participate in domain decisions. Interim recognition text remains presentation-only; only final recognition segments or explicit text fallback edits update the stable transcript consumed by the existing Runtime.
@@ -35,7 +34,7 @@ Browser STT converts speech to input text and does not participate in domain dec
 
 Phase 1 configures one real LLM. The same model performs two roles through one provider-independent service interface:
 
-- before answering, it generates deep-dive questions, the frozen Hidden QuestionPlan, the primary training target, and evidence requirements;
+- before answering, one request generates three distinct deep-dive QuestionPlans with frozen Hidden Targets and evidence requirements;
 - during answering, it evaluates semantic checkpoints for `NOT_ANSWERING_QUESTION`, `VAGUE_WITHOUT_EVIDENCE`, and `OWNERSHIP_AMBIGUOUS` and returns structured data to the Gate Arbiter.
 
 Planner and Semantic Evaluator orchestration depend only on the provider-independent service interface. Domain code has no LLM service dependency, and provider-specific code stays inside `src/services/llm`. LLM output never directly controls the UI or state machine.
@@ -46,12 +45,12 @@ A future extension may use a stronger model for planning and final review and a 
 
 ## QuestionPlan and Hidden Target
 
-Each Phase 1 question has one `primaryTarget` and separates evidence into:
+Each of the three Phase 1 questions has one `primaryTarget` and separates evidence into:
 
 - `requiredEvidence`: evidence reasonably demanded by the surface question;
 - `optionalEvidence`: useful for review but never sufficient reason for a Hard Gate when absent.
 
-Only `primaryTarget` plus `requiredEvidence` can affect Gate Arbiter eligibility. The complete QuestionPlan is generated and frozen before the answer begins and remains on the server. The frontend receives the surface question and public runtime state, not hidden targets or expected evidence.
+Only `primaryTarget` plus `requiredEvidence` can affect Gate Arbiter eligibility. All three QuestionPlans use distinct scenario families and are generated, copied, and frozen before the first answer begins. They remain on the server throughout the round and are never regenerated during Repair. The frontend receives surface questions and public runtime state, not hidden targets or expected evidence.
 
 Hidden Target is the AI's precommitted target for this training run. It is not an inference about a real interviewer's private psychology.
 
@@ -133,15 +132,15 @@ Every accepted transcript change increments `answerVersion`. Creating a checkpoi
 
 Periodic `INTERIM` checkpoint eligibility is an explicitly tunable MVP heuristic, not a scientifically calibrated threshold. The current values require 80 characters in the trimmed transcript, five seconds since answer start, five seconds since the previous checkpoint, a changed answer version, and no request already in flight. Explicit completion creates a `FINAL` checkpoint once the trimmed answer has at least four characters; it does not inherit the periodic length, duration, or persistence thresholds. Shorter non-empty input completes without semantic interruption.
 
-`POST /api/sessions` validates project context, plans and freezes one question, and returns only the public session and runtime DTOs. `POST /api/sessions/:sessionId/answer` validates `START`, `UPDATE_TRANSCRIPT`, `COMPLETE`, `CONTINUE_AFTER_WRAP_UP`, `START_REANSWER`, and `OVERRIDE_GATE` actions; transcript writes must identify answer attempt 1 or 2. Public runtime responses include the surface question, state, transcript, version counters, and checkpoint freshness metadata; they exclude project context and every private QuestionPlan field.
+`POST /api/sessions` validates project context, generates exactly three distinct plans in one provider call, freezes all three, and returns only the public session and runtime DTOs. `POST /api/sessions/:sessionId/answer` validates `START`, `UPDATE_TRANSCRIPT`, `COMPLETE`, `CONTINUE_AFTER_WRAP_UP`, `START_REANSWER`, and `OVERRIDE_GATE` actions; transcript writes must identify answer attempt 1 or 2. Public runtime responses include the current surface question, state, transcript, version counters, checkpoint freshness metadata, an optional completed-Repair transition, and the final deterministic report; they exclude project context and every private QuestionPlan field.
 
-The Training Console is deliberately not a chat transcript. Setup contains one project/research context field. Before answering, the surface question occupies the center of a near-full-screen interview stage. During answering, the question remains visible above a microphone focus and a compact read-only transcript. Save status remains secondary; answer and checkpoint versions stay in the public DTO for synchronization but are not rendered in the ordinary interface. This stage can later be frozen behind a near-full-screen Hard Gate without turning the experience into a form layout.
+The Training Console is deliberately not a chat transcript. Setup contains one project/research context field. Before answering, the current surface question occupies the center of a near-full-screen interview stage. During answering, the question remains visible above a microphone focus and a compact read-only transcript. After a terminal Repair, a concise result transition remains visible before the next question. After question three, the console renders the deterministic report instead of returning to the setup screen. Save status remains secondary; answer and checkpoint versions stay in the public DTO for synchronization but are not rendered in the ordinary interface.
 
 ## User-facing Chinese boundary
 
 Internal protocol identifiers remain stable English machine values. The `zh-CN` presentation boundary maps runtime states, actions, errors, and future gate results to concise Chinese copy; it never renders issue ids, version counters, confidence, or provider details to ordinary users. This is a presentation contract, not a requirement for a general-purpose localization framework.
 
-The planner selects one question family and must return its exact target, evidence split, and gate types through validated structured output. The application uses that family's fixed concise Chinese surface question so every gating criterion has source-defined surface support; model-adapted wording cannot silently omit a required request. Provider failures and structurally invalid plans still fail session creation rather than guessing a family or target.
+The planner selects exactly three distinct question families and must return each family's exact target, evidence split, and gate types through one validated structured output. Personal contribution, technical choice and rationale, and results with validation are preferred when relevant. The application uses each family's fixed concise Chinese surface question so every gating criterion has source-defined surface support; model-adapted wording cannot silently omit a required request. Provider failures, duplicate families, the wrong plan count, and structurally invalid plans fail session creation rather than guessing or partially creating a session.
 
 The Semantic Evaluator returns structured internal metadata only. User-facing Hard Gate copy is deterministic application copy derived from the validated issue and triggering criterion. It identifies one answer-level gap and one next action, preserves the original question and first answer, and never evaluates the user's personality or displays a numerical score.
 
@@ -174,6 +173,12 @@ Only the application-level Gate Arbiter can enter `REPAIR`. A successful gate co
 Completing a re-answer creates a final checkpoint and evaluates it with the exact frozen QuestionPlan already stored in the session. Repair does not invoke planning and accepts no replacement plan, target, or evidence definitions from the client or evaluator. A current, validated result is `UNRESOLVED` only when it still identifies the original Gate issue type or criterion on that frozen primary target or required evidence; a different issue on a different criterion does not impose a perfect-answer threshold. Optional evidence, ambiguity, low confidence, foreign criteria, and normal `CONTINUE` results cannot produce `UNRESOLVED`; a provider failure or stale result leaves `REANSWER` unchanged for a safe retry. An honest no-measurement boundary resolves an original required-evidence gap only when the portable Scenario Pack precommitted that boundary as satisfying the evidence kind.
 
 A terminal repair stores the original answer, repaired answer, issue record, override record, before and after evaluator results, and `SUCCESSFUL` or `UNRESOLVED` outcome for the later report stage. The public DTO exposes only the deterministic repair cue, preserved original answer while re-answering, and the concise Chinese terminal title `修复成功` or `仍未解决`.
+
+## Stage 10 complete round and deterministic report
+
+`completeAnswer` and `completeRepair` reuse the existing `currentQuestionIndex` to mark the active question done and activate the next already-frozen plan. Successful and unresolved Repairs both advance; a third completion sets `INTERVIEW_DONE`. The UI keeps a repaired question's terminal result as a local acknowledgement transition before revealing the next question or final report.
+
+The report is built only when every runtime question is `QUESTION_DONE`. It counts completed questions, first-pass questions with no Hard Gate, Hard Gates, Repairs, successful Repairs, and unresolved Repairs. Each question exposes its surface question and final answer; a Hard Gate additionally exposes its deterministic pause reason, original answer, optional repair answer, repair outcome, or an override note. The report selects these fields from frozen plans and runtime records only. It does not call the LLM and contains no score, ranking, probability, confidence, internal issue id, or specialist factual judgment.
 
 ## Dependency direction
 

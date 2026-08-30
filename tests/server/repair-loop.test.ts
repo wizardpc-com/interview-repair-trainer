@@ -191,6 +191,7 @@ function createHarness(plan: QuestionPlan, evaluations: readonly Evaluation[]) {
     questionPlans: [plan],
   });
   const generateQuestionPlan = vi.fn<LlmService["generateQuestionPlan"]>();
+  const generateInterviewPlan = vi.fn<LlmService["generateInterviewPlan"]>();
   const evaluateSemanticCheckpoint = vi.fn<
     LlmService["evaluateSemanticCheckpoint"]
   >(async (input) => {
@@ -202,6 +203,7 @@ function createHarness(plan: QuestionPlan, evaluations: readonly Evaluation[]) {
   });
   const llmService: LlmService = {
     model: "fake-single-model",
+    generateInterviewPlan,
     generateQuestionPlan,
     evaluateSemanticCheckpoint,
   };

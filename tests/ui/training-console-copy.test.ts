@@ -9,9 +9,9 @@ describe("training console copy", () => {
   it("explains the setup flow in Chinese", () => {
     const markup = renderToStaticMarkup(createElement(TrainingConsole));
 
-    expect(markup).toContain("再使用麦克风作答");
+    expect(markup).toContain("一次生成三道互不重复的深挖问题");
     expect(markup).toContain("第一步：提供项目背景");
-    expect(markup).toContain("生成面试问题");
+    expect(markup).toContain("生成三题训练计划");
     expect(markup).not.toContain("Text-first console");
     expect(markup).not.toContain("Setup");
   });
@@ -36,6 +36,8 @@ describe("training console copy", () => {
     expect(source).not.toContain("快照版本");
     expect(source).not.toContain("最终快照");
     expect(source).not.toContain('REPAIR: "修复中"');
+    expect(source).not.toContain("开始新的训练");
+    expect(source).toContain("本轮训练报告");
   });
 
   it("keeps voice input behind the start action and interim text local", () => {

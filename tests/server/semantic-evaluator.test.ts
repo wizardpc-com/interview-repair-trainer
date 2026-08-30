@@ -193,6 +193,9 @@ function createHarness(
   const evaluateSemanticCheckpoint = vi.fn(evaluator);
   const llmService: LlmService = {
     model: "fake-single-model",
+    async generateInterviewPlan() {
+      return { ok: true, value: [plan, plan, plan] };
+    },
     async generateQuestionPlan() {
       return { ok: true, value: plan };
     },

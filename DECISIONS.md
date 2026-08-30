@@ -8,9 +8,9 @@ The application uses Next.js with TypeScript, Tailwind CSS, and Route Handlers i
 
 Persona, Core Interview Protocol, and Scenario Pack are portable protocol assets. Runtime Engine code is kept separately under `src` so product execution does not become the source of truth for protocol content.
 
-## Text-first, single-model Phase 1
+## Text-first domain, single-model Phase 1
 
-The first MVP uses text input and exactly one configured LLM for both planning and semantic evaluation. Planner and Semantic Evaluator reuse one provider-independent LLM service interface and one real provider/model configuration.
+The first MVP keeps text as the complete domain input contract and uses exactly one configured LLM for both planning and semantic evaluation. Browser speech is an optional input adapter with a complete text fallback. Planner and Semantic Evaluator reuse one provider-independent LLM service interface and one real provider/model configuration.
 
 Phase 1 does not include a model router, automatic model selection, separate planner and evaluator provider configurations, or multi-agent orchestration. A future split may assign planning, hidden targets, and final review to a stronger model while a faster model monitors checkpoints, but this is an architecture extension rather than current infrastructure.
 
@@ -20,11 +20,11 @@ LLM and STT adapters belong under `src/services/llm` and `src/services/stt`. Dom
 
 The Stage 4 adapter calls Qwen's OpenAI-compatible Chat Completions endpoint with native `fetch`, so no provider SDK is required. One `QWEN_MODEL` configuration is reused for QuestionPlan generation and semantic checkpoint evaluation.
 
-Browser STT is deferred until the text-first runtime is stable. It remains an input adapter and cannot become a domain dependency.
+Browser STT was added only after the text-first runtime was stable. It remains an input adapter and cannot become a domain dependency. Interim recognition is presentation-only; final stable text uses the same runtime action as manual text input. Permission denial, unsupported recognition, or adapter failure returns to the text path.
 
 ## Hidden server QuestionPlan
 
-Each QuestionPlan is generated and frozen before its answer begins. It has one `primaryTarget`, `requiredEvidence`, and `optionalEvidence`. Only the primary target and required evidence may affect a Hard Gate, and every required hidden criterion must be reasonably implied by the surface question.
+One provider call generates exactly three distinct QuestionPlans before the first answer begins. Every plan is copied and frozen in the hidden Session and has one `primaryTarget`, `requiredEvidence`, and `optionalEvidence`. Only the primary target and required evidence may affect a Hard Gate, every required hidden criterion must be reasonably implied by the surface question, and Repair cannot regenerate any plan.
 
 Optional evidence may improve final review but cannot force an interruption. Hidden Target means the AI's precommitted training target for this run; it is not a claim about a real interviewer's private intent. The complete QuestionPlan remains server-only while the answer is in progress.
 
@@ -33,6 +33,8 @@ Optional evidence may improve final review but cannot force an interruption. Hid
 Semantic Evaluator confidence or gateability is an uncalibrated signal, not a probability. It cannot independently trigger a Hard Gate. The Gate Arbiter combines the evaluator decision with the surface question requirements, available answer context, persistence of the issue, checkpoint freshness, current interview state, and the per-question gate count.
 
 Any initial numeric threshold or timing value is an MVP heuristic and tunable parameter, not a scientifically calibrated probability.
+
+An answer-complete-but-rambling signal does not enter the Gate Arbiter. The same signal must persist on a newer interim checkpoint before the application pauses in `WRAP_UP`, and the user can finish or resume without consuming Hard Gate capacity. This reminder is available at most once per question.
 
 ## Fail-open and anti-stale behavior
 
@@ -62,4 +64,6 @@ Node.js 24 is the reference local and Docker runtime. `package.json` retains the
 
 ## Current implementation state
 
-The repository contains the scaffold, Stage 1 domain contracts, the Stage 2 deterministic Gate Arbiter policy, the Stage 3 core protocol plus one scenario, the Stage 4 single-model Qwen integration, and the Stage 5 hidden in-memory Session. It contains no committed credentials, database, speech connection, full interview API/UI, semantic evaluator orchestration, hard gate runtime, repair loop, or multi-agent implementation.
+The repository has completed Stages 1–10: domain contracts, deterministic Gate Arbiter policy, one portable scenario, one Qwen adapter reused for three-plan generation and evaluation, hidden in-memory Sessions, text-first API and multi-question Runtime, Chrome-first speech input with text fallback, versioned Semantic Evaluator orchestration, Hard Gate and override behavior, same-target Repair and Re-answer, the non-Gate real-time wrap-up reminder, and a deterministic three-question report.
+
+The report selects only public-safe fields from frozen plans and completed runtime records; it does not call the LLM. There are no committed credentials, database, durable sessions, accounts, provider STT, multi-model router, multi-agent runtime, factual grading, score, or ranking.

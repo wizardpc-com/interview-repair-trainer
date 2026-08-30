@@ -76,15 +76,15 @@ Across all stages, internal protocol identifiers remain English machine values w
 - **Tests:** Cover target identity, first-answer preservation, successful repair, unresolved repair, invalid re-answer state, one-gate capacity, and late evaluator result discard.
 - **Explicit non-goals:** New questions during repair, target regeneration, repeated repair loops, advanced UI.
 
-## 10. Repair metrics and report
+## 10. Complete round, Repair metrics, and report — complete
 
-- **Goal:** Produce a deterministic report from stored runtime events and validated evaluator outputs.
-- **Files / modules likely involved:** `src/domain/interview/metrics.ts`, report Route Handler, report view, aggregation tests.
-- **Acceptance criteria:** Report first-pass result, gate count, repair attempt, repair success, and structured evidence before and after. Aggregation is deterministic and includes no fabricated overall score.
-- **Tests:** Cover no-gate, repaired, unresolved, and incomplete-session reports plus deterministic replay of the same events.
+- **Goal:** Generate and freeze a three-question Interview Plan, run all three questions through the existing Gate/Repair flow, and produce a deterministic final report.
+- **Files / modules involved:** `src/domain/interview/report.ts`, `src/services/llm`, `src/server/interview-session-service.ts`, `src/server/session-store.ts`, API contracts, Training Console, and report/runtime/session tests.
+- **Acceptance criteria:** Session creation performs one validated provider call for exactly three distinct question families and freezes all plans before question one. Normal completion, successful Repair, and unresolved Repair advance through the existing `currentQuestionIndex`; question three enters `INTERVIEW_DONE`. The report includes first-pass, Gate, Repair, successful Repair, and unresolved counts plus per-question answers and deterministic Hard Gate details, with no fabricated overall score or internal evaluator metadata.
+- **Tests:** Cover exact and distinct plan count, deep freezing, duplicate rejection, all question transitions, successful and unresolved Repair advancement, final interview completion, deterministic aggregation, public-field safety, and report rendering.
 - **Explicit non-goals:** Scores such as `87.4`, rankings, long-term profiles, database-backed analytics.
 
-## 11. Deferred adapters and polish
+## 11. Deferred adapters and polish — deferred
 
 - **Goal:** Only after the core repair loop is stable, add focused UI polish, optional protocol export, or a separately approved dual-model experiment.
 - **Files / modules likely involved:** `src/components`, `scripts`, and a future architecture decision for any model split.

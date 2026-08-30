@@ -192,7 +192,8 @@
   "hints": {
     "planner": [
       "Write surfaceQuestion in Simplified Chinese regardless of the project context language.",
-      "Select one family that follows naturally from the candidate's stated project or research context.",
+      "Select exactly three distinct families that follow naturally from the candidate's stated project or research context.",
+      "Prefer personal contribution, technical choice and rationale, and results with validation when those families fit the supplied context.",
       "Keep one primary target and require only evidence that the generated surface question explicitly asks for.",
       "Freeze the target, evidence split, and allowed issue types before the answer starts."
     ],

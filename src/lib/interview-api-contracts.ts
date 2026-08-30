@@ -74,6 +74,45 @@ const publicRepairResultSchema = z
   })
   .strict();
 
+const publicCompletedQuestionResultSchema = z
+  .object({
+    index: z.number().int().positive(),
+    status: z.enum(["SUCCESSFUL", "UNRESOLVED"]),
+    title: z.enum(["修复成功", "仍未解决"]),
+    hasNextQuestion: z.boolean(),
+  })
+  .strict();
+
+const publicTrainingReportSchema = z
+  .object({
+    completedQuestions: z.number().int().nonnegative(),
+    firstPassQuestions: z.number().int().nonnegative(),
+    hardGateCount: z.number().int().nonnegative(),
+    repairCount: z.number().int().nonnegative(),
+    repairSuccessfulCount: z.number().int().nonnegative(),
+    unresolvedCount: z.number().int().nonnegative(),
+    questions: z.array(
+      z
+        .object({
+          index: z.number().int().positive(),
+          question: nonEmptyString,
+          finalAnswer: z.string(),
+          hardGate: z
+            .object({
+              whyPaused: nonEmptyString,
+              originalAnswer: z.string(),
+              repairAnswer: z.string().nullable(),
+              repairResult: z.enum(["修复成功", "仍未解决"]).nullable(),
+              overridden: z.boolean(),
+            })
+            .strict()
+            .nullable(),
+        })
+        .strict(),
+    ),
+  })
+  .strict();
+
 const publicWrapUpPromptSchema = z
   .object({
     title: z.literal("核心已经回答"),
@@ -102,6 +141,8 @@ export const publicInterviewRuntimeSchema = z
     wrapUpPrompt: publicWrapUpPromptSchema.nullable(),
     hardGate: publicHardGateSchema.nullable(),
     repairResult: publicRepairResultSchema.nullable(),
+    completedQuestionResult: publicCompletedQuestionResultSchema.nullable(),
+    report: publicTrainingReportSchema.nullable(),
   })
   .strict();
 
@@ -171,5 +212,31 @@ export type PublicInterviewRuntimeDto = Readonly<{
   repairResult: Readonly<{
     status: "SUCCESSFUL" | "UNRESOLVED";
     title: "修复成功" | "仍未解决";
+  }> | null;
+  completedQuestionResult: Readonly<{
+    index: number;
+    status: "SUCCESSFUL" | "UNRESOLVED";
+    title: "修复成功" | "仍未解决";
+    hasNextQuestion: boolean;
+  }> | null;
+  report: Readonly<{
+    completedQuestions: number;
+    firstPassQuestions: number;
+    hardGateCount: number;
+    repairCount: number;
+    repairSuccessfulCount: number;
+    unresolvedCount: number;
+    questions: readonly Readonly<{
+      index: number;
+      question: string;
+      finalAnswer: string;
+      hardGate: Readonly<{
+        whyPaused: string;
+        originalAnswer: string;
+        repairAnswer: string | null;
+        repairResult: "修复成功" | "仍未解决" | null;
+        overridden: boolean;
+      }> | null;
+    }>[];
   }> | null;
 }>;

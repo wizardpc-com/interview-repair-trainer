@@ -351,12 +351,12 @@ export function WrapUpView({
 
 export function RepairResultView({
   runtime,
-  onReset,
+  onContinue,
 }: Readonly<{
   runtime: PublicInterviewRuntimeDto;
-  onReset(): void;
+  onContinue(): void;
 }>) {
-  const result = runtime.repairResult;
+  const result = runtime.completedQuestionResult;
   if (result === null) {
     return null;
   }
@@ -387,10 +387,123 @@ export function RepairResultView({
       <button
         className="mt-10 rounded-full bg-[#fff1e4] px-8 py-3 text-sm font-semibold text-[#4a2118] transition hover:bg-white"
         type="button"
-        onClick={onReset}
+        onClick={onContinue}
       >
-        开始新的训练
+        {result.hasNextQuestion ? "进入下一题" : "查看本轮报告"}
       </button>
+    </section>
+  );
+}
+
+export function TrainingReportView({
+  runtime,
+}: Readonly<{
+  runtime: PublicInterviewRuntimeDto;
+}>) {
+  const report = runtime.report;
+  if (report === null) {
+    return null;
+  }
+
+  const summary = [
+    ["完成题数", report.completedQuestions],
+    ["首次直接通过", report.firstPassQuestions],
+    ["Hard Gate", report.hardGateCount],
+    ["Repair", report.repairCount],
+    ["Repair Successful", report.repairSuccessfulCount],
+    ["Unresolved", report.unresolvedCount],
+  ] as const;
+
+  return (
+    <section
+      aria-label="本轮训练报告"
+      className="relative z-10 mx-auto min-h-[calc(100dvh-69px)] w-full max-w-6xl px-5 py-10 sm:px-8 sm:py-14"
+    >
+      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#9ab9aa]">
+        完整一轮训练
+      </p>
+      <h1 className="mt-4 text-4xl font-semibold tracking-[-0.045em] text-[#f8f5ed] sm:text-6xl">
+        本轮训练报告
+      </h1>
+      <p className="mt-4 max-w-2xl text-sm leading-7 text-[#9eb1a8] sm:text-base">
+        以下内容仅由本轮真实回答、Hard Gate 与 Repair 记录确定性汇总，不生成分数，也不判断专业事实。
+      </p>
+
+      <div className="mt-9 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        {summary.map(([label, value]) => (
+          <div
+            className="rounded-2xl border border-white/8 bg-white/[0.045] px-4 py-5"
+            key={label}
+          >
+            <p className="text-3xl font-semibold tracking-[-0.04em] text-[#f3f0e9]">
+              {value}
+            </p>
+            <p className="mt-2 text-xs leading-5 text-[#91a69c]">{label}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-10 space-y-5">
+        {report.questions.map((question) => (
+          <article
+            className="rounded-[28px] border border-white/8 bg-black/10 p-5 sm:p-7"
+            key={question.index}
+          >
+            <p className="text-xs font-semibold tracking-[0.16em] text-[#8fa69a]">
+              第 {question.index} 题
+            </p>
+            <h2 className="mt-3 text-xl font-medium leading-8 text-[#edf4ef] sm:text-2xl">
+              {question.question}
+            </h2>
+            <div className="mt-5 rounded-2xl border border-white/7 bg-[#071a14]/45 p-4 sm:p-5">
+              <p className="text-xs font-semibold tracking-[0.14em] text-[#8fa69a]">
+                最终回答
+              </p>
+              <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-[#cbd7d1] sm:text-base">
+                {question.finalAnswer}
+              </p>
+            </div>
+
+            {question.hardGate !== null && (
+              <div className="mt-4 grid gap-4 rounded-2xl border border-[#e6a58e]/15 bg-[#281713]/55 p-4 sm:p-5 lg:grid-cols-2">
+                <section>
+                  <p className="text-xs font-semibold tracking-[0.14em] text-[#c79482]">
+                    为什么暂停
+                  </p>
+                  <p className="mt-2 text-sm leading-7 text-[#ead8d0]">
+                    {question.hardGate.whyPaused}
+                  </p>
+                </section>
+                <section>
+                  <p className="text-xs font-semibold tracking-[0.14em] text-[#c79482]">
+                    原回答
+                  </p>
+                  <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-[#cdb9b1]">
+                    {question.hardGate.originalAnswer}
+                  </p>
+                </section>
+                {question.hardGate.repairAnswer !== null ? (
+                  <section className="lg:col-span-2">
+                    <p className="text-xs font-semibold tracking-[0.14em] text-[#c79482]">
+                      修复回答
+                    </p>
+                    <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-[#ead8d0]">
+                      {question.hardGate.repairAnswer}
+                    </p>
+                    <p className="mt-3 text-sm font-semibold text-[#ffd0bf]">
+                      {question.hardGate.repairResult}
+                    </p>
+                  </section>
+                ) : question.hardGate.overridden ? (
+                  <p className="text-sm font-semibold text-[#ffd0bf] lg:col-span-2">
+                    用户选择继续原回答，未进行 Repair。
+                  </p>
+                ) : null}
+              </div>
+            )}
+          </article>
+        ))}
+      </div>
     </section>
   );
 }
@@ -408,6 +521,9 @@ export function TrainingConsole() {
   const [isPending, setIsPending] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [acknowledgedResultIndex, setAcknowledgedResultIndex] = useState<
+    number | null
+  >(null);
   const saveChainRef = useRef<Promise<void>>(Promise.resolve());
   const runtimeRef = useRef<PublicInterviewRuntimeDto | null>(null);
   const stableTranscriptRef = useRef("");
@@ -725,6 +841,7 @@ export function TrainingConsole() {
         await readApiResponse(response),
       );
       attemptedCheckpointKeysRef.current.clear();
+      setAcknowledgedResultIndex(null);
       applyRuntime(result.runtime);
       stableTranscriptRef.current = result.runtime.transcript;
       setStableTranscript(result.runtime.transcript);
@@ -937,22 +1054,6 @@ export function TrainingConsole() {
     setStableTranscript(transcript);
   }
 
-  function reset() {
-    captureEpochRef.current += 1;
-    attemptedCheckpointKeysRef.current.clear();
-    void stopVoiceCapture();
-    setRuntime(null);
-    runtimeRef.current = null;
-    setProjectContext("");
-    stableTranscriptRef.current = "";
-    setStableTranscript("");
-    setInterimTranscript("");
-    setInputMode("voice");
-    setMicrophoneStatus("idle");
-    setVoiceNotice(null);
-    setError(null);
-  }
-
   if (runtime === null) {
     return (
       <main className="min-h-screen bg-[#f3f0e9] text-[#15201d]">
@@ -976,7 +1077,7 @@ export function TrainingConsole() {
               把项目经历，练成一段清楚的回答。
             </h1>
             <p className="mt-7 max-w-lg text-base leading-7 text-[#5e6964] sm:text-lg">
-              输入项目经历，生成一道面试问题，再使用麦克风作答。回答内容会实时转写并自动保存。
+              输入项目经历，一次生成三道互不重复的深挖问题，再连续完成回答与修复训练。
             </p>
           </div>
 
@@ -1030,7 +1131,7 @@ export function TrainingConsole() {
               onClick={() => void createSession()}
               disabled={projectContext.trim().length === 0 || isPending}
             >
-              {isPending ? "正在生成问题…" : "生成面试问题"}
+              {isPending ? "正在生成三题计划…" : "生成三题训练计划"}
             </button>
           </div>
         </section>
@@ -1044,9 +1145,11 @@ export function TrainingConsole() {
   const isReanswer = runtime.state === "REANSWER";
   const isRecording = isAnswering || isReanswer;
   const isRepair = runtime.state === "REPAIR" && runtime.hardGate !== null;
-  const isDone = runtime.state === "QUESTION_DONE";
-  const hasRepairResult = runtime.repairResult !== null;
-  const isRepairExperience = isRepair || isReanswer || hasRepairResult;
+  const hasPendingRepairResult =
+    runtime.completedQuestionResult !== null &&
+    runtime.completedQuestionResult.index !== acknowledgedResultIndex;
+  const isRepairExperience =
+    isRepair || isReanswer || hasPendingRepairResult;
   const displayedTranscript = stableTranscript.trim();
 
   return (
@@ -1072,7 +1175,11 @@ export function TrainingConsole() {
               面试训练
             </p>
             <p className="mt-0.5 text-xs text-[#9eb1a8]">
-              第 {runtime.question.index} 题 / 共 {runtime.question.total} 题
+              {hasPendingRepairResult && runtime.completedQuestionResult !== null
+                ? `第 ${runtime.completedQuestionResult.index} 题已完成`
+                : runtime.report === null
+                  ? `第 ${runtime.question.index} 题 / 共 ${runtime.question.total} 题`
+                : `${runtime.report.completedQuestions} 题已完成`}
             </p>
           </div>
           <div className="flex items-center gap-2.5 text-xs text-[#b5c4bd]">
@@ -1081,7 +1188,13 @@ export function TrainingConsole() {
                 isRecording && !isReanswer ? "bg-[#8ed0ae]" : "bg-[#d2a177]"
               }`}
             />
-            <span>{STATE_LABELS[runtime.state]}</span>
+            <span>
+              {hasPendingRepairResult && runtime.completedQuestionResult !== null
+                ? runtime.completedQuestionResult.title
+                : runtime.report === null
+                  ? STATE_LABELS[runtime.state]
+                  : "训练完成"}
+            </span>
           </div>
         </div>
       </header>
@@ -1101,8 +1214,15 @@ export function TrainingConsole() {
           onPrepareReanswer={() => void startReanswerAction()}
           onOverride={() => void overrideGateAction()}
         />
-      ) : hasRepairResult ? (
-        <RepairResultView runtime={runtime} onReset={reset} />
+      ) : hasPendingRepairResult ? (
+        <RepairResultView
+          runtime={runtime}
+          onContinue={() =>
+            setAcknowledgedResultIndex(runtime.completedQuestionResult?.index ?? null)
+          }
+        />
+      ) : runtime.report !== null ? (
+        <TrainingReportView runtime={runtime} />
       ) : (
       <section className="relative z-10 mx-auto flex min-h-[calc(100dvh-69px)] max-w-7xl flex-col items-center px-5 pb-6 pt-8 sm:px-8 sm:pb-8 lg:pt-10">
         <div
@@ -1286,29 +1406,6 @@ export function TrainingConsole() {
           </div>
         )}
 
-        {isDone && (
-          <div className="my-auto flex w-full max-w-4xl flex-col items-center text-center">
-            <div className="grid size-16 place-items-center rounded-full border border-[#a7ceb9]/35 bg-[#a7ceb9]/10 text-2xl text-[#b8ddca]">
-              ✓
-            </div>
-            <h2 className="mt-6 text-3xl font-medium tracking-[-0.03em]">
-              本题回答已完成
-            </h2>
-            <p className="mt-3 text-sm text-[#9eb1a8]">
-              本题回答已保存。
-            </p>
-            <section className="mt-8 max-h-52 w-full overflow-y-auto rounded-3xl border border-white/8 bg-black/10 px-6 py-5 text-left text-sm leading-7 text-[#cbd7d1]">
-              {stableTranscript}
-            </section>
-            <button
-              className="mt-8 rounded-full bg-[#f2eee4] px-8 py-3 text-sm font-semibold text-[#16382b] transition hover:bg-white"
-              type="button"
-              onClick={reset}
-            >
-              开始新的训练
-            </button>
-          </div>
-        )}
       </section>
       )}
     </main>

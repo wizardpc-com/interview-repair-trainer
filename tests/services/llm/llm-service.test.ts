@@ -73,6 +73,49 @@ const canonicalQuestionPlan: QuestionPlan = {
       ?.surfaceQuestion ?? questionPlan.surfaceQuestion,
 };
 
+function canonicalPlanForFamily(familyId: string): QuestionPlan {
+  const family = scenario.questionFamilies.find(({ id }) => id === familyId);
+  if (family === undefined) {
+    throw new Error(`Missing question family: ${familyId}`);
+  }
+  const primaryTarget = scenario.trainingTargets.find(
+    ({ id }) => id === family.primaryTargetId,
+  );
+  if (primaryTarget === undefined) {
+    throw new Error(`Missing primary target: ${family.primaryTargetId}`);
+  }
+  const evidenceById = new Map(
+    scenario.evidenceKinds.map((evidence) => [evidence.id, evidence]),
+  );
+  const evidence = (id: string) => {
+    const item = evidenceById.get(id);
+    if (item === undefined) {
+      throw new Error(`Missing evidence kind: ${id}`);
+    }
+    return { id: item.id, description: item.description };
+  };
+
+  return {
+    id: family.id,
+    surfaceQuestion: family.surfaceQuestion,
+    primaryTarget: {
+      id: primaryTarget.id,
+      description: primaryTarget.description,
+    },
+    requiredEvidence: family.requiredEvidence.map(({ evidenceKindId }) =>
+      evidence(evidenceKindId),
+    ),
+    optionalEvidence: family.optionalEvidenceKindIds.map(evidence),
+    allowedGateIssueTypes: [...family.allowedGateIssueTypes],
+  };
+}
+
+const interviewPlans = [
+  canonicalPlanForFamily("personal-contribution"),
+  canonicalPlanForFamily("technical-choice"),
+  canonicalPlanForFamily("results-and-validation"),
+] as const;
+
 const evaluatorInput: EvaluateSemanticCheckpointInput = {
   projectContext: plannerInput.projectContext,
   questionPlan,
@@ -112,10 +155,70 @@ function qwenService(fetcher: typeof fetch): QwenLlmService {
 }
 
 describe("provider-independent LLM service", () => {
+  it("generates one validated three-question plan with distinct preferred families", async () => {
+    const { fetcher, requests } = queuedFetcher([
+      completionResponse(JSON.stringify({ questionPlans: interviewPlans })),
+    ]);
+    const service = qwenService(fetcher);
+
+    await expect(service.generateInterviewPlan(plannerInput)).resolves.toEqual({
+      ok: true,
+      value: interviewPlans,
+    });
+    expect(requests).toHaveLength(1);
+
+    const body = z
+      .object({
+        messages: z.array(z.object({ content: z.string() }).passthrough()),
+        response_format: z.object({
+          json_schema: z.object({
+            name: z.literal("interview_plan"),
+            schema: z.object({
+              required: z.array(z.string()),
+              properties: z.record(z.string(), z.unknown()),
+            }).passthrough(),
+          }).passthrough(),
+        }).passthrough(),
+      })
+      .passthrough()
+      .parse(JSON.parse(String(requests[0].init?.body)));
+    expect(body.response_format.json_schema.schema.required).toEqual([
+      "questionPlans",
+    ]);
+    const prompt = body.messages.map(({ content }) => content).join("\n");
+    expect(prompt).toContain("exactly three interview QuestionPlans");
+    expect(prompt).toContain("three distinct scenario questionFamilies");
+    expect(prompt).toContain(
+      "personal-contribution, technical-choice, and results-and-validation",
+    );
+  });
+
+  it("rejects a three-question plan that repeats a family", async () => {
+    const repeated = {
+      questionPlans: [interviewPlans[0], interviewPlans[0], interviewPlans[2]],
+    };
+    const { fetcher, requests } = queuedFetcher([
+      completionResponse(JSON.stringify(repeated)),
+      completionResponse(JSON.stringify(repeated)),
+    ]);
+
+    await expect(
+      qwenService(fetcher).generateInterviewPlan(plannerInput),
+    ).resolves.toMatchObject({
+      ok: false,
+      error: { code: "INVALID_STRUCTURED_OUTPUT", attempts: 2 },
+    });
+    expect(requests).toHaveLength(2);
+  });
+
   it("exposes planning and evaluation through one shared interface", async () => {
     const calls: string[] = [];
     const fakeService: LlmService = {
       model: "fake-single-model",
+      async generateInterviewPlan() {
+        calls.push("interview-planner");
+        return { ok: true, value: [questionPlan, questionPlan, questionPlan] };
+      },
       async generateQuestionPlan() {
         calls.push("planner");
         return { ok: true, value: questionPlan };
@@ -126,11 +229,12 @@ describe("provider-independent LLM service", () => {
       },
     };
 
+    await fakeService.generateInterviewPlan(plannerInput);
     await fakeService.generateQuestionPlan(plannerInput);
     await fakeService.evaluateSemanticCheckpoint(evaluatorInput);
 
     expect(fakeService.model).toBe("fake-single-model");
-    expect(calls).toEqual(["planner", "evaluator"]);
+    expect(calls).toEqual(["interview-planner", "planner", "evaluator"]);
   });
 
   it("uses the same configured Qwen model for valid planner and evaluator responses", async () => {

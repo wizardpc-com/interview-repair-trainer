@@ -9,6 +9,7 @@ import {
   createInterviewRuntime,
   type InterviewRuntime,
 } from "../domain/interview/runtime";
+import { createTrainingReport } from "../domain/interview/report";
 import type {
   PublicInterviewRuntimeDto,
   PublicInterviewSessionDto,
@@ -104,6 +105,16 @@ export function toPublicInterviewRuntime(
   }
 
   const checkpoint = questionRuntime.latestCheckpoint;
+  let latestCompletedQuestionIndex = -1;
+  for (let index = 0; index < session.runtime.questions.length; index += 1) {
+    if (session.runtime.questions[index]?.state === "QUESTION_DONE") {
+      latestCompletedQuestionIndex = index;
+    }
+  }
+  const latestCompletedQuestion =
+    latestCompletedQuestionIndex === -1
+      ? null
+      : session.runtime.questions[latestCompletedQuestionIndex] ?? null;
 
   return Object.freeze({
     sessionId: session.sessionId,
@@ -170,6 +181,24 @@ export function toPublicInterviewRuntime(
                 ? "修复成功"
                 : "仍未解决",
           }),
+    completedQuestionResult:
+      latestCompletedQuestion?.repairOutcome === null ||
+      latestCompletedQuestion?.repairOutcome === undefined
+        ? null
+        : Object.freeze({
+            index: latestCompletedQuestionIndex + 1,
+            status: latestCompletedQuestion.repairOutcome,
+            title:
+              latestCompletedQuestion.repairOutcome === "SUCCESSFUL"
+                ? ("修复成功" as const)
+                : ("仍未解决" as const),
+            hasNextQuestion:
+              latestCompletedQuestionIndex < session.questionPlans.length - 1,
+          }),
+    report:
+      session.runtime.interviewState.state === "INTERVIEW_DONE"
+        ? createTrainingReport(session.runtime, session.questionPlans)
+        : null,
   });
 }
 

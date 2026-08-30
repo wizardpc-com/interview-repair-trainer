@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   HardGateView,
   RepairResultView,
+  TrainingReportView,
   WrapUpView,
   runtimeIsAtLeastAsCurrent,
 } from "../../src/components/training-console";
@@ -37,6 +38,8 @@ function hardGateRuntime(): PublicInterviewRuntimeDto {
         "我们最后使用了这个方案。这个方法先建立索引，再根据索引找到候选路径。",
     },
     repairResult: null,
+    completedQuestionResult: null,
+    report: null,
   };
 }
 
@@ -53,6 +56,12 @@ function repairResultRuntime(
     repairResult: {
       status,
       title: status === "SUCCESSFUL" ? "修复成功" : "仍未解决",
+    },
+    completedQuestionResult: {
+      index: 1,
+      status,
+      title: status === "SUCCESSFUL" ? "修复成功" : "仍未解决",
+      hasNextQuestion: false,
     },
   };
 }
@@ -118,17 +127,89 @@ describe("Hard Gate view", () => {
     const markup = renderToStaticMarkup(
       createElement(RepairResultView, {
         runtime: repairResultRuntime(status),
-        onReset: vi.fn(),
+        onContinue: vi.fn(),
       }),
     );
 
     expect(markup).toContain(title);
     expect(markup).toContain("重新回答结果");
+    expect(markup).toContain("查看本轮报告");
     expect(markup).not.toMatch(
       /NOT_ANSWERING_QUESTION|VAGUE_WITHOUT_EVIDENCE|OWNERSHIP_AMBIGUOUS/,
     );
     expect(markup).not.toMatch(
       /confidence|Hidden Target|primaryTarget|requiredEvidence|optionalEvidence/i,
+    );
+  });
+
+  it("renders the deterministic round report without scores or internal evaluator data", () => {
+    const runtime: PublicInterviewRuntimeDto = {
+      ...hardGateRuntime(),
+      runtimeRevision: 20,
+      state: "QUESTION_DONE",
+      question: {
+        questionId: "results-and-validation",
+        surfaceQuestion: "你实际观察到了什么结果？你是如何验证这个结果的？",
+        index: 3,
+        total: 3,
+      },
+      hardGate: null,
+      repairResult: null,
+      completedQuestionResult: null,
+      report: {
+        completedQuestions: 3,
+        firstPassQuestions: 1,
+        hardGateCount: 2,
+        repairCount: 2,
+        repairSuccessfulCount: 1,
+        unresolvedCount: 1,
+        questions: [
+          {
+            index: 1,
+            question: "哪些工作是由你本人完成的？",
+            finalAnswer: "我本人实现了数据处理模块。",
+            hardGate: null,
+          },
+          {
+            index: 2,
+            question: "你为什么选择这项技术方案？",
+            finalAnswer: "因为设备内存有限，我选择了更小的方案。",
+            hardGate: {
+              whyPaused: "当前回答没有说明技术选择的原因。",
+              originalAnswer: "我选择了这个方案。",
+              repairAnswer: "因为设备内存有限，我选择了更小的方案。",
+              repairResult: "修复成功",
+              overridden: false,
+            },
+          },
+          {
+            index: 3,
+            question: "你观察到了什么结果，如何验证？",
+            finalAnswer: "结果还是很好。",
+            hardGate: {
+              whyPaused: "当前回答没有说明结果如何验证。",
+              originalAnswer: "结果很好。",
+              repairAnswer: "结果还是很好。",
+              repairResult: "仍未解决",
+              overridden: false,
+            },
+          },
+        ],
+      },
+    };
+
+    const markup = renderToStaticMarkup(
+      createElement(TrainingReportView, { runtime }),
+    );
+
+    expect(markup).toContain("本轮训练报告");
+    expect(markup).toContain("首次直接通过");
+    expect(markup).toContain("当前回答没有说明技术选择的原因。");
+    expect(markup).toContain("因为设备内存有限，我选择了更小的方案。");
+    expect(markup).toContain("修复成功");
+    expect(markup).toContain("仍未解决");
+    expect(markup).not.toMatch(
+      /综合评分|面试通过概率|confidence|NOT_ANSWERING_QUESTION|VAGUE_WITHOUT_EVIDENCE|OWNERSHIP_AMBIGUOUS/,
     );
   });
 

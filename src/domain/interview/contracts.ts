@@ -1,5 +1,7 @@
 import type { GateIssueType } from "../semantic/contracts";
 
+export const INTERVIEW_PLAN_QUESTION_COUNT = 3;
+
 export type TrainingTarget = Readonly<{
   id: string;
   description: string;
@@ -37,6 +39,19 @@ export function assertQuestionPlanInvariants(plan: QuestionPlan): void {
   if (new Set(plan.allowedGateIssueTypes).size !== plan.allowedGateIssueTypes.length) {
     throw new Error("allowedGateIssueTypes must not contain duplicates");
   }
+}
+
+export function assertInterviewPlanInvariants(
+  plans: readonly QuestionPlan[],
+): void {
+  if (plans.length !== INTERVIEW_PLAN_QUESTION_COUNT) {
+    throw new Error(
+      `Interview plan must contain exactly ${INTERVIEW_PLAN_QUESTION_COUNT} questions`,
+    );
+  }
+
+  assertUniqueIds(plans, "questionPlans");
+  plans.forEach(assertQuestionPlanInvariants);
 }
 
 export function getGateEvidenceRequirements(

@@ -48,23 +48,34 @@ function makeQuestionPlan(
 }
 
 function fakeLlmService(
-  planningResults: readonly LlmResult<QuestionPlan>[],
+  planningResults: readonly LlmResult<readonly QuestionPlan[]>[],
 ): LlmService {
   const queuedResults = [...planningResults];
 
   return {
     model: "fake-single-model",
-    async generateQuestionPlan() {
+    async generateInterviewPlan() {
       const result = queuedResults.shift();
       if (result === undefined) {
         throw new Error("No fake planning result queued");
       }
       return result;
     },
+    async generateQuestionPlan() {
+      throw new Error("Session creation must generate the complete interview plan");
+    },
     async evaluateSemanticCheckpoint() {
       throw new Error("Session creation must not evaluate checkpoints");
     },
   };
+}
+
+function makeInterviewPlan(prefix = ""): readonly QuestionPlan[] {
+  return [
+    makeQuestionPlan(`${prefix}question-1`, "Question one?"),
+    makeQuestionPlan(`${prefix}question-2`, "Question two?"),
+    makeQuestionPlan(`${prefix}question-3`, "Question three?"),
+  ];
 }
 
 function sequentialIdFactory(...ids: readonly string[]): () => string {
@@ -86,7 +97,7 @@ describe("hidden in-memory interview sessions", () => {
       idFactory: () => "session-1",
     });
     const service = new InterviewSessionService(
-      fakeLlmService([{ ok: true, value: makeQuestionPlan() }]),
+      fakeLlmService([{ ok: true, value: makeInterviewPlan() }]),
       store,
     );
 
@@ -99,8 +110,15 @@ describe("hidden in-memory interview sessions", () => {
         questions: [
           {
             questionId: "question-1",
-            surfaceQuestion:
-              "What problem were you trying to solve, and why did it matter?",
+            surfaceQuestion: "Question one?",
+          },
+          {
+            questionId: "question-2",
+            surfaceQuestion: "Question two?",
+          },
+          {
+            questionId: "question-3",
+            surfaceQuestion: "Question three?",
           },
         ],
       },
@@ -117,7 +135,7 @@ describe("hidden in-memory interview sessions", () => {
   });
 
   it("copies and deeply freezes a QuestionPlan when the session is created", () => {
-    const sourcePlan = makeQuestionPlan();
+    const sourcePlans = makeInterviewPlan();
     const store = new InMemoryInterviewSessionStore({
       ttlMs: 60_000,
       idFactory: () => "session-frozen",
@@ -126,9 +144,9 @@ describe("hidden in-memory interview sessions", () => {
     const session = store.create({
       projectContext,
       scenario: { id: scenario.id, version: scenario.version },
-      questionPlans: [sourcePlan],
+      questionPlans: sourcePlans,
     });
-    const mutableSource = sourcePlan as unknown as {
+    const mutableSource = sourcePlans[0] as unknown as {
       primaryTarget: { description: string };
       requiredEvidence: Array<{ id: string; description: string }>;
     };
@@ -145,6 +163,8 @@ describe("hidden in-memory interview sessions", () => {
     expect(storedPlan.requiredEvidence).toHaveLength(2);
     expect(Object.isFrozen(session)).toBe(true);
     expect(Object.isFrozen(session.questionPlans)).toBe(true);
+    expect(session.questionPlans).toHaveLength(3);
+    expect(new Set(session.questionPlans.map(({ id }) => id)).size).toBe(3);
     expect(Object.isFrozen(storedPlan)).toBe(true);
     expect(Object.isFrozen(storedPlan.primaryTarget)).toBe(true);
     expect(Object.isFrozen(storedPlan.requiredEvidence)).toBe(true);
@@ -157,7 +177,7 @@ describe("hidden in-memory interview sessions", () => {
       idFactory: () => "session-public",
     });
     const service = new InterviewSessionService(
-      fakeLlmService([{ ok: true, value: makeQuestionPlan() }]),
+      fakeLlmService([{ ok: true, value: makeInterviewPlan() }]),
       store,
     );
 
@@ -167,10 +187,10 @@ describe("hidden in-memory interview sessions", () => {
       return;
     }
 
-    expect(Object.keys(result.session.questions[0])).toEqual([
-      "questionId",
-      "surfaceQuestion",
-    ]);
+    expect(result.session.questions).toHaveLength(3);
+    result.session.questions.forEach((question) => {
+      expect(Object.keys(question)).toEqual(["questionId", "surfaceQuestion"]);
+    });
     const serialized = JSON.stringify(result.session);
     expect(serialized).not.toContain("primaryTarget");
     expect(serialized).not.toContain("requiredEvidence");
@@ -240,12 +260,39 @@ describe("hidden in-memory interview sessions", () => {
     expect(allocatedIds).toBe(0);
   });
 
-  it("keeps multiple sessions isolated", async () => {
-    const firstPlan = makeQuestionPlan("question-a", "Why did project A matter?");
-    const secondPlan = makeQuestionPlan(
-      "question-b",
-      "Why was project B worth pursuing?",
+  it("rejects a repeated question family before creating a session", async () => {
+    const store = new InMemoryInterviewSessionStore({
+      ttlMs: 60_000,
+      idFactory: () => "must-not-be-created",
+    });
+    const repeated = makeQuestionPlan("repeated-family", "Repeated question?");
+    const service = new InterviewSessionService(
+      fakeLlmService([
+        {
+          ok: true,
+          value: [
+            repeated,
+            repeated,
+            makeQuestionPlan("third-family", "Third question?"),
+          ],
+        },
+      ]),
+      store,
     );
+
+    await expect(service.create({ projectContext, scenario })).resolves.toMatchObject({
+      ok: false,
+      error: {
+        code: "PLANNING_FAILED",
+        cause: { code: "INVALID_STRUCTURED_OUTPUT" },
+      },
+    });
+    expect(store.size).toBe(0);
+  });
+
+  it("keeps multiple sessions isolated", async () => {
+    const firstPlan = makeInterviewPlan("a-");
+    const secondPlan = makeInterviewPlan("b-");
     const store = new InMemoryInterviewSessionStore({
       ttlMs: 60_000,
       idFactory: sequentialIdFactory("session-a", "session-b"),
@@ -271,8 +318,8 @@ describe("hidden in-memory interview sessions", () => {
     expect(second.ok && second.session.sessionId).toBe("session-b");
     expect(store.get("session-a")?.projectContext).toBe("Project A context");
     expect(store.get("session-b")?.projectContext).toBe("Project B context");
-    expect(store.get("session-a")?.questionPlans[0]?.id).toBe("question-a");
-    expect(store.get("session-b")?.questionPlans[0]?.id).toBe("question-b");
+    expect(store.get("session-a")?.questionPlans[0]?.id).toBe("a-question-1");
+    expect(store.get("session-b")?.questionPlans[0]?.id).toBe("b-question-1");
     expect(store.size).toBe(2);
   });
 });

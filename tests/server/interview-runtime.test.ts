@@ -40,9 +40,18 @@ const plan: QuestionPlan = {
   ],
 };
 
+const plans = [
+  plan,
+  { ...plan, id: "question-2", surfaceQuestion: "What choice did you make?" },
+  { ...plan, id: "question-3", surfaceQuestion: "What result did you observe?" },
+] as const;
+
 function planningService(): LlmService {
   return {
     model: "fake-single-model",
+    async generateInterviewPlan() {
+      return { ok: true, value: plans };
+    },
     async generateQuestionPlan() {
       return { ok: true, value: plan };
     },
@@ -125,15 +134,61 @@ describe("interview runtime service", () => {
     expect(updated.checkpoint?.freshness).toBe("CURRENT");
     expect(updated.checkpoint?.kind).toBe("INTERIM");
 
-    const done = await runtimeService.complete(created.session.sessionId);
-    expect(done).toMatchObject({
+    const secondReady = await runtimeService.complete(created.session.sessionId);
+    expect(secondReady).toMatchObject({
+      state: "QUESTION_READY",
+      question: { index: 2, total: 3, questionId: "question-2" },
+      transcript: "",
+      answerVersion: 0,
+      checkpointVersion: 0,
+      report: null,
+    });
+    expect(store.get(created.session.sessionId)?.runtime.questions[0]).toMatchObject({
       state: "QUESTION_DONE",
       transcript: "I personally designed and implemented the experiment harness.",
-      answerVersion: 1,
       checkpointVersion: 2,
     });
-    expect(done.checkpoint?.freshness).toBe("STALE");
-    expect(done.checkpoint?.kind).toBe("FINAL");
+
+    runtimeService.start(created.session.sessionId);
+    runtimeService.updateTranscript(
+      created.session.sessionId,
+      "I chose the smaller design because memory was constrained.",
+      1,
+    );
+    const thirdReady = await runtimeService.complete(created.session.sessionId);
+    expect(thirdReady).toMatchObject({
+      state: "QUESTION_READY",
+      question: { index: 3, total: 3, questionId: "question-3" },
+      report: null,
+    });
+
+    runtimeService.start(created.session.sessionId);
+    runtimeService.updateTranscript(
+      created.session.sessionId,
+      "I observed lower latency and checked it with repeated device runs.",
+      1,
+    );
+    const finished = await runtimeService.complete(created.session.sessionId);
+    expect(finished).toMatchObject({
+      state: "QUESTION_DONE",
+      question: { index: 3, total: 3 },
+      report: {
+        completedQuestions: 3,
+        firstPassQuestions: 3,
+        hardGateCount: 0,
+        repairCount: 0,
+        repairSuccessfulCount: 0,
+        unresolvedCount: 0,
+      },
+    });
+    expect(store.get(created.session.sessionId)?.runtime.interviewState).toEqual({
+      state: "INTERVIEW_DONE",
+      activeQuestionId: null,
+    });
+    expect(finished.report?.questions).toHaveLength(3);
+    expect(JSON.stringify(finished.report)).not.toMatch(
+      /confidence|NOT_ANSWERING_QUESTION|VAGUE_WITHOUT_EVIDENCE|OWNERSHIP_AMBIGUOUS|score/i,
+    );
   });
 
   it("keeps FINAL out of the transcript update contract", () => {
@@ -210,6 +265,8 @@ describe("interview runtime service", () => {
       "wrapUpPrompt",
       "hardGate",
       "repairResult",
+      "completedQuestionResult",
+      "report",
     ]);
     expect(serialized).not.toContain("primaryTarget");
     expect(serialized).not.toContain("requiredEvidence");

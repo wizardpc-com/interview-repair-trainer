@@ -1,3 +1,4 @@
+import { assertInterviewPlanInvariants } from "../domain/interview/contracts";
 import type { InterviewScenarioPack } from "../domain/interview/scenario";
 import type {
   LlmService,
@@ -36,7 +37,7 @@ export class InterviewSessionService {
   async create(
     input: CreateInterviewSessionInput,
   ): Promise<CreateInterviewSessionResult> {
-    const planningResult = await this.llmService.generateQuestionPlan({
+    const planningResult = await this.llmService.generateInterviewPlan({
       projectContext: input.projectContext,
       scenario: input.scenario,
     });
@@ -51,13 +52,32 @@ export class InterviewSessionService {
       };
     }
 
+    try {
+      assertInterviewPlanInvariants(planningResult.value);
+    } catch (error) {
+      return {
+        ok: false,
+        error: {
+          code: "PLANNING_FAILED",
+          cause: {
+            code: "INVALID_STRUCTURED_OUTPUT",
+            message:
+              error instanceof Error
+                ? error.message
+                : "Interview plan failed validation",
+            attempts: 1,
+          },
+        },
+      };
+    }
+
     const session = this.sessionStore.create({
       projectContext: input.projectContext,
       scenario: {
         id: input.scenario.id,
         version: input.scenario.version,
       },
-      questionPlans: [planningResult.value],
+      questionPlans: planningResult.value,
     });
 
     return {

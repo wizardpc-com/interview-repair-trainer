@@ -1,5 +1,8 @@
 import { z } from "zod";
-import type { QuestionPlan } from "../../domain/interview/contracts";
+import {
+  INTERVIEW_PLAN_QUESTION_COUNT,
+  type QuestionPlan,
+} from "../../domain/interview/contracts";
 import type { InterviewScenarioPack } from "../../domain/interview/scenario";
 import {
   ANSWER_BOUNDARIES,
@@ -202,6 +205,34 @@ export function createQuestionPlanSchema(scenario: InterviewScenarioPack) {
   });
 }
 
+const interviewPlanStructuredOutputSchema = z
+  .object({
+    questionPlans: z
+      .array(questionPlanSchema)
+      .length(INTERVIEW_PLAN_QUESTION_COUNT),
+  })
+  .strict();
+
+export function createInterviewPlanSchema(scenario: InterviewScenarioPack) {
+  return z
+    .object({
+      questionPlans: z
+        .array(createQuestionPlanSchema(scenario))
+        .length(INTERVIEW_PLAN_QUESTION_COUNT),
+    })
+    .strict()
+    .superRefine(({ questionPlans }, context) => {
+      const ids = questionPlans.map(({ id }) => id);
+      if (new Set(ids).size !== ids.length) {
+        context.addIssue({
+          code: "custom",
+          message: "questionPlans must use distinct question families",
+          path: ["questionPlans"],
+        });
+      }
+    });
+}
+
 const semanticMetadata = {
   questionId: nonEmptyString,
   checkpointVersion: z.number().int().nonnegative(),
@@ -244,6 +275,9 @@ function toProviderJsonSchema(schema: z.ZodType) {
 }
 
 export const questionPlanJsonSchema = toProviderJsonSchema(questionPlanSchema);
+export const interviewPlanJsonSchema = toProviderJsonSchema(
+  interviewPlanStructuredOutputSchema,
+);
 export const semanticCheckResultJsonSchema = toProviderJsonSchema(
   semanticCheckStructuredOutputSchema,
 );

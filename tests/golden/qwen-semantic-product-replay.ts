@@ -87,6 +87,9 @@ function fakeEvaluator(
 ): LlmService {
   return {
     model: "captured-qwen-result-replay",
+    async generateInterviewPlan() {
+      return { ok: true, value: [plan, plan, plan] };
+    },
     async generateQuestionPlan() {
       return { ok: true, value: plan };
     },
